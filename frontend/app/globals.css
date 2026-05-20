@@ -1,0 +1,296 @@
+/* ── Google Fonts — HARUS di paling atas sebelum @tailwind ──────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Variables (White & Black Monochrome Grayscale Theme) ────────────── */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
+
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 9%;
+
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 43%;
+
+    --accent: 0 0% 92%;
+    --accent-foreground: 0 0% 9%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 89%;
+    --input: 0 0% 89%;
+    --ring: 0 0% 9%;
+
+    --radius: 0.5rem;
+
+    /* Grayscale chart colors */
+    --chart-cpu: 0 0% 10%;
+    --chart-ram: 0 0% 35%;
+    --chart-disk: 0 0% 55%;
+    --chart-network: 0 0% 75%;
+    --chart-forecast: 0 0% 20%;
+
+    /* Status colors - Monochrome variations */
+    --status-healthy: 0 0% 15%;
+    --status-warning: 0 0% 45%;
+    --status-critical: 0 0% 5%;
+    --status-unknown: 0 0% 70%;
+    --status-down: 0 0% 85%;
+  }
+
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 95%;
+
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 0 0% 95%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 55%;
+
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 95%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 0%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 95%;
+
+    /* Grayscale chart colors */
+    --chart-cpu: 0 0% 95%;
+    --chart-ram: 0 0% 75%;
+    --chart-disk: 0 0% 55%;
+    --chart-network: 0 0% 35%;
+    --chart-forecast: 0 0% 80%;
+
+    /* Status colors - Monochrome variations */
+    --status-healthy: 0 0% 90%;
+    --status-warning: 0 0% 60%;
+    --status-critical: 0 0% 98%;
+    --status-unknown: 0 0% 40%;
+    --status-down: 0 0% 20%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  /* Grayscale scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50%       { opacity: 0.7; transform: scale(1.05); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 4s ease-in-out infinite;
+  }
+}
+
+/* ── Component Layer ─────────────────────────────────────────────────────── */
+@layer components {
+
+  /* Glass card effect (Grayscale) */
+  .glass-card {
+    @apply bg-card rounded-xl border border-border/80 shadow-sm;
+  }
+
+  /* Metric card with hover */
+  .metric-card {
+    @apply glass-card p-5 transition-all duration-200;
+  }
+  .metric-card:hover {
+    @apply border-foreground/30 shadow-md;
+  }
+
+  /* Descriptive Status badges */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border transition-colors;
+  }
+  .status-healthy, .status-up {
+    @apply bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20;
+  }
+  .status-warning {
+    @apply bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20;
+  }
+  .status-critical, .status-down {
+    @apply bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20;
+  }
+  .status-unknown {
+    @apply bg-zinc-50 text-zinc-500 border-zinc-200 dark:bg-zinc-500/10 dark:text-zinc-400 dark:border-zinc-500/20;
+  }
+
+  /* Descriptive Severity badges */
+  .severity-critical {
+    @apply bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20 font-semibold;
+  }
+  .severity-warning  {
+    @apply bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20;
+  }
+  .severity-info     {
+    @apply bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20;
+  }
+
+  /* Animated pulse dot */
+  .pulse-dot {
+    @apply w-2 h-2 rounded-full relative bg-foreground/80;
+  }
+  .pulse-dot::after {
+    content: '';
+    @apply absolute inset-0 rounded-full animate-ping opacity-75 bg-foreground;
+  }
+
+  /* Skeleton shimmer */
+  .skeleton {
+    @apply rounded-md;
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Sidebar nav item (Grayscale) */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+           text-muted-foreground transition-all duration-150 cursor-pointer;
+  }
+  .nav-item:hover {
+    @apply bg-secondary text-foreground;
+  }
+  .nav-item.active {
+    @apply bg-secondary text-foreground font-semibold border border-border/60;
+  }
+
+  /* Grayscale Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent font-extrabold;
+    background-image: linear-gradient(135deg, hsl(var(--foreground)) 30%, hsl(var(--muted-foreground)) 100%);
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    @apply h-1 rounded-full overflow-hidden bg-secondary;
+  }
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-500;
+  }
+  .progress-fill.low     { @apply bg-emerald-500 dark:bg-emerald-600; }
+  .progress-fill.medium  { @apply bg-amber-500; }
+  .progress-fill.high    { @apply bg-rose-500; }
+
+  /* Chart container */
+  .chart-container {
+    @apply glass-card p-4;
+  }
+
+  /* Table styles */
+  .data-table {
+    @apply w-full text-sm;
+  }
+  .data-table th {
+    @apply text-left text-xs uppercase tracking-wider text-muted-foreground
+           font-semibold px-4 py-3 bg-secondary/80 border-b border-border;
+  }
+  .data-table td {
+    @apply px-4 py-3 border-t border-border;
+  }
+  .data-table tr {
+    @apply transition-colors duration-100;
+  }
+  .data-table tr:hover td {
+    @apply bg-secondary/30;
+  }
+}
+
+/* ── Utility Layer ───────────────────────────────────────────────────────── */
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  /* Grayscale glow utilities */
+  .glow-blue   { box-shadow: 0 0 20px hsla(0, 0%, 0%, 0.15); }
+  .glow-green  { box-shadow: 0 0 20px hsla(0, 0%, 0%, 0.15); }
+  .glow-yellow { box-shadow: 0 0 20px hsla(0, 0%, 0%, 0.1); }
+  .glow-red    { box-shadow: 0 0 20px hsla(0, 0%, 0%, 0.2); }
+
+  /* Grayscale Blur glassmorphism */
+  .glass {
+    background-color: hsla(0, 0%, 100%, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid border-border;
+  }
+
+  /* Truncate with tooltip hint */
+  .truncate-hover {
+    @apply truncate cursor-default;
+  }
+}

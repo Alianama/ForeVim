@@ -1,0 +1,63 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: "forevim-default"
+
+# ─── Alerting (optional — for built-in Prometheus alerts) ─────────────────────
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['alertmanager:9093']
+
+# ─── Rule Files ───────────────────────────────────────────────────────────────
+# rule_files:
+#   - "alert_rules/*.yml"
+
+# ─── Scrape Configs ───────────────────────────────────────────────────────────
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # ForeVim Backend metrics
+  - job_name: "forevim_backend"
+    static_configs:
+      - targets: ["backend:8000"]
+    metrics_path: /metrics
+
+  # Linux VM node_exporters
+  # Add each VM here or use file_sd for dynamic discovery
+  - job_name: "node_exporter"
+    scrape_interval: 15s
+    static_configs:
+      # ─── EDIT BELOW: Add your VMs here ───────────────────────────────────
+      - targets:
+          # Format: <ip>:9100
+          - "192.168.1.10:9100"   # vm-prod-01
+          - "192.168.1.11:9100"   # vm-prod-02
+          - "192.168.1.12:9100"   # vm-staging-01
+        labels:
+          environment: "production"
+
+      # Example: different environment
+      # - targets:
+      #     - "10.0.0.20:9100"
+      #   labels:
+      #     environment: "staging"
+
+    # Optional: relabel to add hostname from file
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: "([^:]+)(:[0-9]+)?"
+        replacement: "${1}"
+
+  # ─── File-based Service Discovery (for dynamic VM lists) ──────────────────
+  # Uncomment to use: create docker/prometheus/targets/*.json files
+  # - job_name: "node_exporter_dynamic"
+  #   file_sd_configs:
+  #     - files:
+  #         - '/etc/prometheus/targets/*.json'
+  #       refresh_interval: 30s
