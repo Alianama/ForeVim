@@ -16,6 +16,15 @@ export interface TokenResponse {
   expires_in: number;
 }
 
+export interface LoginResponse {
+  totp_required: boolean;
+  mfa_token: string | null;
+  access_token: string | null;
+  refresh_token: string | null;
+  token_type: string;
+  expires_in: number | null;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -25,8 +34,10 @@ export interface User {
   is_active: boolean;
   is_verified: boolean;
   last_login: string | null;
+  is_2fa_enabled: boolean;
   created_at: string;
 }
+
 
 // ─── VM ───────────────────────────────────────────────────────────────────────
 
@@ -42,6 +53,7 @@ export interface VM {
   cluster: string | null;
   tags: string | null;
   status: VMStatus;
+  prometheus_source_id: string | null;
   prometheus_job: string;
   prometheus_instance: string | null;
   is_active: boolean;
@@ -62,8 +74,31 @@ export interface VMCreate {
   environment?: string;
   cluster?: string;
   tags?: string;
+  prometheus_source_id?: string;
   prometheus_job?: string;
   prometheus_instance?: string;
+}
+
+// ─── Prometheus Source ─────────────────────────────────────────────────────────
+
+export interface PrometheusSource {
+  id: string;
+  name: string;
+  url: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface PrometheusSourceCreate {
+  name: string;
+  url: string;
+  is_active?: boolean;
+}
+
+export interface PrometheusSourceUpdate {
+  name?: string;
+  url?: string;
+  is_active?: boolean;
 }
 
 // ─── Metrics ──────────────────────────────────────────────────────────────────
@@ -104,8 +139,10 @@ export interface VMHistoryResponse {
 
 export type ForecastMetric = "cpu" | "ram" | "disk";
 export type ForecastAlgorithm =
+  | "auto"
   | "moving_average"
   | "linear_regression"
+  | "holt_winters"
   | "prophet"
   | "arima"
   | "lstm";
@@ -126,7 +163,20 @@ export interface ForecastResponse {
   historical: ForecastPoint[];
   forecast: ForecastPoint[];
   accuracy_score: number | null;
+  accuracy_metric: string | null;
+  model_info: string | null;
   generated_at: string;
+}
+
+export interface ForecastHistoryItem {
+  id: string;
+  vm_id: string;
+  metric: ForecastMetric;
+  algorithm: ForecastAlgorithm;
+  forecast_period_days: number;
+  accuracy_score: number | null;
+  generated_at: string;
+  has_forecast: boolean;
 }
 
 // ─── Alerts ───────────────────────────────────────────────────────────────────

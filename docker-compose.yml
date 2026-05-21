@@ -2,7 +2,7 @@ version: "3.9"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # ForeVim — Production Docker Compose
-# Prometheus sudah jalan eksternal di: http://192.168.9.16:9090
+# URL Prometheus dikonfigurasi via web → Prometheus Sources (bukan env)
 # Jalankan: docker compose up -d --build
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -40,13 +40,13 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
+    command: sh -c "python init_db.py && alembic stamp head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1"
     env_file:
       - ./backend/.env
+
     environment:
-      # Override supaya pakai Prometheus eksternal & DB container
       DATABASE_URL: postgresql+asyncpg://forevim:forevim@postgres:5432/forevim
-      PROMETHEUS_URL: http://192.168.9.16:9090
-      ALLOWED_ORIGINS: "http://localhost:3000,http://192.168.9.16:3000,http://192.168.9.16:8000"
+      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8000"
     ports:
       - "8000:8000"
     networks:

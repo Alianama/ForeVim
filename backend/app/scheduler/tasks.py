@@ -44,48 +44,57 @@ async def task_refresh_metrics() -> None:
 
 
 # ─── Task: Generate Forecasts ─────────────────────────────────────────────────
-
-
+ 
+ 
 async def task_generate_forecasts() -> None:
+    if not settings.FORECAST_SCHEDULER_ENABLED:
+        return
     logger.info("scheduler_task_start", task="generate_forecasts")
     async with AsyncSessionLocal() as db:
         try:
             vms = await vm_service.get_all(db)
             for vm in vms:
-                instance = vm.prometheus_instance or f"{vm.ip_address}:9100"
+                if not vm.prometheus_source:
+                    continue
                 for metric in [ForecastMetric.CPU, ForecastMetric.RAM, ForecastMetric.DISK]:
                     try:
-                        await forecast_service.generate_forecast(
-                            vm_id=vm.id,
-                            instance=instance,
-                            metric=metric,
-                            algorithm=ForecastAlgorithm.LINEAR_REGRESSION,
-                            period_days=7,
+                        await forecast_service.generate_and_save(
+                            db,
+                            vm,
+                            metric,
+                            ForecastAlgorithm.HOLT_WINTERS,
+                            7,
                         )
                     except Exception as exc:
                         logger.warning("forecast_failed", vm=vm.hostname, metric=metric, error=str(exc))
+            await db.commit()
         except Exception as exc:
+            await db.rollback()
             logger.error("scheduler_task_error", task="generate_forecasts", error=str(exc))
-
-
+ 
+ 
 # ─── Task: Anomaly Detection ──────────────────────────────────────────────────
-
-
+ 
+ 
 async def task_detect_anomalies() -> None:
     """Simple z-score based anomaly detection on CPU usage."""
     import numpy as np
-
+ 
     logger.info("scheduler_task_start", task="anomaly_detection")
     async with AsyncSessionLocal() as db:
         try:
             vms = await vm_service.get_all(db)
             for vm in vms:
+                if not vm.prometheus_source:
+                    continue
                 instance = vm.prometheus_instance or f"{vm.ip_address}:9100"
+                source_url = vm.prometheus_source.url
                 history = await prometheus_service.get_metric_range(
                     instance=instance,
                     metric_key="cpu_usage",
                     hours=3,
                     step="1m",
+                    url=source_url,
                 )
                 if len(history) < 10:
                     continue

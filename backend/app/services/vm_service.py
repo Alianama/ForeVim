@@ -8,8 +8,9 @@ from datetime import datetime, timezone
 from typing import Dict, List, Optional
 import uuid
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.alerts.service import alert_service
 from app.core.logging import get_logger
@@ -41,14 +42,22 @@ METRIC_TO_QUERY = {
 class VMService:
     # ─── CRUD ─────────────────────────────────────────────────────────────────
 
+    async def count_all(self, db: AsyncSession) -> int:
+        result = await db.execute(
+            select(func.count()).select_from(VM).where(VM.is_active == True)
+        )
+        return int(result.scalar() or 0)
+
     async def get_all(self, db: AsyncSession, skip: int = 0, limit: int = 100) -> List[VM]:
         result = await db.execute(
-            select(VM).where(VM.is_active == True).offset(skip).limit(limit)
+            select(VM).options(selectinload(VM.prometheus_source)).where(VM.is_active == True).offset(skip).limit(limit)
         )
         return list(result.scalars().all())
 
     async def get_by_id(self, db: AsyncSession, vm_id: uuid.UUID) -> Optional[VM]:
-        result = await db.execute(select(VM).where(VM.id == vm_id))
+        result = await db.execute(
+            select(VM).options(selectinload(VM.prometheus_source)).where(VM.id == vm_id)
+        )
         return result.scalar_one_or_none()
 
     async def create(self, db: AsyncSession, data: VMCreate) -> VM:
@@ -64,6 +73,7 @@ class VMService:
             tags=data.tags,
             prometheus_job=data.prometheus_job,
             prometheus_instance=instance,
+            prometheus_source_id=data.prometheus_source_id,
         )
         db.add(vm)
         await db.flush()
@@ -87,9 +97,18 @@ class VMService:
     async def collect_metrics(self, db: AsyncSession, vm: VM) -> VMMetrics:
         """Fetch current metrics from Prometheus and update VM status."""
         instance = vm.prometheus_instance or f"{vm.ip_address}:9100"
+        if not vm.prometheus_source:
+            await self._update_status(db, vm, VMStatus.UNKNOWN)
+            return VMMetrics(
+                vm_id=vm.id,
+                hostname=vm.hostname,
+                status=VMStatus.UNKNOWN,
+                collected_at=datetime.now(timezone.utc),
+            )
+        source_url = vm.prometheus_source.url
 
         # Check if up
-        is_up = await prometheus_service.get_instance_up(instance, vm.prometheus_job)
+        is_up = await prometheus_service.get_instance_up(instance, vm.prometheus_job, url=source_url)
 
         if not is_up:
             await self._update_status(db, vm, VMStatus.DOWN)
@@ -100,7 +119,7 @@ class VMService:
                 collected_at=datetime.now(timezone.utc),
             )
 
-        raw = await prometheus_service.get_current_metrics(instance)
+        raw = await prometheus_service.get_current_metrics(instance, url=source_url)
 
         cpu = raw.get("cpu_usage")
         ram = raw.get("ram_usage_percent")
@@ -171,13 +190,17 @@ class VMService:
     ) -> VMHistoryResponse:
         instance = vm.prometheus_instance or f"{vm.ip_address}:9100"
         query_key, aggregate = METRIC_TO_QUERY.get(metric, ("cpu_usage", False))
+        if not vm.prometheus_source:
+            return VMHistoryResponse(vm_id=vm.id, metric=metric, step=step, data=[])
 
+        source_url = vm.prometheus_source.url
         raw = await prometheus_service.get_metric_range(
             instance=instance,
             metric_key=query_key,
             hours=hours,
             step=step,
             aggregate=aggregate,
+            url=source_url,
         )
 
         return VMHistoryResponse(

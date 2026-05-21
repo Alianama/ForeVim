@@ -42,8 +42,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     CACHE_TTL_SECONDS: int = 60
 
-    # ── Prometheus ────────────────────────────────────────────────────────────
-    PROMETHEUS_URL: str = "http://localhost:9090"
+    # ── Prometheus (URL dikelola via web → tabel prometheus_sources) ─────────
     PROMETHEUS_TIMEOUT: int = 30
     METRICS_SCRAPE_INTERVAL: int = 15  # seconds
 
@@ -53,6 +52,9 @@ class Settings(BaseSettings):
     # ── Forecasting ───────────────────────────────────────────────────────────
     FORECAST_DEFAULT_PERIOD: int = 7  # days
     FORECAST_HISTORY_HOURS: int = 168  # 7 days lookback
+    # Background forecast tiap jam memakan CPU (statsmodels); default off — forecast on-demand via API
+    FORECAST_SCHEDULER_ENABLED: bool = False
+    FORECAST_MAX_LOOKBACK_HOURS: int = 336  # 14 hari max query Prometheus
 
     # ── Alerting ──────────────────────────────────────────────────────────────
     ALERT_CPU_THRESHOLD: float = 85.0

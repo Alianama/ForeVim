@@ -53,17 +53,13 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env.local
 ```
 
-### 2. Configure Prometheus
+### 2. Configure Prometheus (via Web UI)
 
-Edit `docker/prometheus/prometheus.yml` and add your VM IPs:
+Setelah login, buka **Prometheus Sources** di dashboard dan tambahkan IP/URL server Prometheus Anda (bisa lebih dari satu). Contoh: `192.168.1.5:9090`.
 
-```yaml
-- job_name: "node_exporter"
-  static_configs:
-    - targets:
-        - "192.168.1.10:9100"   # your-vm-01
-        - "192.168.1.11:9100"   # your-vm-02
-```
+> URL Prometheus **tidak** dikonfigurasi lewat `.env` — hanya dari web.
+
+Untuk target VM, tetap konfigurasi `node_exporter` di server Prometheus Anda (file `docker/prometheus/prometheus.yml` hanya contoh referensi).
 
 ### 3. Start with Docker Compose
 
@@ -74,9 +70,10 @@ docker compose up -d
 Services:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000/api/docs
-- Prometheus: http://localhost:9090
 
 Default login: `admin@forevim.local` / `ChangeMe123!`
+
+Lalu tambahkan Prometheus source di web, lalu **Sync from Prometheus** di halaman Virtual Machines.
 
 ---
 

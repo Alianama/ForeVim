@@ -8,21 +8,26 @@ import {
   ForecastAlgorithm,
   ForecastMetric,
   ForecastResponse,
+  ForecastHistoryItem,
   LoginRequest,
   TokenResponse,
+  LoginResponse,
   User,
   VM,
   VMCreate,
   VMHistoryResponse,
   VMListResponse,
   VMMetrics,
+  PrometheusSource,
+  PrometheusSourceCreate,
+  PrometheusSourceUpdate,
 } from "@/types";
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export const authService = {
-  login: async (creds: LoginRequest): Promise<TokenResponse> => {
-    const { data } = await api.post<TokenResponse>("/auth/login/json", creds);
+  login: async (creds: LoginRequest): Promise<LoginResponse> => {
+    const { data } = await api.post<LoginResponse>("/auth/login/json", creds);
     return data;
   },
   me: async (): Promise<User> => {
@@ -35,12 +40,32 @@ export const authService = {
     });
     return data;
   },
+  verify2fa: async (mfa_token: string, code: string): Promise<TokenResponse> => {
+    const { data } = await api.post<TokenResponse>("/auth/verify-2fa", {
+      mfa_token,
+      code,
+    });
+    return data;
+  },
+  setup2fa: async (): Promise<{ secret: string; provisioning_uri: string }> => {
+    const { data } = await api.post<{ secret: string; provisioning_uri: string }>("/auth/2fa/setup");
+    return data;
+  },
+  enable2fa: async (code: string): Promise<{ message: string }> => {
+    const { data } = await api.post<{ message: string }>("/auth/2fa/enable", { code });
+    return data;
+  },
+  disable2fa: async (code: string): Promise<{ message: string }> => {
+    const { data } = await api.post<{ message: string }>("/auth/2fa/disable", { code });
+    return data;
+  },
 };
+
 
 // ─── VMs ─────────────────────────────────────────────────────────────────────
 
 export const vmService = {
-  list: async (skip = 0, limit = 100): Promise<VMListResponse> => {
+  list: async (skip = 0, limit = 500): Promise<VMListResponse> => {
     const { data } = await api.get<VMListResponse>("/vms", {
       params: { skip, limit },
     });
@@ -76,10 +101,28 @@ export const vmService = {
     id: string,
     metric: ForecastMetric,
     algorithm: ForecastAlgorithm,
-    periodDays: number
+    periodDays: number,
+    forceRefresh = false
   ): Promise<ForecastResponse> => {
     const { data } = await api.get<ForecastResponse>(`/vms/${id}/forecast`, {
+      params: { metric, algorithm, period_days: periodDays, force_refresh: forceRefresh },
+    });
+    return data;
+  },
+  generateForecast: async (
+    id: string,
+    metric: ForecastMetric,
+    algorithm: ForecastAlgorithm,
+    periodDays: number
+  ): Promise<ForecastResponse> => {
+    const { data } = await api.post<ForecastResponse>(`/vms/${id}/forecast/generate`, null, {
       params: { metric, algorithm, period_days: periodDays },
+    });
+    return data;
+  },
+  forecastHistory: async (id: string, limit = 20): Promise<ForecastHistoryItem[]> => {
+    const { data } = await api.get<ForecastHistoryItem[]>(`/vms/${id}/forecast/history`, {
+      params: { limit },
     });
     return data;
   },
@@ -127,8 +170,59 @@ export const userService = {
 // ─── Prometheus ────────────────────────────────────────────────────────────────
 
 export const prometheusService = {
-  retention: async (): Promise<{ retention_days: number }> => {
-    const { data } = await api.get<{ retention_days: number }>("/prometheus/retention");
+  retention: async (sourceId?: string): Promise<{ retention_days: number }> => {
+    const { data } = await api.get<{ retention_days: number }>("/prometheus/retention", {
+      params: { source_id: sourceId },
+    });
+    return data;
+  },
+  listSources: async (): Promise<PrometheusSource[]> => {
+    const { data } = await api.get<PrometheusSource[]>("/prometheus/sources");
+    return data;
+  },
+  createSource: async (body: PrometheusSourceCreate): Promise<PrometheusSource> => {
+    const { data } = await api.post<PrometheusSource>("/prometheus/sources", body);
+    return data;
+  },
+  updateSource: async (id: string, body: PrometheusSourceUpdate): Promise<PrometheusSource> => {
+    const { data } = await api.patch<PrometheusSource>(`/prometheus/sources/${id}`, body);
+    return data;
+  },
+  deleteSource: async (id: string): Promise<void> => {
+    await api.delete(`/prometheus/sources/${id}`);
+  },
+  listTargets: async (sourceId?: string): Promise<any> => {
+    const { data } = await api.get<any>("/prometheus/targets", {
+      params: { source_id: sourceId },
+    });
+    return data;
+  },
+  listJobs: async (sourceId?: string): Promise<string[]> => {
+    const { data } = await api.get<string[]>("/prometheus/jobs", {
+      params: { source_id: sourceId },
+    });
+    return data;
+  },
+  listOrigins: async (sourceId?: string): Promise<string[]> => {
+    const { data } = await api.get<string[]>("/prometheus/origins", {
+      params: { source_id: sourceId },
+    });
+    return data;
+  },
+  listNodeTargets: async (sourceId?: string): Promise<any> => {
+    const { data } = await api.get<any>("/prometheus/node-targets", {
+      params: { source_id: sourceId },
+    });
+    return data;
+  },
+  syncVms: async (params: { job?: string; origin_prometheus?: string; source_id?: string }): Promise<any> => {
+    const { data } = await api.post<any>("/prometheus/sync-vms", null, {
+      params: {
+        job: params.job,
+        origin_prometheus: params.origin_prometheus,
+        source_id: params.source_id,
+      },
+    });
     return data;
   },
 };

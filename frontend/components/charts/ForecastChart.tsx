@@ -3,7 +3,8 @@
 import ReactECharts from "echarts-for-react";
 import { format } from "date-fns";
 import type { ForecastMetric, ForecastResponse } from "@/types";
-import { TrendingUp } from "lucide-react";
+import { formatAccuracy, FORECAST_ALGORITHMS } from "@/lib/forecast-algorithms";
+import { TrendingUp, Info, AlertCircle } from "lucide-react";
 
 interface Props {
   data?: ForecastResponse;
@@ -24,33 +25,37 @@ export function ForecastChart({ data, isLoading, metric }: Props) {
     return <div className="chart-container skeleton h-80" />;
   }
 
-  if (!data || (!data.historical.length && !data.forecast.length)) {
+  const hasHistorical = (data?.historical.length ?? 0) > 0;
+  const hasForecast = (data?.forecast.length ?? 0) > 0;
+
+  if (!data || (!hasHistorical && !hasForecast)) {
     return (
-      <div className="chart-container h-80 flex items-center justify-center text-muted-foreground text-sm">
-        No forecast data. Insufficient historical metrics.
+      <div className="chart-container h-80 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2 px-6 text-center">
+        <AlertCircle className="w-8 h-8 opacity-40" />
+        <p>Belum ada data forecast.</p>
+        {data?.model_info && (
+          <p className="text-xs text-amber-600 dark:text-amber-400 max-w-md">{data.model_info}</p>
+        )}
+        <p className="text-xs">
+          Pilih VM lalu klik <strong>Jalankan Forecast</strong>. Pastikan VM sudah di-sync dengan
+          Prometheus source.
+        </p>
       </div>
     );
   }
 
-  // Merge historical + forecast for the chart
   const historicalDates = data.historical.map((d) =>
     format(new Date(d.timestamp), "MMM d HH:mm")
   );
-  const historicalValues = data.historical.map((d) => [
-    format(new Date(d.timestamp), "MMM d HH:mm"),
-    d.value,
-  ]);
-
   const forecastDates = data.forecast.map((d) =>
     format(new Date(d.timestamp), "MMM d HH:mm")
   );
+  const allDates = [...historicalDates, ...forecastDates];
+
   const forecastValues = data.forecast.map((d) => d.value);
   const lowerBounds = data.forecast.map((d) => d.lower_bound ?? d.value);
   const upperBounds = data.forecast.map((d) => d.upper_bound ?? d.value);
 
-  const allDates = [...historicalDates, ...forecastDates];
-
-  // Pad historical with nulls for forecast region
   const historicalSeries = [
     ...data.historical.map((d) => d.value),
     ...data.forecast.map(() => null),
@@ -59,152 +64,135 @@ export function ForecastChart({ data, isLoading, metric }: Props) {
     ...data.historical.map(() => null),
     ...forecastValues,
   ];
-  const lowerSeries = [
-    ...data.historical.map(() => null),
-    ...lowerBounds,
-  ];
-  const upperSeries = [
-    ...data.historical.map(() => null),
-    ...upperBounds,
-  ];
+  const lowerSeries = [...data.historical.map(() => null), ...lowerBounds];
+  const upperSeries = [...data.historical.map(() => null), ...upperBounds];
+
+  const splitIndex = data.historical.length - 1;
+  const algoLabel =
+    FORECAST_ALGORITHMS.find((a) => a.value === data.algorithm)?.label ??
+    data.algorithm.replace(/_/g, " ");
+  const accuracyLabel = formatAccuracy(data.accuracy_score, data.accuracy_metric);
 
   const option = {
     backgroundColor: "transparent",
     animation: true,
-    animationDuration: 1000,
     legend: {
-      data: ["Historical", "Forecast", "Confidence Band"],
+      data: hasForecast
+        ? ["Historis", "Forecast", "Interval 95%"]
+        : ["Historis (Prometheus)"],
       textStyle: { color: "hsl(215,20%,65%)", fontSize: 11 },
       top: 0,
     },
-    grid: { top: 35, right: 16, bottom: 30, left: 48 },
-    tooltip: {
-      trigger: "axis",
-      backgroundColor: "hsl(222, 47%, 13%)",
-      borderColor: "hsl(217, 33%, 22%)",
-      textStyle: { color: "#e2e8f0", fontSize: 12 },
-    },
+    grid: { top: 40, right: 16, bottom: 30, left: 48 },
+    tooltip: { trigger: "axis" },
     xAxis: {
       type: "category",
-      data: allDates,
-      axisLine: { lineStyle: { color: "hsl(217,33%,22%)" } },
-      axisTick: { show: false },
+      data: allDates.length ? allDates : historicalDates,
       axisLabel: {
-        color: "hsl(215,20%,55%)",
         fontSize: 10,
-        interval: Math.floor(allDates.length / 8) || 1,
-        rotate: 0,
+        interval: Math.floor((allDates.length || historicalDates.length) / 8) || 1,
       },
-      splitLine: { show: false },
     },
     yAxis: {
       type: "value",
       min: 0,
       max: 100,
-      axisLine: { show: false },
-      axisTick: { show: false },
-      axisLabel: { color: "hsl(215,20%,55%)", fontSize: 10, formatter: "{value}%" },
-      splitLine: { lineStyle: { color: "hsl(217,33%,16%)", type: "dashed" } },
+      axisLabel: { formatter: "{value}%" },
     },
     series: [
       {
-        name: "Historical",
+        name: "Historis",
         type: "line",
-        data: historicalSeries,
+        data: hasForecast ? historicalSeries : data.historical.map((d) => d.value),
         smooth: true,
         symbol: "none",
         lineStyle: { color, width: 2 },
-        areaStyle: {
-          color: {
-            type: "linear", x: 0, y: 0, x2: 0, y2: 1,
-            colorStops: [
-              { offset: 0, color: color + "30" },
-              { offset: 1, color: color + "00" },
-            ],
-          },
-        },
+        markLine: hasForecast
+          ? {
+              silent: true,
+              symbol: "none",
+              data: [{ xAxis: splitIndex >= 0 ? splitIndex : 0 }],
+              lineStyle: { type: "dotted", color: "hsl(215,20%,40%)" },
+              label: { show: false },
+            }
+          : undefined,
       },
-      {
-        name: "Forecast",
-        type: "line",
-        data: forecastSeries,
-        smooth: true,
-        symbol: "none",
-        lineStyle: { color: color + "cc", width: 2, type: "dashed" },
-      },
-      // Upper bound (hidden, for band)
-      {
-        name: "Upper",
-        type: "line",
-        data: upperSeries,
-        smooth: true,
-        symbol: "none",
-        lineStyle: { color: "transparent" },
-        areaStyle: {
-          color: color + "20",
-          origin: "start",
-        },
-        stack: "confidence",
-        silent: true,
-        legendHoverLink: false,
-        showInLegend: false,
-      },
-      // Lower bound
-      {
-        name: "Lower",
-        type: "line",
-        data: lowerSeries,
-        smooth: true,
-        symbol: "none",
-        lineStyle: { color: "transparent" },
-        areaStyle: {
-          color: "#00000000",
-          origin: "start",
-        },
-        stack: "confidence",
-        silent: true,
-        legendHoverLink: false,
-        showInLegend: false,
-      },
-      // Threshold
-      {
-        type: "line",
-        markLine: {
-          silent: true,
-          data: [{ yAxis: 85 }],
-          lineStyle: { color: "#ef4444", type: "dashed", width: 1, opacity: 0.4 },
-          label: { formatter: "Threshold 85%", color: "#ef444466", fontSize: 10 },
-        },
-      },
+      ...(hasForecast
+        ? [
+            {
+              name: "Forecast",
+              type: "line",
+              data: forecastSeries,
+              smooth: true,
+              symbol: "none",
+              lineStyle: { color: color + "cc", width: 2, type: "dashed" },
+            },
+            {
+              name: "Upper",
+              type: "line",
+              data: upperSeries,
+              smooth: true,
+              symbol: "none",
+              lineStyle: { color: "transparent" },
+              areaStyle: { color: color + "18" },
+              stack: "confidence",
+              silent: true,
+              showInLegend: false,
+            },
+            {
+              name: "Lower",
+              type: "line",
+              data: lowerSeries,
+              smooth: true,
+              symbol: "none",
+              lineStyle: { color: "transparent" },
+              stack: "confidence",
+              silent: true,
+              showInLegend: false,
+            },
+          ]
+        : []),
     ],
   };
 
   return (
     <div className="chart-container">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 text-sm font-medium">
           <TrendingUp className="w-4 h-4 text-primary" />
-          <span>{metric.toUpperCase()} Forecast — {data.period_days} days</span>
-        </div>
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          {data.accuracy_score !== null && (
-            <span>
-              Accuracy (R²):{" "}
-              <span className="text-foreground font-mono">
-                {(data.accuracy_score * 100).toFixed(1)}%
-              </span>
-            </span>
-          )}
-          <span className="capitalize text-muted-foreground">
-            {data.algorithm.replace("_", " ")}
+          <span>
+            {metric.toUpperCase()} — {data.period_days} hari
+            {!hasForecast && hasHistorical && " (historis saja)"}
           </span>
         </div>
+        <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">{algoLabel}</span>
+          {accuracyLabel && (
+            <span>
+              Akurasi: <span className="font-mono text-foreground">{accuracyLabel}</span>
+            </span>
+          )}
+        </div>
       </div>
-      <ReactECharts
-        option={option}
-        style={{ height: "320px" }}
-        opts={{ renderer: "canvas" }}
-      />
+
+      {!hasForecast && hasHistorical && (
+        <div className="flex items-start gap-2 mb-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <span>
+            {data.model_info ||
+              "Garis historis dari Prometheus ada, tetapi prediksi belum terbentuk. Coba algoritma Moving Average atau periode lebih pendek."}
+          </span>
+        </div>
+      )}
+
+      {data.model_info && hasForecast && (
+        <div className="flex items-start gap-2 mb-2 px-3 py-2 rounded-lg bg-secondary/50 border border-border/60 text-xs text-muted-foreground">
+          <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <span>{data.model_info}</span>
+        </div>
+      )}
+
+      <ReactECharts option={option} style={{ height: "320px" }} opts={{ renderer: "canvas" }} />
     </div>
   );
 }

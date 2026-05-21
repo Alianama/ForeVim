@@ -3,7 +3,13 @@
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { alertService, vmService, userService, prometheusService } from "@/services";
-import type { ForecastAlgorithm, ForecastMetric, VMCreate } from "@/types";
+import type {
+  ForecastAlgorithm,
+  ForecastMetric,
+  VMCreate,
+  PrometheusSourceCreate,
+  PrometheusSourceUpdate,
+} from "@/types";
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 
@@ -26,12 +32,12 @@ export const queryKeys = {
 
 // ─── VM Hooks ─────────────────────────────────────────────────────────────────
 
-export function useVMs() {
+export function useVMs(options?: { refetchInterval?: number | false }) {
   return useQuery({
     queryKey: queryKeys.vms,
     queryFn: () => vmService.list(),
-    staleTime: 30_000,
-    refetchInterval: 30_000,
+    staleTime: options?.refetchInterval !== undefined ? Math.min(5000, typeof options.refetchInterval === "number" ? options.refetchInterval : 5000) : 30_000,
+    refetchInterval: options?.refetchInterval !== undefined ? options.refetchInterval : 30_000,
   });
 }
 
@@ -71,30 +77,63 @@ export function useVMForecast(
   id: string,
   metric: ForecastMetric,
   algorithm: ForecastAlgorithm,
-  periodDays: number
+  periodDays: number,
+  options?: { enabled?: boolean }
 ) {
   return useQuery({
     queryKey: queryKeys.vmForecast(id, metric, algorithm, periodDays),
-    queryFn: () => vmService.forecast(id, metric, algorithm, periodDays),
-    enabled: !!id,
+    queryFn: () => vmService.forecast(id, metric, algorithm, periodDays, false),
+    enabled: options?.enabled !== false && !!id,
     staleTime: 5 * 60_000,
   });
 }
 
-export function usePrometheusRetention() {
+export function useGenerateForecast() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      metric,
+      algorithm,
+      periodDays,
+    }: {
+      id: string;
+      metric: ForecastMetric;
+      algorithm: ForecastAlgorithm;
+      periodDays: number;
+    }) => vmService.generateForecast(id, metric, algorithm, periodDays),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({
+        queryKey: queryKeys.vmForecast(vars.id, vars.metric, vars.algorithm, vars.periodDays),
+      });
+      qc.invalidateQueries({ queryKey: ["forecast", "history", vars.id] });
+    },
+  });
+}
+
+export function useForecastHistory(vmId: string, enabled = true) {
   return useQuery({
-    queryKey: ["prometheus", "retention"],
-    queryFn: () => prometheusService.retention().then((res) => res.retention_days),
+    queryKey: ["forecast", "history", vmId],
+    queryFn: () => vmService.forecastHistory(vmId),
+    enabled: !!vmId && enabled,
+    staleTime: 30_000,
+  });
+}
+
+export function usePrometheusRetention(sourceId?: string) {
+  return useQuery({
+    queryKey: ["prometheus", "retention", sourceId],
+    queryFn: () => prometheusService.retention(sourceId).then((res) => res.retention_days),
     staleTime: 24 * 60 * 60 * 1000, // Caches retention for 24 hours
   });
 }
 
-export function useDashboardSummary() {
+export function useDashboardSummary(options?: { refetchInterval?: number | false }) {
   return useQuery({
     queryKey: queryKeys.summary,
     queryFn: () => vmService.summary(),
-    refetchInterval: 30_000,
-    staleTime: 15_000,
+    staleTime: options?.refetchInterval !== undefined ? Math.min(5000, typeof options.refetchInterval === "number" ? options.refetchInterval : 5000) : 15_000,
+    refetchInterval: options?.refetchInterval !== undefined ? options.refetchInterval : 30_000,
   });
 }
 
@@ -120,13 +159,99 @@ export function useDeleteVM() {
   });
 }
 
+// ─── Prometheus Source Hooks ──────────────────────────────────────────────────
+
+export function usePrometheusSources() {
+  return useQuery({
+    queryKey: ["prometheus", "sources"],
+    queryFn: () => prometheusService.listSources(),
+    staleTime: 60_000,
+  });
+}
+
+export function useCreatePrometheusSource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: PrometheusSourceCreate) => prometheusService.createSource(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["prometheus", "sources"] });
+    },
+  });
+}
+
+export function useUpdatePrometheusSource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: PrometheusSourceUpdate }) =>
+      prometheusService.updateSource(id, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["prometheus", "sources"] });
+    },
+  });
+}
+
+export function useDeletePrometheusSource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => prometheusService.deleteSource(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["prometheus", "sources"] });
+    },
+  });
+}
+
+export function usePrometheusTargets(sourceId?: string) {
+  return useQuery({
+    queryKey: ["prometheus", "targets", sourceId],
+    queryFn: () => prometheusService.listTargets(sourceId),
+    staleTime: 30_000,
+  });
+}
+
+export function usePrometheusJobs(sourceId?: string) {
+  return useQuery({
+    queryKey: ["prometheus", "jobs", sourceId],
+    queryFn: () => prometheusService.listJobs(sourceId),
+    staleTime: 60_000,
+  });
+}
+
+export function usePrometheusOrigins(sourceId?: string) {
+  return useQuery({
+    queryKey: ["prometheus", "origins", sourceId],
+    queryFn: () => prometheusService.listOrigins(sourceId),
+    staleTime: 60_000,
+  });
+}
+
+export function usePrometheusNodeTargets(sourceId?: string) {
+  return useQuery({
+    queryKey: ["prometheus", "node-targets", sourceId],
+    queryFn: () => prometheusService.listNodeTargets(sourceId),
+    staleTime: 30_000,
+  });
+}
+
+export function useSyncVMs() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (params: { job?: string; origin_prometheus?: string; source_id?: string }) =>
+      prometheusService.syncVms(params),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.vms });
+      qc.invalidateQueries({ queryKey: queryKeys.summary });
+    },
+  });
+}
+
 // ─── Alert Hooks ──────────────────────────────────────────────────────────────
 
-export function useAlerts(vmId?: string, status?: string) {
+export function useAlerts(vmId?: string, status?: string, options?: { refetchInterval?: number | false }) {
   return useQuery({
     queryKey: queryKeys.alerts(vmId, status),
     queryFn: () => alertService.list(vmId, status),
-    refetchInterval: 30_000,
+    staleTime: options?.refetchInterval !== undefined ? Math.min(5000, typeof options.refetchInterval === "number" ? options.refetchInterval : 5000) : 15_000,
+    refetchInterval: options?.refetchInterval !== undefined ? options.refetchInterval : 30_000,
   });
 }
 

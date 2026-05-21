@@ -34,8 +34,7 @@ fi
 
 source "$VENV/bin/activate"
 
-# Set env vars untuk dev
-export PROMETHEUS_URL="http://192.168.9.16:9090"
+# Set env vars untuk dev (Prometheus URL via web → Prometheus Sources)
 export DATABASE_URL="postgresql+asyncpg://forevim:forevim@localhost:5432/forevim"
 export DEBUG="true"
 export LOG_FORMAT="text"
@@ -44,7 +43,7 @@ export FIRST_SUPERUSER_PASSWORD="Admin123!"
 export ALLOWED_ORIGINS="http://localhost:3000"
 
 echo -e "  ${GREEN}✅ Backend akan jalan di http://localhost:8000${NC}"
-echo -e "  ${GREEN}✅ Prometheus: $PROMETHEUS_URL${NC}"
+echo -e "  ${GREEN}✅ Prometheus: konfigurasi via web → Prometheus Sources${NC}"
 echo ""
 
 # Jalankan backend di background

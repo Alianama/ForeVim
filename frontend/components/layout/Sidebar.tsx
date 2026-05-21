@@ -7,7 +7,7 @@ import {
   SettingsIcon,
   LogoutIcon,
 } from "@animateicons/react/lucide";
-import { ChevronLeft, ChevronRight, Server, BarChart2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Server, BarChart2, Database, Lock } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/stores";
 import { useAlerts } from "@/hooks/useQueries";
 
@@ -16,8 +16,11 @@ const NAV_ITEMS = [
   { href: "/dashboard/vms", icon: Server, label: "Virtual Machines" },
   { href: "/dashboard/alerts", icon: BellIcon, label: "Alerts" },
   { href: "/dashboard/forecasting", icon: BarChart2, label: "Forecasting" },
+  { href: "/dashboard/sources", icon: Database, label: "Prometheus Sources" },
   { href: "/dashboard/users", icon: SettingsIcon, label: "Users & Roles" },
+  { href: "/dashboard/profile", icon: Lock, label: "Profile & Security" },
 ];
+
 
 export function Sidebar() {
   const router = useRouter();

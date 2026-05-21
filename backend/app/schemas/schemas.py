@@ -51,6 +51,29 @@ class TokenResponse(BaseModel):
     expires_in: int
 
 
+class LoginResponse(BaseModel):
+    totp_required: bool = False
+    mfa_token: Optional[str] = None
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
+    token_type: str = "bearer"
+    expires_in: Optional[int] = None
+
+
+class Verify2FARequest(BaseModel):
+    code: str
+
+
+class VerifyMFA2FARequest(BaseModel):
+    mfa_token: str
+    code: str
+
+
+class Setup2FAResponse(BaseModel):
+    secret: str
+    provisioning_uri: str
+
+
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
@@ -90,6 +113,34 @@ class UserResponse(BaseSchema):
     is_active: bool
     is_verified: bool
     last_login: Optional[datetime]
+    is_2fa_enabled: bool
+    created_at: datetime
+
+
+# ─── Prometheus Source ─────────────────────────────────────────────────────────
+
+
+class PrometheusSourceBase(BaseSchema):
+    name: str = Field(..., min_length=1, max_length=255)
+    url: str = Field(..., min_length=1, max_length=500)
+    is_active: bool = True
+
+
+class PrometheusSourceCreate(PrometheusSourceBase):
+    pass
+
+
+class PrometheusSourceUpdate(BaseModel):
+    name: Optional[str] = None
+    url: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class PrometheusSourceResponse(BaseSchema):
+    id: uuid.UUID
+    name: str
+    url: str
+    is_active: bool
     created_at: datetime
 
 
@@ -104,6 +155,7 @@ class VMCreate(BaseModel):
     environment: str = "production"
     cluster: Optional[str] = None
     tags: Optional[str] = None
+    prometheus_source_id: Optional[uuid.UUID] = None
     prometheus_job: str = "node_exporter"
     prometheus_instance: Optional[str] = None
 
@@ -115,6 +167,7 @@ class VMUpdate(BaseModel):
     cluster: Optional[str] = None
     tags: Optional[str] = None
     is_active: Optional[bool] = None
+    prometheus_source_id: Optional[uuid.UUID] = None
     prometheus_job: Optional[str] = None
     prometheus_instance: Optional[str] = None
 
@@ -129,6 +182,7 @@ class VMResponse(BaseSchema):
     cluster: Optional[str]
     tags: Optional[str]
     status: VMStatus
+    prometheus_source_id: Optional[uuid.UUID] = None
     prometheus_job: str
     prometheus_instance: Optional[str]
     is_active: bool
@@ -181,7 +235,7 @@ class VMHistoryResponse(BaseModel):
 
 class ForecastRequest(BaseModel):
     metric: ForecastMetric
-    algorithm: ForecastAlgorithm = ForecastAlgorithm.LINEAR_REGRESSION
+    algorithm: ForecastAlgorithm = ForecastAlgorithm.HOLT_WINTERS
     period_days: int = Field(default=7, ge=1, le=30)
 
 
@@ -201,7 +255,20 @@ class ForecastResponse(BaseModel):
     historical: List[ForecastPoint]
     forecast: List[ForecastPoint]
     accuracy_score: Optional[float] = None
+    accuracy_metric: Optional[str] = None  # mape | mae | r2
+    model_info: Optional[str] = None
     generated_at: datetime
+
+
+class ForecastHistoryItem(BaseSchema):
+    id: uuid.UUID
+    vm_id: uuid.UUID
+    metric: ForecastMetric
+    algorithm: ForecastAlgorithm
+    forecast_period_days: int
+    accuracy_score: Optional[float] = None
+    generated_at: datetime
+    has_forecast: bool = True
 
 
 # ─── Alert ────────────────────────────────────────────────────────────────────

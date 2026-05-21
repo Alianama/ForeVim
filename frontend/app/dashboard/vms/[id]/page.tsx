@@ -9,6 +9,7 @@ import { ForecastChart } from "@/components/charts/ForecastChart";
 import { AlertList } from "@/components/alerts/AlertList";
 import { ArrowLeft, Cpu, HardDrive, MemoryStick, Network, TrendingUp, Terminal } from "lucide-react";
 import type { ForecastAlgorithm, ForecastMetric } from "@/types";
+import { FORECAST_ALGORITHMS } from "@/lib/forecast-algorithms";
 
 type Tab = "metrics" | "forecast" | "alerts";
 const METRIC_TABS = ["cpu", "ram", "disk", "network_rx"] as const;
@@ -21,7 +22,7 @@ export default function VMDetailPage() {
   const [historyHours, setHistoryHours] = useState(24);
   const [forecastMetric, setForecastMetric] = useState<ForecastMetric>("cpu");
   const [forecastPeriod, setForecastPeriod] = useState(7);
-  const [forecastAlgo, setForecastAlgo] = useState<ForecastAlgorithm>("linear_regression");
+  const [forecastAlgo, setForecastAlgo] = useState<ForecastAlgorithm>("auto");
 
   const { data: retentionDays = 90 } = usePrometheusRetention();
 
@@ -222,19 +223,22 @@ export default function VMDetailPage() {
             </div>
 
             {/* Algorithm selector */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Algorithm:</span>
-              {(["linear_regression", "moving_average"] as ForecastAlgorithm[]).map((a) => (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs text-muted-foreground">Model:</span>
+              {FORECAST_ALGORITHMS.filter((a) =>
+                ["auto", "holt_winters", "arima", "moving_average"].includes(a.value)
+              ).map((a) => (
                 <button
-                  key={a}
-                  onClick={() => setForecastAlgo(a)}
+                  key={a.value}
+                  onClick={() => setForecastAlgo(a.value)}
                   className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                    forecastAlgo === a
+                    forecastAlgo === a.value
                       ? "bg-primary text-primary-foreground"
                       : "bg-secondary text-muted-foreground hover:text-foreground"
                   }`}
+                  title={a.description}
                 >
-                  {a === "linear_regression" ? "Linear Reg." : "Moving Avg."}
+                  {a.label.replace(" (Rekomendasi)", "").replace(" (ETS)", "")}
                 </button>
               ))}
             </div>

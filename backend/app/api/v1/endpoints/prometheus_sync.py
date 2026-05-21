@@ -12,11 +12,34 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import AdminOnly, CurrentUser, DBSession
-from app.models.models import VM
+from app.models.models import VM, PrometheusSource
 from app.prometheus.client import prometheus_service
-from app.schemas.schemas import VMResponse
+from app.prometheus.sources import resolve_prometheus_url
+from app.schemas.schemas import (
+    VMResponse,
+    PrometheusSourceCreate,
+    PrometheusSourceUpdate,
+    PrometheusSourceResponse,
+)
 
 router = APIRouter(prefix="/prometheus", tags=["Prometheus"])
+
+
+def normalize_prometheus_url(url: str) -> str:
+    """Normalisasi IP/URL ke format http://host:port (default 9090)."""
+    raw = url.strip()
+    if not raw:
+        return raw
+    if not raw.startswith(("http://", "https://")):
+        raw = f"http://{raw}"
+    from urllib.parse import urlparse, urlunparse
+
+    parsed = urlparse(raw)
+    netloc = parsed.netloc or parsed.path.split("/")[0]
+    if ":" not in netloc:
+        netloc = f"{netloc}:9090"
+    normalized = urlunparse((parsed.scheme or "http", netloc, "", "", "", ""))
+    return normalized.rstrip("/")
 
 # Job names yang berisi node_exporter (Linux VM metrics)
 NODE_EXPORTER_JOBS = {
@@ -25,10 +48,105 @@ NODE_EXPORTER_JOBS = {
 }
 
 
+# ─── CRUD Prometheus Sources ───────────────────────────────────────────────
+
+
+@router.get("/sources", response_model=List[PrometheusSourceResponse], summary="List semua Prometheus sources")
+async def list_sources(db: DBSession, current_user: CurrentUser):
+    """Dapatkan semua daftar Prometheus sources yang terdaftar."""
+    result = await db.execute(select(PrometheusSource).order_by(PrometheusSource.name.asc()))
+    return list(result.scalars().all())
+
+
+@router.post(
+    "/sources",
+    response_model=PrometheusSourceResponse,
+    status_code=201,
+    summary="Tambah Prometheus source baru",
+    dependencies=[AdminOnly],
+)
+async def create_source(
+    db: DBSession,
+    current_user: CurrentUser,
+    data: PrometheusSourceCreate,
+):
+    """Tambah Prometheus source baru."""
+    source = PrometheusSource(
+        name=data.name,
+        url=normalize_prometheus_url(data.url),
+        is_active=data.is_active,
+    )
+    db.add(source)
+    await db.flush()
+    await db.commit()
+    await db.refresh(source)
+    return source
+
+
+@router.patch(
+    "/sources/{source_id}",
+    response_model=PrometheusSourceResponse,
+    summary="Update detail Prometheus source",
+    dependencies=[AdminOnly],
+)
+async def update_source(
+    db: DBSession,
+    current_user: CurrentUser,
+    source_id: uuid.UUID,
+    data: PrometheusSourceUpdate,
+):
+    """Update detail Prometheus source."""
+    result = await db.execute(select(PrometheusSource).where(PrometheusSource.id == source_id))
+    source = result.scalar_one_or_none()
+    if not source:
+        raise HTTPException(status_code=404, detail="Source not found")
+    
+    updates = data.model_dump(exclude_unset=True)
+    if "url" in updates:
+        updates["url"] = normalize_prometheus_url(updates["url"])
+    for field, val in updates.items():
+        setattr(source, field, val)
+    
+    await db.flush()
+    await db.commit()
+    await db.refresh(source)
+    return source
+
+
+@router.delete(
+    "/sources/{source_id}",
+    status_code=204,
+    summary="Hapus Prometheus source",
+    dependencies=[AdminOnly],
+)
+async def delete_source(
+    db: DBSession,
+    current_user: CurrentUser,
+    source_id: uuid.UUID,
+):
+    """Hapus Prometheus source."""
+    result = await db.execute(select(PrometheusSource).where(PrometheusSource.id == source_id))
+    source = result.scalar_one_or_none()
+    if not source:
+        raise HTTPException(status_code=404, detail="Source not found")
+    
+    await db.delete(source)
+    await db.commit()
+    return
+
+
+# ─── Discovery & Targets ───────────────────────────────────────────────────
+
+
 @router.get("/targets", summary="List semua Prometheus targets")
-async def list_prometheus_targets(current_user: CurrentUser):
+async def list_prometheus_targets(
+    db: DBSession,
+    current_user: CurrentUser,
+    source_id: Optional[uuid.UUID] = Query(None),
+):
     """Tampilkan semua active target dari Prometheus."""
-    targets = await prometheus_service.list_targets()
+    url = await resolve_prometheus_url(db, source_id)
+    targets = await prometheus_service.list_targets(url=url)
     result = []
     for t in targets:
         labels = t.get("labels", {})
@@ -43,16 +161,26 @@ async def list_prometheus_targets(current_user: CurrentUser):
 
 
 @router.get("/retention", summary="Get Prometheus retention period in days")
-async def get_prometheus_retention(current_user: CurrentUser):
+async def get_prometheus_retention(
+    db: DBSession,
+    current_user: CurrentUser,
+    source_id: Optional[uuid.UUID] = Query(None),
+):
     """Ambil durasi penyimpanan (retention) maksimum dari Prometheus dalam jumlah hari."""
-    retention_days = await prometheus_service.get_retention_days()
+    url = await resolve_prometheus_url(db, source_id)
+    retention_days = await prometheus_service.get_retention_days(url=url)
     return {"retention_days": retention_days}
 
 
 @router.get("/jobs", summary="List semua unique Prometheus jobs")
-async def list_prometheus_jobs(current_user: CurrentUser):
+async def list_prometheus_jobs(
+    db: DBSession,
+    current_user: CurrentUser,
+    source_id: Optional[uuid.UUID] = Query(None),
+):
     """Ambil daftar unique job names dari active Prometheus targets."""
-    targets = await prometheus_service.list_targets()
+    url = await resolve_prometheus_url(db, source_id)
+    targets = await prometheus_service.list_targets(url=url)
     jobs = set()
     for t in targets:
         labels = t.get("labels", {})
@@ -63,9 +191,14 @@ async def list_prometheus_jobs(current_user: CurrentUser):
 
 
 @router.get("/origins", summary="List semua unique Prometheus origins")
-async def list_prometheus_origins(current_user: CurrentUser):
+async def list_prometheus_origins(
+    db: DBSession,
+    current_user: CurrentUser,
+    source_id: Optional[uuid.UUID] = Query(None),
+):
     """Ambil daftar unique origin_prometheus names dari active Prometheus targets atau node_uname_info."""
-    targets = await prometheus_service.list_targets()
+    url = await resolve_prometheus_url(db, source_id)
+    targets = await prometheus_service.list_targets(url=url)
     origins = set()
     for t in targets:
         labels = t.get("labels", {})
@@ -74,7 +207,7 @@ async def list_prometheus_origins(current_user: CurrentUser):
             origins.add(origin)
 
     try:
-        results = await prometheus_service.query("node_uname_info - 0")
+        results = await prometheus_service.query("node_uname_info - 0", url=url)
         for r in results:
             metric = r.get("metric", {})
             origin = metric.get("origin_prometheus")
@@ -87,9 +220,14 @@ async def list_prometheus_origins(current_user: CurrentUser):
 
 
 @router.get("/node-targets", summary="Hanya tampilkan node_exporter targets")
-async def list_node_targets(current_user: CurrentUser):
+async def list_node_targets(
+    db: DBSession,
+    current_user: CurrentUser,
+    source_id: Optional[uuid.UUID] = Query(None),
+):
     """Filter targets yang merupakan Linux VM (node_exporter)."""
-    targets = await prometheus_service.list_targets()
+    url = await resolve_prometheus_url(db, source_id)
+    targets = await prometheus_service.list_targets(url=url)
     node_targets = []
     for t in targets:
         labels = t.get("labels", {})
@@ -121,6 +259,7 @@ async def list_node_targets(current_user: CurrentUser):
 async def sync_vms_from_prometheus(
     db: DBSession,
     current_user: CurrentUser,
+    source_id: uuid.UUID = Query(..., description="Prometheus source ID to sync from"),
     job: Optional[str] = Query(None, description="Prometheus job name to selectively sync or 'all' to scan all jobs"),
     origin_prometheus: Optional[str] = Query(None, description="Prometheus origin name to selectively sync or 'all' to scan all origins"),
 ):
@@ -129,7 +268,8 @@ async def sync_vms_from_prometheus(
     VM yang sudah ada (berdasarkan prometheus_instance) tidak akan duplikat.
     Menggunakan node_uname_info untuk mengambil hostname real dari OS.
     """
-    targets = await prometheus_service.list_targets()
+    url = await resolve_prometheus_url(db, source_id)
+    targets = await prometheus_service.list_targets(url=url)
 
     # Query node_uname_info dari Prometheus untuk mapping instance IP ke OS Hostname
     filters = []
@@ -143,7 +283,7 @@ async def sync_vms_from_prometheus(
 
     uname_map = {}
     try:
-        uname_results = await prometheus_service.query(promql)
+        uname_results = await prometheus_service.query(promql, url=url)
         for r in uname_results:
             metric = r.get("metric", {})
             inst = metric.get("instance")
@@ -247,18 +387,21 @@ async def sync_vms_from_prometheus(
             # Jika kita mendeteksi port standard 9100 atau 9101, lebih disukai untuk mengupdate prometheus_instance ke target ini agar scraping valid
             is_standard_port = "9100" in instance or "9101" in instance
             should_update_instance = vm.prometheus_instance != instance and (is_standard_port or not vm.prometheus_instance)
+            should_update_source = vm.prometheus_source_id != source_id
 
-            if should_update_hostname or should_update_instance:
+            if should_update_hostname or should_update_instance or should_update_source:
                 old_hostname = vm.hostname
                 if should_update_hostname:
                     vm.hostname = target_hostname
                 if should_update_instance:
                     vm.prometheus_instance = instance
                     vm.prometheus_job = target_job
+                if should_update_source:
+                    vm.prometheus_source_id = source_id
                 await db.flush()
                 skipped.append({
                     "instance": instance,
-                    "reason": f"updated hostname from {old_hostname} to {target_hostname}"
+                    "reason": f"updated hostname/source from {old_hostname} to {target_hostname}"
                 })
             else:
                 skipped.append({"instance": instance, "reason": "sudah terdaftar"})
@@ -274,6 +417,7 @@ async def sync_vms_from_prometheus(
                 environment="production",
                 prometheus_job=target_job,
                 prometheus_instance=instance,
+                prometheus_source_id=source_id,
                 status=VMStatus.UNKNOWN,
             )
             db.add(vm)
@@ -299,4 +443,5 @@ async def sync_vms_from_prometheus(
             "errors": errors,
         },
     }
+
 

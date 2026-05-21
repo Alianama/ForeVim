@@ -270,6 +270,9 @@
   .data-table tr:hover td {
     @apply bg-secondary/30;
   }
+  .data-table th.cursor-pointer:hover {
+    @apply bg-secondary/60;
+  }
 }
 
 /* ── Utility Layer ───────────────────────────────────────────────────────── */

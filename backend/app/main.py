@@ -147,14 +147,44 @@ def create_app() -> FastAPI:
         except Exception:
             pass
 
-        prom_ok = await prometheus_service.is_healthy()
+        from sqlalchemy import select
+        from app.models.models import PrometheusSource
+
+        prom_status = "not_configured"
+        prom_sources_ok = 0
+        prom_sources_total = 0
+        if db_ok:
+            try:
+                async with AsyncSessionLocal() as db:
+                    result = await db.execute(
+                        select(PrometheusSource).where(PrometheusSource.is_active.is_(True))
+                    )
+                    sources = list(result.scalars().all())
+                    prom_sources_total = len(sources)
+                    for src in sources:
+                        if await prometheus_service.is_healthy(src.url):
+                            prom_sources_ok += 1
+                    if prom_sources_total == 0:
+                        prom_status = "not_configured"
+                    elif prom_sources_ok == prom_sources_total:
+                        prom_status = "ok"
+                    elif prom_sources_ok > 0:
+                        prom_status = "degraded"
+                    else:
+                        prom_status = "unreachable"
+            except Exception:
+                prom_status = "error"
 
         return {
             "status": "healthy" if db_ok else "degraded",
             "version": settings.APP_VERSION,
             "environment": settings.ENVIRONMENT,
             "database": "ok" if db_ok else "error",
-            "prometheus": "ok" if prom_ok else "unreachable",
+            "prometheus": prom_status,
+            "prometheus_sources": {
+                "configured": prom_sources_total,
+                "reachable": prom_sources_ok,
+            },
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 

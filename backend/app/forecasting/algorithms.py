@@ -1,31 +1,46 @@
 """
-Forecasting module: pluggable algorithm architecture.
-Current implementations: Moving Average, Linear Regression.
-Architecture supports: Prophet, ARIMA, LSTM (future).
+Forecasting algorithms for VM resource metrics.
+
+Recommended for production: Holt-Winters (seasonal workloads) or Auto (model selection).
+Baselines: Moving Average, Linear Regression.
+Advanced: SARIMA (ARIMA with seasonality).
 """
 from __future__ import annotations
 
-import json
-import math
+import warnings
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 
 from app.core.logging import get_logger
-from app.models.models import ForecastAlgorithm, ForecastMetric
+from app.forecasting.holt_native import holt_forecast
+from app.forecasting.preprocessing import preprocess_timeseries
+from app.models.models import ForecastAlgorithm
 from app.schemas.schemas import ForecastPoint
 
 logger = get_logger(__name__)
 
+warnings.filterwarnings("ignore", category=UserWarning, module="statsmodels")
+warnings.filterwarnings("ignore", category=FutureWarning, module="statsmodels")
 
-# ─── Base Algorithm ───────────────────────────────────────────────────────────
+# statsmodels 0.14.4 + numpy 2.2 dapat gagal saat import ExponentialSmoothing
+_ExponentialSmoothing = None
+try:
+    from statsmodels.tsa.holtwinters import ExponentialSmoothing as _ExponentialSmoothing
+
+    _ = _ExponentialSmoothing  # trigger class body
+    STATSMODELS_HW_AVAILABLE = True
+except Exception as exc:
+    STATSMODELS_HW_AVAILABLE = False
+    logger.warning("statsmodels_holtwinters_unavailable", error=str(exc))
+
+# (score, metric_name) — metric_name: mape | mae | r2
+AccuracyResult = Tuple[Optional[float], str]
 
 
 class ForecastAlgorithmBase(ABC):
-    """Abstract base class for all forecasting algorithms."""
-
     name: ForecastAlgorithm
 
     @abstractmethod
@@ -34,43 +49,60 @@ class ForecastAlgorithmBase(ABC):
         historical: List[Tuple[datetime, float]],
         periods: int,
         interval_minutes: int = 5,
-    ) -> Tuple[List[ForecastPoint], Optional[float]]:
-        """
-        Fit on historical data and return forecast points.
-
-        Args:
-            historical: List of (timestamp, value) tuples sorted ascending.
-            periods: Number of intervals to forecast.
-            interval_minutes: Minutes between forecast points.
-
-        Returns:
-            (forecast_points, accuracy_score)
-        """
+    ) -> Tuple[List[ForecastPoint], AccuracyResult]:
         raise NotImplementedError
 
-    def _build_historical_points(
-        self, historical: List[Tuple[datetime, float]]
-    ) -> List[ForecastPoint]:
-        return [
-            ForecastPoint(timestamp=ts, value=val, is_forecast=False)
-            for ts, val in historical
-        ]
+    def _prepare(
+        self,
+        historical: List[Tuple[datetime, float]],
+        interval_minutes: int,
+        min_points: int,
+    ) -> List[Tuple[datetime, float]]:
+        return preprocess_timeseries(
+            historical,
+            interval_minutes,
+            min_points=min_points,
+        )
 
-    def _calc_mae(
-        self, actual: List[float], predicted: List[float]
-    ) -> Optional[float]:
+    def _calc_mae(self, actual: List[float], predicted: List[float]) -> Optional[float]:
         if len(actual) != len(predicted) or not actual:
             return None
-        errors = [abs(a - p) for a, p in zip(actual, predicted)]
-        return round(sum(errors) / len(errors), 4)
+        return round(sum(abs(a - p) for a, p in zip(actual, predicted)) / len(actual), 4)
 
+    def _calc_mape(self, actual: List[float], predicted: List[float]) -> Optional[float]:
+        if len(actual) != len(predicted) or not actual:
+            return None
+        valid = [(a, p) for a, p in zip(actual, predicted) if abs(a) > 0.01]
+        if not valid:
+            return None
+        mape = sum(abs((a - p) / a) for a, p in valid) / len(valid) * 100
+        return round(mape, 2)
 
-# ─── Moving Average ───────────────────────────────────────────────────────────
+    @staticmethod
+    def _clamp(val: float, lo: float = 0.0, hi: float = 100.0) -> float:
+        return round(max(lo, min(hi, val)), 4)
+
+    def _detect_seasonal_period(
+        self, n: int, interval_minutes: int
+    ) -> Optional[int]:
+        candidates = [
+            int(1440 / interval_minutes),
+            int(720 / interval_minutes),
+            int(360 / interval_minutes),
+        ]
+        for period in candidates:
+            if n >= 2 * period and period >= 2:
+                return period
+        return None
+
+    def _holdout_split(
+        self, values: np.ndarray, ratio: float = 0.2
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        holdout = max(1, int(len(values) * ratio))
+        return values[:-holdout], values[-holdout:]
 
 
 class MovingAverageForecaster(ForecastAlgorithmBase):
-    """Simple Moving Average with configurable window."""
-
     name = ForecastAlgorithm.MOVING_AVERAGE
 
     def __init__(self, window: int = 12) -> None:
@@ -81,55 +113,43 @@ class MovingAverageForecaster(ForecastAlgorithmBase):
         historical: List[Tuple[datetime, float]],
         periods: int,
         interval_minutes: int = 5,
-    ) -> Tuple[List[ForecastPoint], Optional[float]]:
-        if len(historical) < self.window:
-            logger.warning("insufficient_data_for_ma", count=len(historical), window=self.window)
-            return [], None
+    ) -> Tuple[List[ForecastPoint], AccuracyResult]:
+        data = self._prepare(historical, interval_minutes, min_points=self.window + 4)
+        if len(data) < self.window:
+            return [], (None, "mape")
 
-        values = [v for _, v in historical]
-
-        # Validate holdout to compute accuracy
-        holdout = min(self.window, len(values) // 5)
-        train_vals = values[: len(values) - holdout]
-        test_vals = values[len(values) - holdout :]
-
+        values = [v for _, v in data]
+        train, test = self._holdout_split(np.array(values))
         predicted_test: List[float] = []
-        current = list(train_vals[-self.window :])
-        for _ in test_vals:
-            pred = sum(current[-self.window :]) / min(self.window, len(current))
+        rolling = list(train[-self.window :])
+        for _ in test:
+            pred = float(np.mean(rolling[-self.window :]))
             predicted_test.append(pred)
-            current.append(pred)
+            rolling.append(pred)
 
-        accuracy = self._calc_mae(test_vals, predicted_test)
+        accuracy = self._calc_mape(list(test), predicted_test)
 
-        # Forecast future periods
-        last_ts = historical[-1][0]
+        last_ts = data[-1][0]
         rolling = list(values[-self.window :])
         forecast_points: List[ForecastPoint] = []
-
         for i in range(1, periods + 1):
-            pred_val = sum(rolling[-self.window :]) / min(self.window, len(rolling))
+            pred_val = float(np.mean(rolling[-self.window :]))
             std = float(np.std(rolling[-self.window :]))
             forecast_points.append(
                 ForecastPoint(
                     timestamp=last_ts + timedelta(minutes=interval_minutes * i),
-                    value=round(max(0.0, min(100.0, pred_val)), 4),
-                    lower_bound=round(max(0.0, pred_val - 1.5 * std), 4),
-                    upper_bound=round(min(100.0, pred_val + 1.5 * std), 4),
+                    value=self._clamp(pred_val),
+                    lower_bound=self._clamp(pred_val - 1.96 * std),
+                    upper_bound=self._clamp(pred_val + 1.96 * std),
                     is_forecast=True,
                 )
             )
             rolling.append(pred_val)
 
-        return forecast_points, accuracy
-
-
-# ─── Linear Regression ────────────────────────────────────────────────────────
+        return forecast_points, (accuracy, "mape")
 
 
 class LinearRegressionForecaster(ForecastAlgorithmBase):
-    """Ordinary Least Squares linear regression over time index."""
-
     name = ForecastAlgorithm.LINEAR_REGRESSION
 
     def fit_predict(
@@ -137,99 +157,377 @@ class LinearRegressionForecaster(ForecastAlgorithmBase):
         historical: List[Tuple[datetime, float]],
         periods: int,
         interval_minutes: int = 5,
-    ) -> Tuple[List[ForecastPoint], Optional[float]]:
-        if len(historical) < 4:
-            return [], None
+    ) -> Tuple[List[ForecastPoint], AccuracyResult]:
+        data = self._prepare(historical, interval_minutes, min_points=12)
+        if len(data) < 12:
+            return [], (None, "mape")
 
-        timestamps = np.array(
-            [ts.timestamp() for ts, _ in historical], dtype=np.float64
-        )
-        values = np.array([v for _, v in historical], dtype=np.float64)
-
-        # Normalize timestamps
+        timestamps = np.array([ts.timestamp() for ts, _ in data], dtype=np.float64)
+        values = np.array([v for _, v in data], dtype=np.float64)
         t0 = timestamps[0]
         x = timestamps - t0
 
-        # OLS
-        n = len(x)
-        x_mean, y_mean = x.mean(), values.mean()
-        ss_xy = float(np.sum((x - x_mean) * (values - y_mean)))
-        ss_xx = float(np.sum((x - x_mean) ** 2))
+        train, test = self._holdout_split(values)
+        x_train = x[: len(train)]
+        x_test = x[len(train) :]
 
-        if ss_xx == 0:
-            slope = 0.0
-        else:
-            slope = ss_xy / ss_xx
-        intercept = y_mean - slope * x_mean
+        slope, intercept, residual_std = self._fit_ols(x_train, train)
+        pred_test = slope * x_test + intercept
+        accuracy = self._calc_mape(list(test), list(pred_test))
 
-        # Accuracy on training data (R²)
-        predicted = slope * x + intercept
-        ss_res = float(np.sum((values - predicted) ** 2))
-        ss_tot = float(np.sum((values - y_mean) ** 2))
-        r2 = 1.0 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
-
-        # Residual std for confidence intervals
-        residuals = values - predicted
-        residual_std = float(np.std(residuals))
-
-        last_ts = historical[-1][0]
+        last_ts = data[-1][0]
         interval_secs = interval_minutes * 60
         forecast_points: List[ForecastPoint] = []
-
         for i in range(1, periods + 1):
             future_x = (last_ts.timestamp() - t0) + interval_secs * i
             pred_val = slope * future_x + intercept
             forecast_points.append(
                 ForecastPoint(
                     timestamp=last_ts + timedelta(minutes=interval_minutes * i),
-                    value=round(max(0.0, min(100.0, pred_val)), 4),
-                    lower_bound=round(max(0.0, pred_val - 2 * residual_std), 4),
-                    upper_bound=round(min(100.0, pred_val + 2 * residual_std), 4),
+                    value=self._clamp(pred_val),
+                    lower_bound=self._clamp(pred_val - 1.96 * residual_std),
+                    upper_bound=self._clamp(pred_val + 1.96 * residual_std),
                     is_forecast=True,
                 )
             )
 
-        return forecast_points, round(r2, 4)
+        return forecast_points, (accuracy, "mape")
+
+    @staticmethod
+    def _fit_ols(x: np.ndarray, y: np.ndarray) -> Tuple[float, float, float]:
+        x_mean, y_mean = x.mean(), y.mean()
+        ss_xx = float(np.sum((x - x_mean) ** 2))
+        if ss_xx == 0:
+            slope = 0.0
+        else:
+            slope = float(np.sum((x - x_mean) * (y - y_mean)) / ss_xx)
+        intercept = y_mean - slope * x_mean
+        predicted = slope * x + intercept
+        residual_std = float(np.std(y - predicted))
+        return slope, intercept, residual_std
 
 
-# ─── Stub stubs for future algorithms ─────────────────────────────────────────
+class HoltWintersForecaster(ForecastAlgorithmBase):
+    """
+    Triple exponential smoothing (Holt-Winters) with damped trend.
+    Best default for VM CPU/RAM/disk (daily seasonality).
+    """
 
+    name = ForecastAlgorithm.HOLT_WINTERS
 
-class ProphetForecaster(ForecastAlgorithmBase):
-    """Placeholder for Facebook Prophet integration."""
+    def fit_predict(
+        self,
+        historical: List[Tuple[datetime, float]],
+        periods: int,
+        interval_minutes: int = 5,
+    ) -> Tuple[List[ForecastPoint], AccuracyResult]:
+        data = self._prepare(historical, interval_minutes, min_points=20)
+        if len(data) < 20:
+            logger.warning("insufficient_data_for_hw", count=len(data))
+            return [], (None, "mape")
 
-    name = ForecastAlgorithm.PROPHET
+        values = np.array([v for _, v in data], dtype=np.float64)
+        seasonal_period = self._detect_seasonal_period(len(values), interval_minutes)
 
-    def fit_predict(self, historical, periods, interval_minutes=5):
-        raise NotImplementedError("Prophet not yet integrated. Install prophet>=1.1 first.")
+        try:
+            if STATSMODELS_HW_AVAILABLE and _ExponentialSmoothing is not None:
+                return self._fit_statsmodels(
+                    data, values, periods, interval_minutes, seasonal_period
+                )
+            return self._fit_native(
+                data, values, periods, interval_minutes, seasonal_period
+            )
+        except Exception as e:
+            logger.error("hw_fit_error", error=str(e))
+            return self._fit_native(
+                data, values, periods, interval_minutes, seasonal_period
+            )
+
+    def _fit_statsmodels(
+        self,
+        data: List[Tuple[datetime, float]],
+        values: np.ndarray,
+        periods: int,
+        interval_minutes: int,
+        seasonal_period: Optional[int],
+    ) -> Tuple[List[ForecastPoint], AccuracyResult]:
+        model = self._build_hw_model(values, seasonal_period)
+        fitted = model.fit(optimized=True, maxiter=500)
+
+        train, test = self._holdout_split(values)
+        val_model = self._build_hw_model(train, seasonal_period)
+        val_fitted = val_model.fit(optimized=True, maxiter=300)
+        val_forecast = val_fitted.forecast(len(test))
+        accuracy = self._calc_mape(list(test), list(val_forecast))
+
+        forecast_vals = fitted.forecast(periods)
+        residual_std = float(np.std(values - fitted.fittedvalues))
+        return self._build_forecast_points(
+            data[-1][0],
+            forecast_vals,
+            periods,
+            interval_minutes,
+            residual_std,
+            accuracy,
+        )
+
+    def _fit_native(
+        self,
+        data: List[Tuple[datetime, float]],
+        values: np.ndarray,
+        periods: int,
+        interval_minutes: int,
+        seasonal_period: Optional[int],
+    ) -> Tuple[List[ForecastPoint], AccuracyResult]:
+        _, future, residual_std = holt_forecast(values, periods, seasonal_period)
+        if len(future) == 0:
+            return [], (None, "mape")
+
+        holdout = max(1, len(values) // 5)
+        train, test = values[:-holdout], values[-holdout:]
+        _, val_future, _ = holt_forecast(train, len(test), seasonal_period)
+        accuracy = self._calc_mape(list(test), list(val_future[: len(test)]))
+
+        return self._build_forecast_points(
+            data[-1][0],
+            future,
+            periods,
+            interval_minutes,
+            residual_std,
+            accuracy,
+        )
+
+    def _build_forecast_points(
+        self,
+        last_ts: datetime,
+        forecast_vals,
+        periods: int,
+        interval_minutes: int,
+        residual_std: float,
+        accuracy: Optional[float],
+    ) -> Tuple[List[ForecastPoint], AccuracyResult]:
+        forecast_points: List[ForecastPoint] = []
+        for i in range(periods):
+            pred_val = float(
+                forecast_vals.iloc[i]
+                if hasattr(forecast_vals, "iloc")
+                else forecast_vals[i]
+            )
+            uncertainty = residual_std * (1.0 + 0.08 * i)
+            forecast_points.append(
+                ForecastPoint(
+                    timestamp=last_ts + timedelta(minutes=interval_minutes * (i + 1)),
+                    value=self._clamp(pred_val),
+                    lower_bound=self._clamp(pred_val - 1.96 * uncertainty),
+                    upper_bound=self._clamp(pred_val + 1.96 * uncertainty),
+                    is_forecast=True,
+                )
+            )
+        return forecast_points, (accuracy, "mape")
+
+    def _build_hw_model(self, values: np.ndarray, seasonal_period: Optional[int]):
+        if seasonal_period is not None:
+            return _ExponentialSmoothing(
+                values,
+                trend="add",
+                damped_trend=True,
+                seasonal="add",
+                seasonal_periods=seasonal_period,
+                initialization_method="estimated",
+            )
+        return _ExponentialSmoothing(
+            values,
+            trend="add",
+            damped_trend=True,
+            seasonal=None,
+            initialization_method="estimated",
+        )
 
 
 class ARIMAForecaster(ForecastAlgorithmBase):
-    """Placeholder for ARIMA/statsmodels integration."""
+    """SARIMA with compact order search and 95% prediction intervals."""
 
     name = ForecastAlgorithm.ARIMA
 
+    def fit_predict(
+        self,
+        historical: List[Tuple[datetime, float]],
+        periods: int,
+        interval_minutes: int = 5,
+    ) -> Tuple[List[ForecastPoint], AccuracyResult]:
+        try:
+            from statsmodels.tsa.statespace.sarimax import SARIMAX
+        except Exception as exc:
+            logger.error("statsmodels_sarimax_unavailable", error=str(exc))
+            return [], (None, "mape")
+
+        data = self._prepare(historical, interval_minutes, min_points=60)
+        if len(data) < 60:
+            logger.warning("insufficient_data_for_arima", count=len(data))
+            return [], (None, "mape")
+
+        values = np.array([v for _, v in data], dtype=np.float64)
+        seasonal_period = self._detect_seasonal_period(len(values), interval_minutes)
+        if seasonal_period and seasonal_period > 48:
+            seasonal_period = None
+
+        try:
+            best_order, best_seasonal = self._find_best_order(values, seasonal_period)
+            model = SARIMAX(
+                values,
+                order=best_order,
+                seasonal_order=best_seasonal or (0, 0, 0, 0),
+                enforce_stationarity=False,
+                enforce_invertibility=False,
+            )
+            result = model.fit(disp=False, maxiter=150)
+
+            train, test = self._holdout_split(values)
+            try:
+                val_model = SARIMAX(
+                    train,
+                    order=best_order,
+                    seasonal_order=best_seasonal or (0, 0, 0, 0),
+                    enforce_stationarity=False,
+                    enforce_invertibility=False,
+                )
+                val_result = val_model.fit(disp=False, maxiter=80)
+                val_forecast = val_result.forecast(len(test))
+                accuracy = self._calc_mape(list(test), list(val_forecast))
+            except Exception:
+                accuracy = None
+
+            forecast_result = result.get_forecast(steps=periods)
+            forecast_vals = forecast_result.predicted_mean
+            conf_int = forecast_result.conf_int(alpha=0.05)
+            last_ts = data[-1][0]
+            forecast_points: List[ForecastPoint] = []
+
+            for i in range(periods):
+                pred_val = float(
+                    forecast_vals.iloc[i]
+                    if hasattr(forecast_vals, "iloc")
+                    else forecast_vals[i]
+                )
+                lower = float(conf_int.iloc[i, 0] if hasattr(conf_int, "iloc") else conf_int[i, 0])
+                upper = float(conf_int.iloc[i, 1] if hasattr(conf_int, "iloc") else conf_int[i, 1])
+                forecast_points.append(
+                    ForecastPoint(
+                        timestamp=last_ts + timedelta(minutes=interval_minutes * (i + 1)),
+                        value=self._clamp(pred_val),
+                        lower_bound=self._clamp(lower),
+                        upper_bound=self._clamp(upper),
+                        is_forecast=True,
+                    )
+                )
+
+            return forecast_points, (accuracy, "mape")
+
+        except Exception as e:
+            logger.error("arima_fit_error", error=str(e))
+            return [], (None, "mape")
+
+    def _find_best_order(
+        self,
+        values: np.ndarray,
+        seasonal_period: Optional[int],
+    ) -> Tuple[Tuple[int, int, int], Optional[Tuple[int, int, int, int]]]:
+        from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+        best_aic = float("inf")
+        best_order = (1, 1, 1)
+        best_seasonal: Optional[Tuple[int, int, int, int]] = None
+        orders = [(1, 1, 1), (1, 1, 0), (0, 1, 1), (2, 1, 2)]
+
+        for order in orders:
+            try:
+                seasonal_order = (1, 1, 1, seasonal_period) if seasonal_period else None
+                model = SARIMAX(
+                    values,
+                    order=order,
+                    seasonal_order=seasonal_order or (0, 0, 0, 0),
+                    enforce_stationarity=False,
+                    enforce_invertibility=False,
+                )
+                fit = model.fit(disp=False, maxiter=40)
+                if fit.aic < best_aic:
+                    best_aic = fit.aic
+                    best_order = order
+                    best_seasonal = seasonal_order
+            except Exception:
+                continue
+
+        return best_order, best_seasonal
+
+
+class AutoForecaster(ForecastAlgorithmBase):
+    """
+    Selects best model via holdout MAPE among Holt-Winters dan MA (ringan CPU).
+    """
+
+    name = ForecastAlgorithm.AUTO
+    last_selected: ForecastAlgorithm = ForecastAlgorithm.HOLT_WINTERS
+
+    def fit_predict(
+        self,
+        historical: List[Tuple[datetime, float]],
+        periods: int,
+        interval_minutes: int = 5,
+    ) -> Tuple[List[ForecastPoint], AccuracyResult]:
+        # Holt-Winters + MA saja — ARIMA di-skip di Auto karena sangat berat CPU
+        candidates: List[ForecastAlgorithmBase] = [
+            HoltWintersForecaster(),
+            MovingAverageForecaster(window=max(6, int(60 / interval_minutes))),
+        ]
+
+        best_points: List[ForecastPoint] = []
+        best_score: Optional[float] = None
+        best_algo = ForecastAlgorithm.MOVING_AVERAGE
+
+        for forecaster in candidates:
+            points, (score, metric) = forecaster.fit_predict(
+                historical, periods, interval_minutes
+            )
+            if not points:
+                continue
+            if score is None:
+                if not best_points:
+                    best_points, best_score, best_algo = points, score, forecaster.name
+                continue
+            if best_score is None or score < best_score:
+                best_points, best_score, best_algo = points, score, forecaster.name
+
+        if not best_points:
+            lr = LinearRegressionForecaster()
+            self.last_selected = ForecastAlgorithm.LINEAR_REGRESSION
+            return lr.fit_predict(historical, periods, interval_minutes)
+
+        self.last_selected = best_algo
+        logger.info("auto_forecast_selected", algorithm=best_algo.value, mape=best_score)
+        return best_points, (best_score, "mape")
+
+
+class ProphetForecaster(ForecastAlgorithmBase):
+    name = ForecastAlgorithm.PROPHET
+
     def fit_predict(self, historical, periods, interval_minutes=5):
-        raise NotImplementedError("ARIMA not yet integrated. Install statsmodels first.")
+        raise NotImplementedError("Prophet belum diintegrasikan.")
 
 
 class LSTMForecaster(ForecastAlgorithmBase):
-    """Placeholder for LSTM (PyTorch/TF) integration."""
-
     name = ForecastAlgorithm.LSTM
 
     def fit_predict(self, historical, periods, interval_minutes=5):
-        raise NotImplementedError("LSTM not yet integrated.")
+        raise NotImplementedError("LSTM belum diintegrasikan.")
 
 
-# ─── Registry ─────────────────────────────────────────────────────────────────
-
-
-_REGISTRY: Dict[ForecastAlgorithm, ForecastAlgorithmBase] = {
+_REGISTRY: dict[ForecastAlgorithm, ForecastAlgorithmBase] = {
     ForecastAlgorithm.MOVING_AVERAGE: MovingAverageForecaster(),
     ForecastAlgorithm.LINEAR_REGRESSION: LinearRegressionForecaster(),
-    ForecastAlgorithm.PROPHET: ProphetForecaster(),
+    ForecastAlgorithm.HOLT_WINTERS: HoltWintersForecaster(),
     ForecastAlgorithm.ARIMA: ARIMAForecaster(),
+    ForecastAlgorithm.AUTO: AutoForecaster(),
+    ForecastAlgorithm.PROPHET: ProphetForecaster(),
     ForecastAlgorithm.LSTM: LSTMForecaster(),
 }
 

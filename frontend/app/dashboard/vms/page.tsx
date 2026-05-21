@@ -1,84 +1,266 @@
 "use client";
 
-import { useVMs } from "@/hooks/useQueries";
-import { VMTable } from "@/components/vm/VMTable";
-import { Server, RefreshCw, Search } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useQueries } from "@tanstack/react-query";
+import {
+  useVMs,
+  usePrometheusSources,
+  useSyncVMs,
+  queryKeys,
+} from "@/hooks/useQueries";
+import {
+  VMTable,
+  type SortState,
+  type SortField,
+} from "@/components/vm/VMTable";
+import { Pagination } from "@/components/ui/Pagination";
+import {
+  SearchableSelect,
+  type SelectOption,
+} from "@/components/ui/SearchableSelect";
+import { Server, RefreshCw, Search, Eye, EyeOff, X } from "lucide-react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api-client";
+import { prometheusService, vmService } from "@/services";
 import { useRealtimeStore } from "@/stores";
+import type { VM, VMMetrics, VMStatus } from "@/types";
+
+const DEFAULT_PAGE_SIZE = 20;
+
+const STATUS_PRIORITY: Record<VMStatus, number> = {
+  critical: 0,
+  warning: 1,
+  healthy: 2,
+  unknown: 3,
+  down: 4,
+};
+
+function getVmStatus(
+  vm: VM,
+  realtime: Record<string, { status?: VMStatus }>,
+): VMStatus {
+  return realtime[vm.id]?.status ?? vm.status;
+}
 
 export default function VMsPage() {
   const { data: vmsData, isLoading } = useVMs();
+  const { data: sources } = usePrometheusSources();
+  const syncMutation = useSyncVMs();
   const realtimeMetrics = useRealtimeStore((s) => s.metrics);
-  const qc = useQueryClient();
 
-  const [syncing, setSyncing] = useState(false);
+  const [selectedSourceId, setSelectedSourceId] = useState<string>("");
   const [jobs, setJobs] = useState<string[]>([]);
   const [selectedJob, setSelectedJob] = useState<string>("all");
   const [origins, setOrigins] = useState<string[]>([]);
   const [selectedOrigin, setSelectedOrigin] = useState<string>("all");
-  
-  // Search & Filter States
+
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [showDown, setShowDown] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [sort, setSort] = useState<SortState>({
+    field: "hostname",
+    dir: "asc",
+  });
 
-  // Fetch unique job and origin labels on mount
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const activeSources = sources?.filter((s) => s.is_active) ?? [];
+  const allVms = vmsData?.vms ?? [];
+
+  // ── Auto-select first source ──────────────────────────────────────────────
   useEffect(() => {
+    if (!selectedSourceId && activeSources.length > 0) {
+      setSelectedSourceId(activeSources[0].id);
+    }
+  }, [activeSources, selectedSourceId]);
+
+  // ── Fetch jobs & origins per source ───────────────────────────────────────
+  useEffect(() => {
+    if (!selectedSourceId) {
+      setJobs([]);
+      setOrigins([]);
+      return;
+    }
     const fetchJobsAndOrigins = async () => {
       try {
-        const [jobsRes, originsRes] = await Promise.all([
-          api.get<string[]>("/prometheus/jobs"),
-          api.get<string[]>("/prometheus/origins")
+        const [jobsList, originsList] = await Promise.all([
+          prometheusService.listJobs(selectedSourceId),
+          prometheusService.listOrigins(selectedSourceId),
         ]);
-        setJobs(jobsRes.data);
-        setOrigins(originsRes.data);
+        setJobs(jobsList);
+        setOrigins(originsList);
+        setSelectedJob("all");
+        setSelectedOrigin("all");
       } catch (err) {
         console.error("Failed to fetch metadata:", err);
       }
     };
     fetchJobsAndOrigins();
-  }, []);
+  }, [selectedSourceId]);
 
+  // ── Down count ────────────────────────────────────────────────────────────
+  const downCount = useMemo(
+    () =>
+      allVms.filter((vm) => getVmStatus(vm, realtimeMetrics) === "down").length,
+    [allVms, realtimeMetrics],
+  );
+
+  // ── Filter ────────────────────────────────────────────────────────────────
+  const filteredVms = useMemo(() => {
+    return allVms.filter((vm) => {
+      const status = getVmStatus(vm, realtimeMetrics);
+
+      if (!showDown && statusFilter !== "down" && status === "down") {
+        return false;
+      }
+
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch =
+        q === "" ||
+        vm.hostname.toLowerCase().includes(q) ||
+        vm.ip_address.toLowerCase().includes(q) ||
+        (vm.cluster ?? "").toLowerCase().includes(q) ||
+        (vm.tags ?? "").toLowerCase().includes(q);
+
+      const matchesStatus = statusFilter === "all" || status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [allVms, searchQuery, statusFilter, showDown, realtimeMetrics]);
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  const sortedVms = useMemo(() => {
+    const arr = [...filteredVms];
+    const dir = sort.dir === "asc" ? 1 : -1;
+
+    arr.sort((a, b) => {
+      const rtA = realtimeMetrics[a.id];
+      const rtB = realtimeMetrics[b.id];
+
+      switch (sort.field) {
+        case "hostname":
+          return dir * a.hostname.localeCompare(b.hostname);
+        case "ip_address":
+          return dir * a.ip_address.localeCompare(b.ip_address);
+        case "status": {
+          const sA = STATUS_PRIORITY[getVmStatus(a, realtimeMetrics)] ?? 99;
+          const sB = STATUS_PRIORITY[getVmStatus(b, realtimeMetrics)] ?? 99;
+          return dir * (sA - sB);
+        }
+        case "cpu": {
+          const cpuA = rtA?.cpu_usage ?? -1;
+          const cpuB = rtB?.cpu_usage ?? -1;
+          return dir * (cpuA - cpuB);
+        }
+        case "ram": {
+          const ramA = rtA?.ram_usage ?? -1;
+          const ramB = rtB?.ram_usage ?? -1;
+          return dir * (ramA - ramB);
+        }
+        case "disk": {
+          const diskA = rtA?.disk_usage ?? -1;
+          const diskB = rtB?.disk_usage ?? -1;
+          return dir * (diskA - diskB);
+        }
+        case "last_seen": {
+          const lsA = a.last_seen ? new Date(a.last_seen).getTime() : 0;
+          const lsB = b.last_seen ? new Date(b.last_seen).getTime() : 0;
+          return dir * (lsA - lsB);
+        }
+        default:
+          return 0;
+      }
+    });
+
+    return arr;
+  }, [filteredVms, sort, realtimeMetrics]);
+
+  // ── Pagination ────────────────────────────────────────────────────────────
+  const totalPages = Math.max(1, Math.ceil(sortedVms.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+
+  const paginatedVms = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return sortedVms.slice(start, start + pageSize);
+  }, [sortedVms, safePage, pageSize]);
+
+  // ── Fetch metrics for VMs on current page (fallback sebelum WebSocket tiba) ─
+  const metricsQueries = useQueries({
+    queries: paginatedVms.map((vm) => ({
+      queryKey: queryKeys.vmMetrics(vm.id),
+      queryFn: () => vmService.metrics(vm.id),
+      staleTime: 15_000,
+      refetchInterval: 30_000,
+    })),
+  });
+
+  const apiMetricsMap = useMemo(() => {
+    const map: Record<string, VMMetrics> = {};
+    metricsQueries.forEach((result, idx) => {
+      const vm = paginatedVms[idx];
+      if (result.data && vm) {
+        map[vm.id] = result.data;
+      }
+    });
+    return map;
+  }, [metricsQueries, paginatedVms]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, statusFilter, showDown, pageSize, sort]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  // ── Select options ────────────────────────────────────────────────────────
+  const sourceOptions: SelectOption[] = activeSources.map((src) => ({
+    value: src.id,
+    label: src.name,
+    sublabel: src.url,
+  }));
+
+  const originOptions: SelectOption[] = [
+    { value: "all", label: "All Origins" },
+    ...origins.map((o) => ({ value: o, label: o })),
+  ];
+
+  const jobOptions: SelectOption[] = [
+    { value: "all", label: "All Jobs" },
+    ...jobs.map((j) => ({ value: j, label: j })),
+  ];
+
+  // ── Sync handler ──────────────────────────────────────────────────────────
   const handleSync = async () => {
-    setSyncing(true);
+    if (!selectedSourceId) {
+      toast.error(
+        "Pilih Prometheus source terlebih dahulu di halaman Prometheus Sources",
+      );
+      return;
+    }
     try {
-      const { data } = await api.post<{ created: number; skipped: number }>("/prometheus/sync-vms", null, {
-        params: { job: selectedJob, origin_prometheus: selectedOrigin }
+      const data = await syncMutation.mutateAsync({
+        job: selectedJob,
+        origin_prometheus: selectedOrigin,
+        source_id: selectedSourceId,
       });
       toast.success(`Synced ${data.created} VMs (${data.skipped} skipped)`);
-      qc.invalidateQueries({ queryKey: ["vms"] });
-      qc.invalidateQueries({ queryKey: ["dashboard", "summary"] });
-    } catch (err) {
+    } catch {
       toast.error("Failed to sync VMs");
-    } finally {
-      setSyncing(false);
     }
   };
 
-  // Perform client-side real-time filtering
-  const filteredVms = (vmsData?.vms ?? []).filter((vm) => {
-    // 1. Search hostname or IP Address
-    const matchesSearch =
-      searchQuery.trim() === "" ||
-      vm.hostname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vm.ip_address.toLowerCase().includes(searchQuery.toLowerCase());
-
-    // 2. Filter status
-    let matchesStatus = true;
-    if (statusFilter !== "all") {
-      const rt = realtimeMetrics[vm.id];
-      const status = rt?.status ?? vm.status;
-      matchesStatus = status === statusFilter;
-    }
-
-    return matchesSearch && matchesStatus;
-  });
+  const clearSearch = useCallback(() => {
+    setSearchQuery("");
+    searchInputRef.current?.focus();
+  }, []);
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
+      {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -87,35 +269,54 @@ export default function VMsPage() {
           </h1>
           <p className="text-muted-foreground text-sm mt-0.5">
             Manage and monitor your infrastructure
+            {vmsData?.total != null && (
+              <span className="ml-1">· {vmsData.total} terdaftar</span>
+            )}
           </p>
         </div>
       </div>
 
-      {/* Control Bar: Search, Status Filter, Job selector, Sync */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between bg-card border border-border/80 p-4 rounded-xl shadow-sm">
-        {/* Left Control Group: Search & Status Filters */}
+      {/* ── Filter Bar ──────────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between bg-card border border-border/80 p-4 rounded-xl shadow-sm">
+        {/* Left: search + status + show down */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 flex-1">
-          {/* Search Box */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          {/* Search */}
+          <div className="relative flex-1 max-w-md group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-foreground transition-colors" />
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="Search by hostname or IP..."
+              placeholder="Cari hostname, IP, cluster, tag..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring transition-all"
+              className="
+                w-full bg-background border border-border rounded-lg
+                pl-9 pr-9 py-2.5 text-sm
+                focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-foreground/30
+                placeholder:text-muted-foreground/60
+                transition-all duration-200
+              "
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
-          {/* Status Filter Badges */}
+          {/* Status pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
             {[
-              { label: "All Statuses", value: "all" },
+              { label: "Semua", value: "all" },
               { label: "Healthy", value: "healthy" },
               { label: "Warning", value: "warning" },
               { label: "Critical", value: "critical" },
               { label: "Down", value: "down" },
-              { label: "Unknown", value: "unknown" }
+              { label: "Unknown", value: "unknown" },
             ].map((btn) => (
               <button
                 key={btn.value}
@@ -130,62 +331,129 @@ export default function VMsPage() {
               </button>
             ))}
           </div>
+
+          {/* Show Down toggle */}
+          <button
+            type="button"
+            onClick={() => setShowDown((v) => !v)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all whitespace-nowrap shrink-0 ${
+              showDown
+                ? "bg-secondary text-foreground border-border"
+                : "bg-background text-muted-foreground border-border hover:bg-secondary hover:text-foreground"
+            }`}
+            title={showDown ? "Sembunyikan VM down" : "Tampilkan VM down"}
+          >
+            {showDown ? (
+              <Eye className="w-3.5 h-3.5" />
+            ) : (
+              <EyeOff className="w-3.5 h-3.5" />
+            )}
+            {showDown ? "Hide Down" : "Show Down"}
+            {!showDown && downCount > 0 && (
+              <span className="bg-rose-500/15 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 rounded-full text-[10px] font-bold">
+                {downCount}
+              </span>
+            )}
+          </button>
         </div>
 
-        {/* Right Control Group: Job Selection & Sync Action */}
+        {/* Right: Prometheus selects + sync */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 self-stretch lg:self-auto">
-          {origins.length > 0 && (
-            <div className="flex items-center justify-between sm:justify-start gap-2 bg-background border border-border px-3 py-1.5 rounded-lg">
-              <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
-                Prometheus Origin:
-              </span>
-              <select
-                value={selectedOrigin}
-                onChange={(e) => setSelectedOrigin(e.target.value)}
-                className="bg-transparent text-xs font-semibold focus:outline-none cursor-pointer pr-1"
-              >
-                <option value="all">All Origins</option>
-                {origins.map((origin) => (
-                  <option key={origin} value={origin}>
-                    {origin}
-                  </option>
-                ))}
-              </select>
+          {activeSources.length > 0 && (
+            <div className="flex items-center gap-2 min-w-[180px]">
+              <SearchableSelect
+                options={sourceOptions}
+                value={selectedSourceId}
+                onChange={setSelectedSourceId}
+                placeholder="Pilih source..."
+                searchPlaceholder="Cari source..."
+                label="Prometheus:"
+                compact
+                className="flex-1"
+              />
             </div>
           )}
 
-          <div className="flex items-center justify-between sm:justify-start gap-2 bg-background border border-border px-3 py-1.5 rounded-lg">
-            <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
-              Prometheus Job:
-            </span>
-            <select
+          {origins.length > 0 && (
+            <div className="flex items-center gap-2 min-w-[160px]">
+              <SearchableSelect
+                options={originOptions}
+                value={selectedOrigin}
+                onChange={setSelectedOrigin}
+                placeholder="Origin..."
+                searchPlaceholder="Cari origin..."
+                label="Origin:"
+                compact
+                className="flex-1"
+              />
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 min-w-[140px]">
+            <SearchableSelect
+              options={jobOptions}
               value={selectedJob}
-              onChange={(e) => setSelectedJob(e.target.value)}
-              className="bg-transparent text-xs font-semibold focus:outline-none cursor-pointer pr-1"
-            >
-              <option value="all">All Jobs</option>
-              {jobs.map((job) => (
-                <option key={job} value={job}>
-                  {job}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedJob}
+              placeholder="Job..."
+              searchPlaceholder="Cari job..."
+              label="Job:"
+              compact
+              className="flex-1"
+            />
           </div>
 
           <button
             onClick={handleSync}
-            disabled={syncing}
+            disabled={syncMutation.isPending || !selectedSourceId}
             className="flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90 active:scale-[0.98] transition-all font-medium text-sm disabled:opacity-50"
           >
-            <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
-            {syncing ? "Syncing..." : "Sync from Prometheus"}
+            <RefreshCw
+              className={`w-4 h-4 ${syncMutation.isPending ? "animate-spin" : ""}`}
+            />
+            {syncMutation.isPending ? "Syncing..." : "Sync from Prometheus"}
           </button>
         </div>
       </div>
 
-      {/* VM List Table */}
-      <div className="glass-card overflow-hidden">
-        <VMTable vms={filteredVms} isLoading={isLoading} />
+      {/* ── Results info ────────────────────────────────────────────────────── */}
+      {searchQuery && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>
+            {filteredVms.length} hasil untuk &quot;
+            <span className="font-medium text-foreground">{searchQuery}</span>
+            &quot;
+          </span>
+          <button
+            type="button"
+            onClick={clearSearch}
+            className="text-primary hover:underline"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
+      {/* ── Table ───────────────────────────────────────────────────────────── */}
+      <div className="glass-card overflow-hidden flex flex-col">
+        <VMTable
+          vms={paginatedVms}
+          isLoading={isLoading}
+          sort={sort}
+          onSortChange={setSort}
+          metricsMap={apiMetricsMap}
+        />
+        {!isLoading && sortedVms.length > 0 && (
+          <Pagination
+            page={safePage}
+            pageSize={pageSize}
+            total={sortedVms.length}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(1);
+            }}
+          />
+        )}
       </div>
     </div>
   );

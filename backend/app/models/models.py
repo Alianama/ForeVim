@@ -61,8 +61,10 @@ class ForecastMetric(str, enum.Enum):
 
 
 class ForecastAlgorithm(str, enum.Enum):
+    AUTO = "auto"
     MOVING_AVERAGE = "moving_average"
     LINEAR_REGRESSION = "linear_regression"
+    HOLT_WINTERS = "holt_winters"
     PROPHET = "prophet"
     ARIMA = "arima"
     LSTM = "lstm"
@@ -96,12 +98,26 @@ class User(TimestampMixin, Base):
     is_active = Column(Boolean, default=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
     last_login = Column(DateTime(timezone=True), nullable=True)
+    totp_secret = Column(String(100), nullable=True)
+    is_2fa_enabled = Column(Boolean, default=False, nullable=False)
 
     # Relationships
     audit_logs = relationship("AuditLog", back_populates="user", lazy="dynamic")
     notification_preferences = relationship(
         "NotificationPreference", back_populates="user", uselist=False
     )
+
+
+class PrometheusSource(TimestampMixin, Base):
+    __tablename__ = "prometheus_sources"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(255), nullable=False)
+    url = Column(String(500), nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+
+    # Relationships
+    vms = relationship("VM", back_populates="prometheus_source", lazy="dynamic")
 
 
 class VM(TimestampMixin, Base):
@@ -117,7 +133,10 @@ class VM(TimestampMixin, Base):
     tags = Column(String(500), nullable=True)  # comma-separated
     status = Column(Enum(VMStatus), default=VMStatus.UNKNOWN, nullable=False)
 
-    # Prometheus job/instance labels
+    # Prometheus job/instance/source mapping
+    prometheus_source_id = Column(
+        UUID(as_uuid=True), ForeignKey("prometheus_sources.id", ondelete="SET NULL"), nullable=True
+    )
     prometheus_job = Column(String(100), default="node_exporter")
     prometheus_instance = Column(String(255), nullable=True)
 
@@ -125,6 +144,7 @@ class VM(TimestampMixin, Base):
     last_seen = Column(DateTime(timezone=True), nullable=True)
 
     # Relationships
+    prometheus_source = relationship("PrometheusSource", back_populates="vms")
     alerts = relationship("Alert", back_populates="vm", lazy="dynamic")
     forecast_results = relationship("ForecastResult", back_populates="vm", lazy="dynamic")
 
