@@ -117,8 +117,9 @@ async def get_vm_forecast(
     vm = await vm_service.get_by_id(db, vm_id)
     if not vm:
         raise HTTPException(status_code=404, detail="VM not found")
+    # db is only used for get_by_id above — forecast service manages its own sessions
     return await forecast_service.get_cached_or_generate(
-        db, vm, metric, algorithm, period_days, force_refresh=force_refresh
+        vm, metric, algorithm, period_days, force_refresh=force_refresh
     )
 
 
@@ -139,7 +140,7 @@ async def generate_vm_forecast(
     if not vm:
         raise HTTPException(status_code=404, detail="VM not found")
     try:
-        return await forecast_service.generate_and_save(db, vm, metric, algorithm, period_days)
+        return await forecast_service.generate_and_save(vm, metric, algorithm, period_days)
     except Exception as exc:
         logger.exception("forecast_generate_failed", vm_id=str(vm_id))
         raise HTTPException(

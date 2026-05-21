@@ -44,42 +44,42 @@ async def task_refresh_metrics() -> None:
 
 
 # ─── Task: Generate Forecasts ─────────────────────────────────────────────────
- 
- 
+
+
 async def task_generate_forecasts() -> None:
     if not settings.FORECAST_SCHEDULER_ENABLED:
         return
     logger.info("scheduler_task_start", task="generate_forecasts")
+    # Fetch VMs with a short-lived session, then release the connection
     async with AsyncSessionLocal() as db:
         try:
             vms = await vm_service.get_all(db)
-            for vm in vms:
-                if not vm.prometheus_source:
-                    continue
-                for metric in [ForecastMetric.CPU, ForecastMetric.RAM, ForecastMetric.DISK]:
-                    try:
-                        await forecast_service.generate_and_save(
-                            db,
-                            vm,
-                            metric,
-                            ForecastAlgorithm.HOLT_WINTERS,
-                            7,
-                        )
-                    except Exception as exc:
-                        logger.warning("forecast_failed", vm=vm.hostname, metric=metric, error=str(exc))
-            await db.commit()
         except Exception as exc:
-            await db.rollback()
             logger.error("scheduler_task_error", task="generate_forecasts", error=str(exc))
- 
- 
+            return
+    # DB connection released — now run forecasts without holding any connections
+    for vm in vms:
+        if not vm.prometheus_source:
+            continue
+        for metric in [ForecastMetric.CPU, ForecastMetric.RAM, ForecastMetric.DISK]:
+            try:
+                await forecast_service.generate_and_save(
+                    vm,
+                    metric,
+                    ForecastAlgorithm.HOLT_WINTERS,
+                    7,
+                )
+            except Exception as exc:
+                logger.warning("forecast_failed", vm=vm.hostname, metric=metric, error=str(exc))
+
+
 # ─── Task: Anomaly Detection ──────────────────────────────────────────────────
- 
- 
+
+
 async def task_detect_anomalies() -> None:
     """Simple z-score based anomaly detection on CPU usage."""
     import numpy as np
- 
+
     logger.info("scheduler_task_start", task="anomaly_detection")
     async with AsyncSessionLocal() as db:
         try:

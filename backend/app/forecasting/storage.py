@@ -73,6 +73,7 @@ async def get_latest_forecast(
             ForecastResult.metric == metric,
             ForecastResult.algorithm == algorithm,
             ForecastResult.forecast_period_days == period_days,
+            ForecastResult.expires_at > datetime.now(timezone.utc),
         )
         .order_by(ForecastResult.generated_at.desc())
         .limit(1)

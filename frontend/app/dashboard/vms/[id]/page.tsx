@@ -2,12 +2,27 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { useVM, useVMHistory, useVMForecast, useVMMetrics, useAlerts, usePrometheusRetention } from "@/hooks/useQueries";
+import {
+  useVM,
+  useVMHistory,
+  useVMForecast,
+  useVMMetrics,
+  useAlerts,
+  usePrometheusRetention,
+} from "@/hooks/useQueries";
 import { MetricsOverviewCards } from "@/components/vm/MetricsOverviewCards";
 import { MetricLineChart } from "@/components/charts/MetricLineChart";
 import { ForecastChart } from "@/components/charts/ForecastChart";
 import { AlertList } from "@/components/alerts/AlertList";
-import { ArrowLeft, Cpu, HardDrive, MemoryStick, Network, TrendingUp, Terminal } from "lucide-react";
+import {
+  ArrowLeft,
+  Cpu,
+  HardDrive,
+  MemoryStick,
+  Network,
+  TrendingUp,
+  Terminal,
+} from "lucide-react";
 import type { ForecastAlgorithm, ForecastMetric } from "@/types";
 import { FORECAST_ALGORITHMS } from "@/lib/forecast-algorithms";
 
@@ -29,18 +44,41 @@ export default function VMDetailPage() {
   const PERIOD_OPTIONS = [
     { label: "7 Days", days: 7 },
     { label: "1 Month", days: 30 },
-    { label: `Max Prometheus Data (${retentionDays}d)`, days: retentionDays }
+    { label: `Max Prometheus Data (${retentionDays}d)`, days: retentionDays },
   ];
 
   const { data: vm, isLoading: vmLoading } = useVM(id);
   const { data: metrics } = useVMMetrics(id);
-  const { data: cpuHistory } = useVMHistory(id, "cpu", historyHours, "5m");
-  const { data: ramHistory } = useVMHistory(id, "ram", historyHours, "5m");
-  const { data: diskHistory } = useVMHistory(id, "disk", historyHours, "5m");
-  const { data: netHistory } = useVMHistory(id, "network_rx", historyHours, "5m");
-  const { data: forecast, isLoading: forecastLoading } = useVMForecast(
-    id, forecastMetric, forecastAlgo, forecastPeriod
+
+  // History charts — hanya fetch saat tab "metrics" aktif
+  const historyEnabled = activeTab === "metrics";
+  const { data: cpuHistory } = useVMHistory(id, "cpu", historyHours, "5m", {
+    enabled: historyEnabled,
+  });
+  const { data: ramHistory } = useVMHistory(id, "ram", historyHours, "5m", {
+    enabled: historyEnabled,
+  });
+  const { data: diskHistory } = useVMHistory(id, "disk", historyHours, "5m", {
+    enabled: historyEnabled,
+  });
+  const { data: netHistory } = useVMHistory(
+    id,
+    "network_rx",
+    historyHours,
+    "5m",
+    { enabled: historyEnabled },
   );
+
+  // Forecast — HANYA fetch saat tab "forecast" aktif (komputasi berat, jangan eager-load)
+  const { data: forecast, isLoading: forecastLoading } = useVMForecast(
+    id,
+    forecastMetric,
+    forecastAlgo,
+    forecastPeriod,
+    { enabled: activeTab === "forecast" },
+  );
+
+  // Alerts — selalu di-fetch (query DB cepat) supaya badge count di tab tetap tampil
   const { data: alerts } = useAlerts(id);
 
   if (vmLoading) {
@@ -57,7 +95,10 @@ export default function VMDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-muted-foreground">VM not found</p>
-        <button onClick={() => router.push("/dashboard")} className="text-primary text-sm">
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="text-primary text-sm"
+        >
           Back to Dashboard
         </button>
       </div>
@@ -226,7 +267,9 @@ export default function VMDetailPage() {
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-xs text-muted-foreground">Model:</span>
               {FORECAST_ALGORITHMS.filter((a) =>
-                ["auto", "holt_winters", "arima", "moving_average"].includes(a.value)
+                ["auto", "holt_winters", "arima", "moving_average"].includes(
+                  a.value,
+                ),
               ).map((a) => (
                 <button
                   key={a.value}

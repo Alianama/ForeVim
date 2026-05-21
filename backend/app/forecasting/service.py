@@ -6,12 +6,12 @@ from __future__ import annotations
 import asyncio
 import uuid
 from datetime import datetime, timezone
-from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.database import AsyncSessionLocal
 from app.core.logging import get_logger
 from app.forecasting.algorithms import AutoForecaster, get_forecaster
 from app.forecasting.preprocessing import downsample_for_display, required_lookback_hours
@@ -208,12 +208,12 @@ class ForecastService:
 
     async def generate_and_save(
         self,
-        db: AsyncSession,
         vm: VM,
         metric: ForecastMetric,
         algorithm: ForecastAlgorithm,
         period_days: int,
     ) -> ForecastResponse:
+        """Generate forecast and persist. Manages its own DB session — never holds a connection during ML."""
         retention_days = None
         if vm.prometheus_source:
             retention_days = await prometheus_service.get_retention_days(
@@ -227,18 +227,22 @@ class ForecastService:
             retention_days=retention_days,
         )
         if response.forecast or response.historical:
-            await save_forecast_result(
-                db,
-                response,
-                accuracy_metric=response.accuracy_metric,
-                model_info=response.model_info,
-            )
-            await db.flush()
+            async with AsyncSessionLocal() as save_db:
+                try:
+                    await save_forecast_result(
+                        save_db,
+                        response,
+                        accuracy_metric=response.accuracy_metric,
+                        model_info=response.model_info,
+                    )
+                    await save_db.commit()
+                except Exception:
+                    await save_db.rollback()
+                    logger.warning("forecast_save_failed", vm_id=str(vm.id))
         return response
 
     async def get_cached_or_generate(
         self,
-        db: AsyncSession,
         vm: VM,
         metric: ForecastMetric,
         algorithm: ForecastAlgorithm,
@@ -246,12 +250,13 @@ class ForecastService:
         *,
         force_refresh: bool = False,
     ) -> ForecastResponse:
+        """Return cached forecast or generate a new one. Uses its own short-lived sessions."""
         if not force_refresh:
-            cached = await get_latest_forecast(db, vm.id, metric, algorithm, period_days)
+            async with AsyncSessionLocal() as check_db:
+                cached = await get_latest_forecast(check_db, vm.id, metric, algorithm, period_days)
             if cached and (cached.forecast or cached.historical):
                 return cached
-
-        return await self.generate_and_save(db, vm, metric, algorithm, period_days)
+        return await self.generate_and_save(vm, metric, algorithm, period_days)
 
     @staticmethod
     def _empty_response(
