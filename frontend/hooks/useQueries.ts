@@ -7,6 +7,7 @@ import {
   vmService,
   userService,
   prometheusService,
+  forecastService,
 } from "@/services";
 import type {
   ForecastAlgorithm,
@@ -69,6 +70,17 @@ export function useVMMetrics(id: string) {
     enabled: !!id,
     refetchInterval: 15_000,
     staleTime: 10_000,
+  });
+}
+
+export function useVMDiskMounts(id: string) {
+  return useQuery({
+    queryKey: ["vms", id, "disk-mounts"] as const,
+    queryFn: () => vmService.diskMounts(id),
+    enabled: !!id,
+    staleTime: 15_000,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -330,5 +342,26 @@ export function useUsers() {
   return useQuery({
     queryKey: ["users"],
     queryFn: () => userService.list(),
+  });
+}
+
+// ─── Forecast Overview Hooks ──────────────────────────────────────────────────
+
+export function useForecastOverview(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ["forecasts", "overview"],
+    queryFn: () => forecastService.overview(),
+    enabled: options?.enabled !== false,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useActiveScan() {
+  return useQuery({
+    queryKey: ["forecasts", "scan", "active"],
+    queryFn: () => forecastService.activeScan(),
+    staleTime: 0,
+    refetchInterval: false, // driven by WebSocket, not polling
   });
 }

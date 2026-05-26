@@ -126,10 +126,14 @@ class VMService:
         disk = raw.get("disk_usage_percent")
         ram_total = raw.get("ram_total_bytes")
         ram_avail = raw.get("ram_available_bytes")
-        disk_total = raw.get("disk_total_bytes")
-        disk_avail = raw.get("disk_avail_bytes")
         net_rx = raw.get("network_rx_bytes")
         net_tx = raw.get("network_tx_bytes")
+        # Aggregate per-mount disk data
+        mounts = await prometheus_service.get_disk_mounts(instance, url=source_url)
+        total_bytes = sum(m.get("total_gb", 0) * 1_073_741_824 for m in mounts)
+        avail_bytes = sum(m.get("avail_gb", 0) * 1_073_741_824 for m in mounts)
+        disk_total = total_bytes if total_bytes > 0 else None
+        disk_avail = avail_bytes if avail_bytes > 0 else None
 
         # Determine status
         if cpu and cpu >= 85 or ram and ram >= 90 or disk and disk >= 85:
@@ -174,6 +178,8 @@ class VMService:
                 "cpu_usage": cpu,
                 "ram_usage": ram,
                 "disk_usage": disk,
+                "disk_used_gb": metrics.disk_used_gb,
+                "disk_total_gb": metrics.disk_total_gb,
                 "status": status.value,
                 "collected_at": metrics.collected_at.isoformat(),
             },

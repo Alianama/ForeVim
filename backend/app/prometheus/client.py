@@ -2,13 +2,16 @@
 Prometheus HTTP API client service.
 Provides typed, async access to PromQL queries.
 """
+
 from __future__ import annotations
 
+import asyncio
 import time
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
+
 from app.core.config import settings
 from app.core.logging import get_logger
 
@@ -27,14 +30,21 @@ QUERIES = {
     "ram_total_bytes": 'node_memory_MemTotal_bytes{{instance="{instance}"}}',
     "ram_available_bytes": 'node_memory_MemAvailable_bytes{{instance="{instance}"}}',
     "disk_usage_percent": (
-        '100 - ((node_filesystem_avail_bytes{{instance="{instance}",mountpoint="/",fstype!="tmpfs"}} / '
-        'node_filesystem_size_bytes{{instance="{instance}",mountpoint="/",fstype!="tmpfs"}}) * 100)'
+        'max by (instance) (100 * (1 - ('
+        'node_filesystem_avail_bytes{{instance="{instance}",fstype!~"tmpfs|devtmpfs|squashfs|overlay|aufs"}} / '
+        'node_filesystem_size_bytes{{instance="{instance}",fstype!~"tmpfs|devtmpfs|squashfs|overlay|aufs"}})))'
     ),
     "disk_total_bytes": (
-        'node_filesystem_size_bytes{{instance="{instance}",mountpoint="/",fstype!="tmpfs"}}'
+        'max by (instance) (node_filesystem_size_bytes{{instance="{instance}",fstype!~"tmpfs|devtmpfs|squashfs|overlay|aufs"}})'
     ),
     "disk_avail_bytes": (
-        'node_filesystem_avail_bytes{{instance="{instance}",mountpoint="/",fstype!="tmpfs"}}'
+        'max by (instance) (node_filesystem_avail_bytes{{instance="{instance}",fstype!~"tmpfs|devtmpfs|squashfs|overlay|aufs"}})'
+    ),
+    "disk_mounts_size": (
+        'node_filesystem_size_bytes{{instance="{instance}",fstype!~"tmpfs|devtmpfs|squashfs|overlay|aufs"}}'
+    ),
+    "disk_mounts_avail": (
+        'node_filesystem_avail_bytes{{instance="{instance}",fstype!~"tmpfs|devtmpfs|squashfs|overlay|aufs"}}'
     ),
     "network_rx_bytes": (
         'rate(node_network_receive_bytes_total{{instance="{instance}",device!="lo"}}[5m])'
@@ -59,7 +69,9 @@ class PrometheusService:
 
     def get_client(self, url: str) -> httpx.AsyncClient:
         if not url:
-            raise ValueError("Prometheus URL wajib disediakan dari database (Prometheus Sources)")
+            raise ValueError(
+                "Prometheus URL wajib disediakan dari database (Prometheus Sources)"
+            )
         base_url = url
         if base_url not in self._clients or self._clients[base_url].is_closed:
             self._clients[base_url] = httpx.AsyncClient(
@@ -92,7 +104,9 @@ class PrometheusService:
             resp.raise_for_status()
             data = resp.json()
             if data["status"] != "success":
-                logger.warning("prometheus_query_failed", query=promql, error=data.get("error"))
+                logger.warning(
+                    "prometheus_query_failed", query=promql, error=data.get("error")
+                )
                 return []
             return data["data"]["result"]
         except httpx.HTTPError as exc:
@@ -119,7 +133,9 @@ class PrometheusService:
             resp.raise_for_status()
             data = resp.json()
             if data["status"] != "success":
-                logger.warning("prometheus_range_failed", query=promql, error=data.get("error"))
+                logger.warning(
+                    "prometheus_range_failed", query=promql, error=data.get("error")
+                )
                 return []
             return data["data"]["result"]
         except httpx.HTTPError as exc:
@@ -153,7 +169,10 @@ class PrometheusService:
             return []
         try:
             return [
-                (datetime.fromtimestamp(float(ts), tz=timezone.utc), round(float(val), 4))
+                (
+                    datetime.fromtimestamp(float(ts), tz=timezone.utc),
+                    round(float(val), 4),
+                )
                 for ts, val in result[0]["values"]
             ]
         except (KeyError, IndexError, ValueError):
@@ -187,9 +206,10 @@ class PrometheusService:
         val = self._extract_value(result)
         return val is not None and val == 1.0
 
-    async def get_current_metrics(self, instance: str, url: str) -> Dict[str, Optional[float]]:
+    async def get_current_metrics(
+        self, instance: str, url: str
+    ) -> Dict[str, Optional[float]]:
         """Fetch all current metric values for one VM instance."""
-        import asyncio
 
         async def _q(key: str, **fmt: str) -> Tuple[str, Optional[float]]:
             promql = QUERIES[key].format(instance=instance, **fmt)
@@ -215,6 +235,64 @@ class PrometheusService:
         ]
         results = await asyncio.gather(*tasks)
         return dict(results)
+
+    async def get_disk_mounts(self, instance: str, url: str) -> List[Dict[str, Any]]:
+        """Get per-mountpoint disk usage breakdown for a VM instance."""
+        size_q = QUERIES["disk_mounts_size"].format(instance=instance)
+        avail_q = QUERIES["disk_mounts_avail"].format(instance=instance)
+
+        size_result, avail_result = await asyncio.gather(
+            self.query(size_q, url=url),
+            self.query(avail_q, url=url),
+        )
+
+        # Build maps by mountpoint from size results
+        size_map: Dict[str, float] = {}
+        device_map: Dict[str, str] = {}
+        fstype_map: Dict[str, str] = {}
+        for r in size_result:
+            mp = r.get("metric", {}).get("mountpoint", "")
+            if not mp:
+                continue
+            try:
+                size_map[mp] = float(r["value"][1])
+                device_map[mp] = r["metric"].get("device", "")
+                fstype_map[mp] = r["metric"].get("fstype", "")
+            except (KeyError, ValueError):
+                continue
+
+        avail_map: Dict[str, float] = {}
+        for r in avail_result:
+            mp = r.get("metric", {}).get("mountpoint", "")
+            if not mp:
+                continue
+            try:
+                avail_map[mp] = float(r["value"][1])
+            except (KeyError, ValueError):
+                continue
+
+        mounts = []
+        for mp, total_bytes in size_map.items():
+            if mp not in avail_map or total_bytes <= 0:
+                continue
+            avail_bytes = avail_map[mp]
+            used_bytes = total_bytes - avail_bytes
+            usage_pct = round(100.0 * used_bytes / total_bytes, 1)
+            mounts.append(
+                {
+                    "mountpoint": mp,
+                    "device": device_map.get(mp, ""),
+                    "fstype": fstype_map.get(mp, ""),
+                    "total_gb": round(total_bytes / 1_073_741_824, 2),
+                    "used_gb": round(used_bytes / 1_073_741_824, 2),
+                    "avail_gb": round(avail_bytes / 1_073_741_824, 2),
+                    "usage_percent": usage_pct,
+                }
+            )
+
+        # Sort: root first, then alphabetically
+        mounts.sort(key=lambda x: (x["mountpoint"] != "/", x["mountpoint"]))
+        return mounts
 
     async def get_metric_range(
         self,
@@ -242,9 +320,12 @@ class PrometheusService:
                 data = resp.json()
                 if data.get("status") == "success":
                     flags = data.get("data", {})
-                    retention_str = flags.get("storage.tsdb.retention.time") or flags.get("storage.tsdb.retention")
+                    retention_str = flags.get(
+                        "storage.tsdb.retention.time"
+                    ) or flags.get("storage.tsdb.retention")
                     if retention_str:
                         import re
+
                         match = re.match(r"^(\d+)([a-zA-Z]+)$", retention_str.strip())
                         if match:
                             val = int(match.group(1))
@@ -273,7 +354,6 @@ class PrometheusService:
         except Exception as exc:
             logger.error("prometheus_list_targets_error", error=str(exc))
             return []
-
 
 
 # Singleton

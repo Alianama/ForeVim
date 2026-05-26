@@ -5,8 +5,10 @@ import api from "@/lib/api-client";
 import {
   Alert,
   DashboardSummary,
+  DiskMount,
   ForecastAlgorithm,
   ForecastMetric,
+  ForecastOverviewItem,
   ForecastResponse,
   ForecastHistoryItem,
   LoginRequest,
@@ -40,7 +42,10 @@ export const authService = {
     });
     return data;
   },
-  verify2fa: async (mfa_token: string, code: string): Promise<TokenResponse> => {
+  verify2fa: async (
+    mfa_token: string,
+    code: string,
+  ): Promise<TokenResponse> => {
     const { data } = await api.post<TokenResponse>("/auth/verify-2fa", {
       mfa_token,
       code,
@@ -48,19 +53,25 @@ export const authService = {
     return data;
   },
   setup2fa: async (): Promise<{ secret: string; provisioning_uri: string }> => {
-    const { data } = await api.post<{ secret: string; provisioning_uri: string }>("/auth/2fa/setup");
+    const { data } = await api.post<{
+      secret: string;
+      provisioning_uri: string;
+    }>("/auth/2fa/setup");
     return data;
   },
   enable2fa: async (code: string): Promise<{ message: string }> => {
-    const { data } = await api.post<{ message: string }>("/auth/2fa/enable", { code });
+    const { data } = await api.post<{ message: string }>("/auth/2fa/enable", {
+      code,
+    });
     return data;
   },
   disable2fa: async (code: string): Promise<{ message: string }> => {
-    const { data } = await api.post<{ message: string }>("/auth/2fa/disable", { code });
+    const { data } = await api.post<{ message: string }>("/auth/2fa/disable", {
+      code,
+    });
     return data;
   },
 };
-
 
 // ─── VMs ─────────────────────────────────────────────────────────────────────
 
@@ -90,7 +101,7 @@ export const vmService = {
     id: string,
     metric: string,
     hours: number,
-    step: string
+    step: string,
   ): Promise<VMHistoryResponse> => {
     const { data } = await api.get<VMHistoryResponse>(`/vms/${id}/history`, {
       params: { metric, hours, step },
@@ -102,10 +113,15 @@ export const vmService = {
     metric: ForecastMetric,
     algorithm: ForecastAlgorithm,
     periodDays: number,
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<ForecastResponse> => {
     const { data } = await api.get<ForecastResponse>(`/vms/${id}/forecast`, {
-      params: { metric, algorithm, period_days: periodDays, force_refresh: forceRefresh },
+      params: {
+        metric,
+        algorithm,
+        period_days: periodDays,
+        force_refresh: forceRefresh,
+      },
     });
     return data;
   },
@@ -113,21 +129,35 @@ export const vmService = {
     id: string,
     metric: ForecastMetric,
     algorithm: ForecastAlgorithm,
-    periodDays: number
+    periodDays: number,
   ): Promise<ForecastResponse> => {
-    const { data } = await api.post<ForecastResponse>(`/vms/${id}/forecast/generate`, null, {
-      params: { metric, algorithm, period_days: periodDays },
-    });
+    const { data } = await api.post<ForecastResponse>(
+      `/vms/${id}/forecast/generate`,
+      null,
+      {
+        params: { metric, algorithm, period_days: periodDays },
+      },
+    );
     return data;
   },
-  forecastHistory: async (id: string, limit = 20): Promise<ForecastHistoryItem[]> => {
-    const { data } = await api.get<ForecastHistoryItem[]>(`/vms/${id}/forecast/history`, {
-      params: { limit },
-    });
+  forecastHistory: async (
+    id: string,
+    limit = 20,
+  ): Promise<ForecastHistoryItem[]> => {
+    const { data } = await api.get<ForecastHistoryItem[]>(
+      `/vms/${id}/forecast/history`,
+      {
+        params: { limit },
+      },
+    );
     return data;
   },
   summary: async (): Promise<DashboardSummary> => {
     const { data } = await api.get<DashboardSummary>("/vms/summary");
+    return data;
+  },
+  diskMounts: async (id: string): Promise<DiskMount[]> => {
+    const { data } = await api.get<DiskMount[]>(`/vms/${id}/disk-mounts`);
     return data;
   },
 };
@@ -171,21 +201,35 @@ export const userService = {
 
 export const prometheusService = {
   retention: async (sourceId?: string): Promise<{ retention_days: number }> => {
-    const { data } = await api.get<{ retention_days: number }>("/prometheus/retention", {
-      params: { source_id: sourceId },
-    });
+    const { data } = await api.get<{ retention_days: number }>(
+      "/prometheus/retention",
+      {
+        params: { source_id: sourceId },
+      },
+    );
     return data;
   },
   listSources: async (): Promise<PrometheusSource[]> => {
     const { data } = await api.get<PrometheusSource[]>("/prometheus/sources");
     return data;
   },
-  createSource: async (body: PrometheusSourceCreate): Promise<PrometheusSource> => {
-    const { data } = await api.post<PrometheusSource>("/prometheus/sources", body);
+  createSource: async (
+    body: PrometheusSourceCreate,
+  ): Promise<PrometheusSource> => {
+    const { data } = await api.post<PrometheusSource>(
+      "/prometheus/sources",
+      body,
+    );
     return data;
   },
-  updateSource: async (id: string, body: PrometheusSourceUpdate): Promise<PrometheusSource> => {
-    const { data } = await api.patch<PrometheusSource>(`/prometheus/sources/${id}`, body);
+  updateSource: async (
+    id: string,
+    body: PrometheusSourceUpdate,
+  ): Promise<PrometheusSource> => {
+    const { data } = await api.patch<PrometheusSource>(
+      `/prometheus/sources/${id}`,
+      body,
+    );
     return data;
   },
   deleteSource: async (id: string): Promise<void> => {
@@ -215,7 +259,11 @@ export const prometheusService = {
     });
     return data;
   },
-  syncVms: async (params: { job?: string; origin_prometheus?: string; source_id?: string }): Promise<any> => {
+  syncVms: async (params: {
+    job?: string;
+    origin_prometheus?: string;
+    source_id?: string;
+  }): Promise<any> => {
     const { data } = await api.post<any>("/prometheus/sync-vms", null, {
       params: {
         job: params.job,
@@ -227,3 +275,30 @@ export const prometheusService = {
   },
 };
 
+// ─── Forecast ─────────────────────────────────────────────────────────────────
+
+export const forecastService = {
+  overview: async (): Promise<ForecastOverviewItem[]> => {
+    const { data } = await api.get<ForecastOverviewItem[]>(
+      "/forecasts/overview",
+    );
+    return data;
+  },
+  activeScan: async (): Promise<{
+    is_running: boolean;
+    scan_id?: string;
+    total?: number;
+    completed?: number;
+  }> => {
+    const { data } = await api.get("/forecasts/scan/active");
+    return data;
+  },
+  startScan: async (body: {
+    algorithm: string;
+    period_days: number;
+    vm_ids?: string[];
+  }): Promise<{ scan_id: string; total: number; vm_count: number }> => {
+    const { data } = await api.post("/forecasts/scan", body);
+    return data;
+  },
+};

@@ -7,7 +7,15 @@ import {
   SettingsIcon,
   LogoutIcon,
 } from "@animateicons/react/lucide";
-import { ChevronLeft, ChevronRight, Server, BarChart2, Database, Lock } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Server,
+  BarChart2,
+  Database,
+  Lock,
+  Download,
+} from "lucide-react";
 import { useAuthStore, useUIStore } from "@/stores";
 import { useAlerts } from "@/hooks/useQueries";
 
@@ -16,11 +24,11 @@ const NAV_ITEMS = [
   { href: "/dashboard/vms", icon: Server, label: "Virtual Machines" },
   { href: "/dashboard/alerts", icon: BellIcon, label: "Alerts" },
   { href: "/dashboard/forecasting", icon: BarChart2, label: "Forecasting" },
+  { href: "/dashboard/reports", icon: Download, label: "Laporan & Ekspor" },
   { href: "/dashboard/sources", icon: Database, label: "Prometheus Sources" },
   { href: "/dashboard/users", icon: SettingsIcon, label: "Users & Roles" },
   { href: "/dashboard/profile", icon: Lock, label: "Profile & Security" },
 ];
-
 
 export function Sidebar() {
   const router = useRouter();
@@ -28,7 +36,8 @@ export function Sidebar() {
   const { user, logout } = useAuthStore();
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const { data: alerts } = useAlerts(undefined, "active");
-  const alertCount = alerts?.filter((a) => a.severity === "critical").length ?? 0;
+  const alertCount =
+    alerts?.filter((a) => a.severity === "critical").length ?? 0;
 
   const handleLogout = () => {
     logout();
@@ -55,8 +64,12 @@ export function Sidebar() {
         </div>
         {sidebarOpen && (
           <div className="overflow-hidden">
-            <span className="font-bold gradient-text text-sm whitespace-nowrap">ForeVim</span>
-            <p className="text-[10px] text-muted-foreground whitespace-nowrap">Observability Platform</p>
+            <span className="font-bold gradient-text text-sm whitespace-nowrap">
+              ForeVim
+            </span>
+            <p className="text-[10px] text-muted-foreground whitespace-nowrap">
+              Observability Platform
+            </p>
           </div>
         )}
       </div>
@@ -65,7 +78,9 @@ export function Sidebar() {
       <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
         {filteredNavItems.map(({ href, icon: Icon, label }) => {
           const isActive =
-            href === "/dashboard" ? pathname === href : pathname.startsWith(href);
+            href === "/dashboard"
+              ? pathname === href
+              : pathname.startsWith(href);
           return (
             <button
               key={href}
@@ -83,9 +98,7 @@ export function Sidebar() {
                   </span>
                 )}
               </div>
-              {sidebarOpen && (
-                <span className="truncate">{label}</span>
-              )}
+              {sidebarOpen && <span className="truncate">{label}</span>}
             </button>
           );
         })}
@@ -95,8 +108,12 @@ export function Sidebar() {
       <div className="px-2 py-3 border-t border-border space-y-1">
         {sidebarOpen && user && (
           <div className="px-3 py-2.5 rounded-lg bg-secondary/50 mb-2 border border-border/40">
-            <p className="text-xs font-semibold truncate text-foreground">{user.full_name || user.username}</p>
-            <p className="text-[9px] text-muted-foreground truncate capitalize font-medium">{user.role}</p>
+            <p className="text-xs font-semibold truncate text-foreground">
+              {user.full_name || user.username}
+            </p>
+            <p className="text-[9px] text-muted-foreground truncate capitalize font-medium">
+              {user.role}
+            </p>
           </div>
         )}
         <button

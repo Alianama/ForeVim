@@ -29,6 +29,13 @@ METRIC_QUERY_MAP: Dict[ForecastMetric, Tuple[str, bool]] = {
     ForecastMetric.DISK: ("disk_usage_percent", False),
 }
 
+# Minimum required raw data points per metric before forecasting
+METRIC_MIN_POINTS: Dict[ForecastMetric, int] = {
+    ForecastMetric.CPU: 8,
+    ForecastMetric.RAM: 8,
+    ForecastMetric.DISK: 4,  # Allow forecasting with fewer disk points
+}
+
 MIN_RAW_POINTS = 8
 MIN_FORECAST_POINTS = 12
 
@@ -70,6 +77,8 @@ class ForecastService:
                 "VM belum terhubung ke Prometheus source. Sync ulang dari halaman Virtual Machines.",
             )
 
+        # Determine minimum points required for this metric
+        min_points = METRIC_MIN_POINTS.get(metric, MIN_RAW_POINTS)
         history_raw, resolved_instance = await fetch_metric_history(
             ip_address=vm.ip_address,
             prometheus_instance=vm.prometheus_instance,
@@ -78,7 +87,7 @@ class ForecastService:
             hours=lookback_hours,
             step=step,
             aggregate=aggregate,
-            min_points=MIN_RAW_POINTS,
+            min_points=min_points,
         )
 
         display_hist = downsample_for_display(history_raw, max_points=400)
@@ -87,7 +96,7 @@ class ForecastService:
             for ts, val in display_hist
         ]
 
-        if len(history_raw) < MIN_RAW_POINTS:
+        if len(history_raw) < min_points:
             logger.warning(
                 "insufficient_historical_data",
                 vm_id=str(vm.id),

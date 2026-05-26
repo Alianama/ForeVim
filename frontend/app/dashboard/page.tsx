@@ -1,28 +1,68 @@
 "use client";
 
-import { useDashboardSummary, useVMs, useAlerts, queryKeys } from "@/hooks/useQueries";
+import {
+  useDashboardSummary,
+  useVMs,
+  useAlerts,
+  queryKeys,
+} from "@/hooks/useQueries";
 import { useQueryClient } from "@tanstack/react-query";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
+import { TopMetricsPanel } from "@/components/dashboard/TopMetricsPanel";
 import { VMTable, type SortState } from "@/components/vm/VMTable";
 import { AlertList } from "@/components/alerts/AlertList";
 import { useRealtimeStore } from "@/stores";
-import { Activity, Bell, Server, Eye, EyeOff, RotateCw, Clock } from "lucide-react";
+import {
+  Activity,
+  Bell,
+  Server,
+  Eye,
+  EyeOff,
+  RotateCw,
+  Clock,
+} from "lucide-react";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import type { VM, VMStatus } from "@/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-function getVmStatus(vm: VM, realtime: Record<string, { status?: VMStatus }>): VMStatus {
+function getVmStatus(
+  vm: VM,
+  realtime: Record<string, { status?: VMStatus }>,
+): VMStatus {
   return realtime[vm.id]?.status ?? vm.status;
 }
 
-function DashboardVMTable({ vms, isLoading }: { vms: VM[]; isLoading: boolean }) {
-  const [sort, setSort] = useState<SortState>({ field: "hostname", dir: "asc" });
-  return <VMTable vms={vms} isLoading={isLoading} sort={sort} onSortChange={setSort} />;
+function DashboardVMTable({
+  vms,
+  isLoading,
+}: {
+  vms: VM[];
+  isLoading: boolean;
+}) {
+  const [sort, setSort] = useState<SortState>({
+    field: "hostname",
+    dir: "asc",
+  });
+  return (
+    <VMTable
+      vms={vms}
+      isLoading={isLoading}
+      sort={sort}
+      onSortChange={setSort}
+    />
+  );
 }
 
 export default function DashboardPage() {
   const queryClient = useQueryClient();
-  
+
   // Refresh interval state in ms (default to 10 seconds, stored in localStorage)
   const [refreshInterval, setRefreshInterval] = useState<number>(10000);
   const [lastUpdated, setLastUpdated] = useState<string>("");
@@ -34,12 +74,14 @@ export default function DashboardPage() {
     if (saved !== null) {
       setRefreshInterval(Number(saved));
     }
-    
+
     // Always force an immediate reload of the data source when the application is opened (mounted)
     queryClient.invalidateQueries({ queryKey: queryKeys.summary });
     queryClient.invalidateQueries({ queryKey: queryKeys.vms });
-    queryClient.invalidateQueries({ queryKey: queryKeys.alerts(undefined, "active") });
-    
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.alerts(undefined, "active"),
+    });
+
     setLastUpdated(new Date().toLocaleTimeString());
   }, [queryClient]);
 
@@ -47,15 +89,31 @@ export default function DashboardPage() {
   const handleIntervalChange = (val: number) => {
     setRefreshInterval(val);
     localStorage.setItem("forevim-dashboard-refresh-interval", String(val));
-    toast.success(`Auto-refresh interval set to ${val === 0 ? "Manual / Off" : val >= 60000 ? `${val / 60000}m` : `${val / 1000}s`}`);
+    toast.success(
+      `Auto-refresh interval set to ${val === 0 ? "Manual / Off" : val >= 60000 ? `${val / 60000}m` : `${val / 1000}s`}`,
+    );
   };
 
   // Queries with dynamic refetch interval
-  const queryOptions = { refetchInterval: refreshInterval === 0 ? (false as const) : refreshInterval };
-  const { data: summary, isLoading: summaryLoading, isFetching: summaryFetching } = useDashboardSummary(queryOptions);
-  const { data: vmsData, isLoading: vmsLoading, isFetching: vmsFetching } = useVMs(queryOptions);
-  const { data: alerts, isLoading: alertsLoading, isFetching: alertsFetching } = useAlerts(undefined, "active", queryOptions);
-  
+  const queryOptions = {
+    refetchInterval: refreshInterval === 0 ? (false as const) : refreshInterval,
+  };
+  const {
+    data: summary,
+    isLoading: summaryLoading,
+    isFetching: summaryFetching,
+  } = useDashboardSummary(queryOptions);
+  const {
+    data: vmsData,
+    isLoading: vmsLoading,
+    isFetching: vmsFetching,
+  } = useVMs(queryOptions);
+  const {
+    data: alerts,
+    isLoading: alertsLoading,
+    isFetching: alertsFetching,
+  } = useAlerts(undefined, "active", queryOptions);
+
   const wsConnected = useRealtimeStore((s) => s.wsConnected);
   const realtimeMetrics = useRealtimeStore((s) => s.metrics);
 
@@ -76,7 +134,9 @@ export default function DashboardPage() {
       await Promise.all([
         queryClient.refetchQueries({ queryKey: queryKeys.summary }),
         queryClient.refetchQueries({ queryKey: queryKeys.vms }),
-        queryClient.refetchQueries({ queryKey: queryKeys.alerts(undefined, "active") })
+        queryClient.refetchQueries({
+          queryKey: queryKeys.alerts(undefined, "active"),
+        }),
       ]);
       setLastUpdated(new Date().toLocaleTimeString());
       toast.success("Datasource reloaded successfully");
@@ -90,8 +150,9 @@ export default function DashboardPage() {
   const allVms = vmsData?.vms ?? [];
 
   const downCount = useMemo(
-    () => allVms.filter((vm) => getVmStatus(vm, realtimeMetrics) === "down").length,
-    [allVms, realtimeMetrics]
+    () =>
+      allVms.filter((vm) => getVmStatus(vm, realtimeMetrics) === "down").length,
+    [allVms, realtimeMetrics],
   );
 
   const filteredVms = useMemo(() => {
@@ -116,7 +177,7 @@ export default function DashboardPage() {
             Infrastructure health at a glance
           </p>
         </div>
-        
+
         {/* Dynamic Controls / Refresh Panel */}
         <div className="flex flex-wrap items-center gap-3 bg-secondary/20 border border-border/40 p-2 rounded-xl backdrop-blur-sm self-start sm:self-auto">
           {/* Realtime Status Indicator */}
@@ -126,7 +187,9 @@ export default function DashboardPage() {
                 wsConnected ? "bg-emerald-500" : "bg-red-500 animate-pulse"
               }`}
             />
-            <span className="font-medium">{wsConnected ? "Realtime" : "Reconnecting..."}</span>
+            <span className="font-medium">
+              {wsConnected ? "Realtime" : "Reconnecting..."}
+            </span>
           </div>
 
           {/* Last Updated Timestamp */}
@@ -139,18 +202,24 @@ export default function DashboardPage() {
 
           {/* Auto Refresh Select Dropdown */}
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">Refresh:</span>
-            <select
-              value={refreshInterval}
-              onChange={(e) => handleIntervalChange(Number(e.target.value))}
-              className="bg-secondary hover:bg-secondary/80 border border-border/60 rounded-lg text-xs font-semibold px-2.5 py-1.5 text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer transition-colors"
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+              Refresh:
+            </span>
+            <Select
+              value={String(refreshInterval)}
+              onValueChange={(v) => handleIntervalChange(Number(v))}
             >
-              <option value={5000}>5 Detik</option>
-              <option value={10000}>10 Detik</option>
-              <option value={60000}>1 Menit</option>
-              <option value={1800000}>30 Menit</option>
-              <option value={0}>Manual / Nonaktif</option>
-            </select>
+              <SelectTrigger size="sm" className="min-w-[110px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5000">5 Detik</SelectItem>
+                <SelectItem value="10000">10 Detik</SelectItem>
+                <SelectItem value="60000">1 Menit</SelectItem>
+                <SelectItem value="1800000">30 Menit</SelectItem>
+                <SelectItem value="0">Manual / Nonaktif</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Manual Refresh Button */}
@@ -162,7 +231,9 @@ export default function DashboardPage() {
           >
             <RotateCw
               className={`w-3.5 h-3.5 ${
-                isAnyFetching || manualSpinning ? "animate-spin text-primary" : ""
+                isAnyFetching || manualSpinning
+                  ? "animate-spin text-primary"
+                  : ""
               }`}
             />
           </button>
@@ -172,14 +243,26 @@ export default function DashboardPage() {
       {/* Summary Cards */}
       <SummaryCards data={summary} isLoading={summaryLoading} />
 
+      {/* Top Resource Usage */}
+      <TopMetricsPanel
+        vms={allVms.map((v) => ({
+          id: v.id,
+          hostname: v.hostname,
+          ip_address: v.ip_address,
+        }))}
+        metrics={realtimeMetrics}
+      />
+
       {/* VM Table + Alerts Side by Side */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* VM Table */}
         <div className="xl:col-span-2 glass-card overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50">
             <Server className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">Virtual Machines</h2>
-            
+            <h2 className="text-sm font-semibold text-foreground">
+              Virtual Machines
+            </h2>
+
             {/* Show/Hide Down Toggle Button */}
             <button
               type="button"
@@ -215,7 +298,9 @@ export default function DashboardPage() {
         <div className="glass-card overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50">
             <Bell className="w-4 h-4 text-amber-400" />
-            <h2 className="text-sm font-semibold text-foreground">Active Alerts</h2>
+            <h2 className="text-sm font-semibold text-foreground">
+              Active Alerts
+            </h2>
             {(alerts?.length ?? 0) > 0 && (
               <span className="ml-auto bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded-full font-medium">
                 {alerts?.length}
@@ -228,4 +313,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

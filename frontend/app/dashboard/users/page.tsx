@@ -4,6 +4,13 @@ import { useUsers } from "@/hooks/useQueries";
 import { UsersIcon, PlusIcon, UserIcon, SettingsIcon } from "@animateicons/react/lucide";
 import { ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -251,15 +258,16 @@ export default function UsersPage() {
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
                   Role <span className="text-rose-500">*</span>
                 </label>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring transition-all cursor-pointer"
-                >
-                  <option value="viewer">Viewer (Read-only)</option>
-                  <option value="admin">Administrator (Read & Write)</option>
-                  <option value="superadmin">Super Administrator (Full Access)</option>
-                </select>
+                <Select value={role} onValueChange={setRole}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="viewer">Viewer (Read-only)</SelectItem>
+                    <SelectItem value="admin">Administrator (Read &amp; Write)</SelectItem>
+                    <SelectItem value="superadmin">Super Administrator (Full Access)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Modal Actions */}

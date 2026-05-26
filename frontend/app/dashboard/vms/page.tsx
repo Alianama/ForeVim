@@ -17,8 +17,17 @@ import {
   SearchableSelect,
   type SelectOption,
 } from "@/components/ui/SearchableSelect";
-import { Server, RefreshCw, Search, Eye, EyeOff, X } from "lucide-react";
+import {
+  Server,
+  RefreshCw,
+  Search,
+  Eye,
+  EyeOff,
+  X,
+  Download,
+} from "lucide-react";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { ReportBuilder } from "@/components/reports/ReportBuilder";
 import { toast } from "sonner";
 import { prometheusService, vmService } from "@/services";
 import { useRealtimeStore } from "@/stores";
@@ -42,6 +51,7 @@ function getVmStatus(
 }
 
 export default function VMsPage() {
+  const [isReportOpen, setIsReportOpen] = useState(false);
   const { data: vmsData, isLoading } = useVMs();
   const { data: sources } = usePrometheusSources();
   const syncMutation = useSyncVMs();
@@ -274,6 +284,13 @@ export default function VMsPage() {
             )}
           </p>
         </div>
+        <button
+          onClick={() => setIsReportOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-secondary hover:bg-secondary/80 border border-border transition-all"
+        >
+          <Download className="w-4 h-4" />
+          Export Report
+        </button>
       </div>
 
       {/* ── Filter Bar ──────────────────────────────────────────────────────── */}
@@ -455,6 +472,12 @@ export default function VMsPage() {
           />
         )}
       </div>
+
+      <ReportBuilder
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        defaultTitle="VM Monitoring Report"
+      />
     </div>
   );
 }

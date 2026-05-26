@@ -31,16 +31,28 @@ async def task_refresh_metrics() -> None:
     async with AsyncSessionLocal() as db:
         try:
             vms = await vm_service.get_all(db)
-            for vm in vms:
-                try:
-                    await vm_service.collect_metrics(db, vm)
-                except Exception as exc:
-                    logger.warning("metric_collect_failed", vm=vm.hostname, error=str(exc))
-            await db.commit()
-            logger.info("scheduler_task_done", task="refresh_metrics", count=len(vms))
         except Exception as exc:
-            await db.rollback()
             logger.error("scheduler_task_error", task="refresh_metrics", error=str(exc))
+            return
+
+    async def process_vm(vm_id):
+        async with AsyncSessionLocal() as session:
+            try:
+                vm = await vm_service.get_by_id(session, vm_id)
+                if vm:
+                    await vm_service.collect_metrics(session, vm)
+                    await session.commit()
+            except Exception as exc:
+                logger.warning("metric_collect_failed", vm_id=str(vm_id), error=str(exc))
+
+    # Process in batches to avoid overwhelming Prometheus/DB
+    batch_size = 15
+    for i in range(0, len(vms), batch_size):
+        batch = vms[i:i + batch_size]
+        await asyncio.gather(*(process_vm(vm.id) for vm in batch))
+
+    logger.info("scheduler_task_done", task="refresh_metrics", count=len(vms))
+
 
 
 # ─── Task: Generate Forecasts ─────────────────────────────────────────────────

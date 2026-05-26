@@ -38,7 +38,6 @@ export interface User {
   created_at: string;
 }
 
-
 // ─── VM ───────────────────────────────────────────────────────────────────────
 
 export type VMStatus = "healthy" | "warning" | "critical" | "unknown" | "down";
@@ -228,6 +227,8 @@ export interface WSMetricsData {
   cpu_usage: number | null;
   ram_usage: number | null;
   disk_usage: number | null;
+  disk_used_gb?: number | null;
+  disk_total_gb?: number | null;
   status: VMStatus;
   collected_at: string;
 }
@@ -238,4 +239,95 @@ export interface WSAlertData {
   severity: AlertSeverity;
   metric: string;
   message: string;
+}
+
+// ─── Forecast Overview ─────────────────────────────────────────────────────
+
+export interface ForecastStatusItem {
+  algorithm: ForecastAlgorithm;
+  generated_at: string;
+  expires_at: string | null;
+  accuracy_score: number | null;
+  period_days: number;
+  has_forecast: boolean;
+  is_expired: boolean;
+}
+
+export interface ForecastOverviewItem {
+  vm_id: string;
+  hostname: string;
+  ip_address: string;
+  location: string | null;
+  cluster: string | null;
+  has_prometheus: boolean;
+  forecasts: {
+    cpu: ForecastStatusItem | null;
+    ram: ForecastStatusItem | null;
+    disk: ForecastStatusItem | null;
+  };
+}
+
+// ─── Forecast Scan (WebSocket events) ─────────────────────────────────────
+
+export type ScanJobStatus = "running" | "done" | "error";
+
+export interface ForecastScanStartData {
+  scan_id: string;
+  total: number;
+  vm_count: number;
+  algorithm: string;
+  period_days: number;
+}
+
+export interface ForecastScanProgressData {
+  scan_id: string;
+  vm_id: string;
+  hostname: string;
+  metric: ForecastMetric;
+  algorithm: string;
+  status: ScanJobStatus;
+  error?: string;
+  completed: number;
+  total: number;
+}
+
+export interface ForecastScanCompleteData {
+  scan_id: string;
+  completed: number;
+  errors: number;
+  total: number;
+}
+
+export interface ScanJobEvent {
+  vm_id: string;
+  hostname: string;
+  metric: ForecastMetric;
+  algorithm: string;
+  status: ScanJobStatus;
+  error?: string;
+  ts: number; // Date.now()
+}
+
+export interface ForecastScanState {
+  isRunning: boolean;
+  scanId: string | null;
+  total: number;
+  completed: number;
+  errors: number;
+  vmCount: number;
+  algorithm: string;
+  periodDays: number;
+  events: ScanJobEvent[]; // most recent first, capped at 200
+}
+
+// ─── Disk Mounts ─────────────────────────────────────────────────────────────
+
+export interface DiskMount {
+  mountpoint: string;
+  device: string;
+  fstype: string;
+  total_gb: number;
+  used_gb: number;
+  avail_gb: number;
+  usage_percent: number;
 }

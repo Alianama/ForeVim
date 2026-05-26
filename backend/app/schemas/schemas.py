@@ -1,14 +1,15 @@
 """
 Pydantic schemas for request/response validation.
 """
+
 from __future__ import annotations
 
+import re
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
-import re
 
 from app.models.models import (
     AlertSeverity,
@@ -18,7 +19,6 @@ from app.models.models import (
     UserRole,
     VMStatus,
 )
-
 
 # ─── Base ─────────────────────────────────────────────────────────────────────
 
@@ -38,7 +38,7 @@ class LoginRequest(BaseModel):
     @classmethod
     def validate_email(cls, v: str) -> str:
         # Validasi format email dasar (regex) tanpa cek DNS
-        pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
         if not re.match(pattern, v.strip()):
             raise ValueError("Format email tidak valid")
         return v.strip().lower()
@@ -91,7 +91,7 @@ class UserCreate(BaseModel):
     @field_validator("email")
     @classmethod
     def validate_email(cls, v: str) -> str:
-        pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
         if not re.match(pattern, v.strip()):
             raise ValueError("Format email tidak valid")
         return v.strip().lower()
@@ -228,6 +228,16 @@ class VMHistoryResponse(BaseModel):
     metric: str
     step: str
     data: List[MetricDataPoint]
+
+
+class DiskMount(BaseModel):
+    mountpoint: str
+    device: str
+    fstype: str
+    total_gb: float
+    used_gb: float
+    avail_gb: float
+    usage_percent: float
 
 
 # ─── Forecast ─────────────────────────────────────────────────────────────────

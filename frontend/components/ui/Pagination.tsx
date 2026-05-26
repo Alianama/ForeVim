@@ -2,6 +2,14 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 
 interface PaginationProps {
   page: number;
@@ -39,18 +47,21 @@ export function Pagination({
 
       <div className="flex items-center gap-2 order-1 sm:order-2">
         {onPageSizeChange && (
-          <select
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="bg-background border border-border rounded-lg px-2 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-ring"
-            aria-label="Baris per halaman"
+          <Select
+            value={String(pageSize)}
+            onValueChange={(v) => onPageSizeChange(Number(v))}
           >
-            {pageSizeOptions.map((n) => (
-              <option key={n} value={n}>
-                {n} / halaman
-              </option>
-            ))}
-          </select>
+            <SelectTrigger size="sm" className="min-w-[110px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {pageSizeOptions.map((n) => (
+                <SelectItem key={n} value={String(n)}>
+                  {n} / halaman
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
 
         <Button

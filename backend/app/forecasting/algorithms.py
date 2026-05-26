@@ -24,6 +24,8 @@ logger = get_logger(__name__)
 
 warnings.filterwarnings("ignore", category=UserWarning, module="statsmodels")
 warnings.filterwarnings("ignore", category=FutureWarning, module="statsmodels")
+warnings.filterwarnings("ignore", message="Maximum Likelihood optimization failed to converge.*")
+
 
 # statsmodels 0.14.4 + numpy 2.2 dapat gagal saat import ExponentialSmoothing
 _ExponentialSmoothing = None
@@ -361,8 +363,8 @@ class ARIMAForecaster(ForecastAlgorithmBase):
             logger.error("statsmodels_sarimax_unavailable", error=str(exc))
             return [], (None, "mape")
 
-        data = self._prepare(historical, interval_minutes, min_points=60)
-        if len(data) < 60:
+        data = self._prepare(historical, interval_minutes, min_points=24)
+        if len(data) < 24:
             logger.warning("insufficient_data_for_arima", count=len(data))
             return [], (None, "mape")
 
@@ -380,7 +382,9 @@ class ARIMAForecaster(ForecastAlgorithmBase):
                 enforce_stationarity=False,
                 enforce_invertibility=False,
             )
-            result = model.fit(disp=False, maxiter=150)
+            # Cap periods to avoid very long ARIMA fitting for large forecasts
+            arima_periods = min(periods, 200)
+            result = model.fit(disp=False, maxiter=60)
 
             train, test = self._holdout_split(values)
             try:
@@ -391,19 +395,19 @@ class ARIMAForecaster(ForecastAlgorithmBase):
                     enforce_stationarity=False,
                     enforce_invertibility=False,
                 )
-                val_result = val_model.fit(disp=False, maxiter=80)
+                val_result = val_model.fit(disp=False, maxiter=30)
                 val_forecast = val_result.forecast(len(test))
                 accuracy = self._calc_mape(list(test), list(val_forecast))
             except Exception:
                 accuracy = None
 
-            forecast_result = result.get_forecast(steps=periods)
+            forecast_result = result.get_forecast(steps=arima_periods)
             forecast_vals = forecast_result.predicted_mean
             conf_int = forecast_result.conf_int(alpha=0.05)
             last_ts = data[-1][0]
             forecast_points: List[ForecastPoint] = []
 
-            for i in range(periods):
+            for i in range(arima_periods):
                 pred_val = float(
                     forecast_vals.iloc[i]
                     if hasattr(forecast_vals, "iloc")
@@ -437,11 +441,12 @@ class ARIMAForecaster(ForecastAlgorithmBase):
         best_aic = float("inf")
         best_order = (1, 1, 1)
         best_seasonal: Optional[Tuple[int, int, int, int]] = None
-        orders = [(1, 1, 1), (1, 1, 0), (0, 1, 1), (2, 1, 2)]
+        # Only try 2 compact orders to keep fitting fast
+        orders = [(1, 1, 1), (0, 1, 1)]
 
         for order in orders:
             try:
-                seasonal_order = (1, 1, 1, seasonal_period) if seasonal_period else None
+                seasonal_order = (1, 0, 1, seasonal_period) if seasonal_period else None
                 model = SARIMAX(
                     values,
                     order=order,
@@ -449,7 +454,7 @@ class ARIMAForecaster(ForecastAlgorithmBase):
                     enforce_stationarity=False,
                     enforce_invertibility=False,
                 )
-                fit = model.fit(disp=False, maxiter=40)
+                fit = model.fit(disp=False, maxiter=20)
                 if fit.aic < best_aic:
                     best_aic = fit.aic
                     best_order = order
@@ -462,11 +467,14 @@ class ARIMAForecaster(ForecastAlgorithmBase):
 
 class AutoForecaster(ForecastAlgorithmBase):
     """
-    Selects best model via holdout MAPE among Holt-Winters dan MA (ringan CPU).
+    Selects best model via holdout MAPE among candidates.
+    Uses fresh instances per call to avoid state sharing between concurrent requests.
     """
 
     name = ForecastAlgorithm.AUTO
-    last_selected: ForecastAlgorithm = ForecastAlgorithm.HOLT_WINTERS
+
+    def __init__(self) -> None:
+        self.last_selected: ForecastAlgorithm = ForecastAlgorithm.HOLT_WINTERS
 
     def fit_predict(
         self,
@@ -474,32 +482,55 @@ class AutoForecaster(ForecastAlgorithmBase):
         periods: int,
         interval_minutes: int = 5,
     ) -> Tuple[List[ForecastPoint], AccuracyResult]:
-        # Holt-Winters + MA saja — ARIMA di-skip di Auto karena sangat berat CPU
+        n_points = len(historical)
+
+        # Build candidate list — only include ARIMA when enough data to fit quickly
         candidates: List[ForecastAlgorithmBase] = [
             HoltWintersForecaster(),
             MovingAverageForecaster(window=max(6, int(60 / interval_minutes))),
+            LinearRegressionForecaster(),
         ]
+        # Add ARIMA only when we have sufficient data (≥48 points after preprocessing)
+        if n_points >= 48:
+            candidates.append(ARIMAForecaster())
 
         best_points: List[ForecastPoint] = []
         best_score: Optional[float] = None
         best_algo = ForecastAlgorithm.MOVING_AVERAGE
 
         for forecaster in candidates:
-            points, (score, metric) = forecaster.fit_predict(
-                historical, periods, interval_minutes
-            )
+            try:
+                points, (score, _metric) = forecaster.fit_predict(
+                    historical, periods, interval_minutes
+                )
+            except Exception as exc:
+                logger.warning(
+                    "auto_candidate_failed",
+                    algorithm=forecaster.name.value,
+                    error=str(exc),
+                )
+                continue
+
             if not points:
                 continue
+
             if score is None:
+                # Accept result only if we have nothing better yet
                 if not best_points:
-                    best_points, best_score, best_algo = points, score, forecaster.name
+                    best_points = points
+                    best_score = score
+                    best_algo = forecaster.name
                 continue
+
             if best_score is None or score < best_score:
-                best_points, best_score, best_algo = points, score, forecaster.name
+                best_points = points
+                best_score = score
+                best_algo = forecaster.name
 
         if not best_points:
-            lr = LinearRegressionForecaster()
-            self.last_selected = ForecastAlgorithm.LINEAR_REGRESSION
+            # Last-resort fallback: plain moving average
+            lr = MovingAverageForecaster(window=max(6, int(60 / interval_minutes)))
+            self.last_selected = ForecastAlgorithm.MOVING_AVERAGE
             return lr.fit_predict(historical, periods, interval_minutes)
 
         self.last_selected = best_algo
@@ -535,4 +566,7 @@ _REGISTRY: dict[ForecastAlgorithm, ForecastAlgorithmBase] = {
 def get_forecaster(algorithm: ForecastAlgorithm) -> ForecastAlgorithmBase:
     if algorithm not in _REGISTRY:
         raise ValueError(f"Unknown algorithm: {algorithm}")
+    # AutoForecaster stores last_selected state — always return a fresh instance
+    if algorithm == ForecastAlgorithm.AUTO:
+        return AutoForecaster()
     return _REGISTRY[algorithm]

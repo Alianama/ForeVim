@@ -3,13 +3,19 @@
  */
 "use client";
 import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { getGlobalWS } from "@/websocket/client";
-import { useRealtimeStore } from "@/stores";
-import type { WSAlertData, WSMetricsData } from "@/types";
+import { useRealtimeStore, useForecastScanStore } from "@/stores";
+import type {
+  WSAlertData,
+  WSMetricsData,
+  ForecastScanStartData,
+  ForecastScanProgressData,
+  ForecastScanCompleteData,
+} from "@/types";
 
 export function useWebSocket() {
-  // Tidak perlu subscribe ke store, gunakan getState() di dalam useEffect
-  // agar komponen yang menggunakan hook ini tidak re-render tiap ada metrics baru.
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const ws = getGlobalWS();
@@ -20,6 +26,8 @@ export function useWebSocket() {
         cpu_usage: data.cpu_usage,
         ram_usage: data.ram_usage,
         disk_usage: data.disk_usage,
+        disk_used_gb: data.disk_used_gb,
+        disk_total_gb: data.disk_total_gb,
         status: data.status,
         collected_at: data.collected_at,
       } as any);
@@ -33,6 +41,29 @@ export function useWebSocket() {
       useRealtimeStore.getState().setWsConnected(true);
     });
 
+    const offScanStart = ws.on<ForecastScanStartData>(
+      "forecast_scan_start",
+      (data) => {
+        useForecastScanStore.getState().onScanStart(data);
+      },
+    );
+
+    const offScanProgress = ws.on<ForecastScanProgressData>(
+      "forecast_scan_progress",
+      (data) => {
+        useForecastScanStore.getState().onScanProgress(data);
+      },
+    );
+
+    const offScanComplete = ws.on<ForecastScanCompleteData>(
+      "forecast_scan_complete",
+      (data) => {
+        useForecastScanStore.getState().onScanComplete(data);
+        // Refresh forecast overview table automatically
+        queryClient.invalidateQueries({ queryKey: ["forecasts", "overview"] });
+      },
+    );
+
     // Periodic connection state check
     const interval = setInterval(() => {
       useRealtimeStore.getState().setWsConnected(ws.isConnected);
@@ -42,12 +73,10 @@ export function useWebSocket() {
       offMetrics();
       offAlert();
       offPong();
+      offScanStart();
+      offScanProgress();
+      offScanComplete();
       clearInterval(interval);
     };
-  }, []);
-
-  // Tidak perlu me-return state store di sini.
-  // Jika komponen butuh data dari store, mereka bisa panggil useRealtimeStore secara langsung.
-  // Me-return object baru (s => ({...})) tanpa shallow equality check akan memicu
-  // infinite re-render loop (React error #185) jika dipanggil di level layout.
+  }, [queryClient]);
 }

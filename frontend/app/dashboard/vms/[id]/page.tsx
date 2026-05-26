@@ -7,6 +7,7 @@ import {
   useVMHistory,
   useVMForecast,
   useVMMetrics,
+  useVMDiskMounts,
   useAlerts,
   usePrometheusRetention,
 } from "@/hooks/useQueries";
@@ -49,6 +50,7 @@ export default function VMDetailPage() {
 
   const { data: vm, isLoading: vmLoading } = useVM(id);
   const { data: metrics } = useVMMetrics(id);
+  const { data: diskMounts = [] } = useVMDiskMounts(id);
 
   // History charts — hanya fetch saat tab "metrics" aktif
   const historyEnabled = activeTab === "metrics";
@@ -172,7 +174,7 @@ export default function VMDetailPage() {
           {/* Time range selector */}
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Time Range:</span>
-            {[6, 24, 48, 168].map((h) => (
+            {[6, 24, 48, 168, 720, 1440].map((h) => (
               <button
                 key={h}
                 onClick={() => setHistoryHours(h)}
@@ -205,7 +207,7 @@ export default function VMDetailPage() {
               threshold={90}
             />
             <MetricLineChart
-              title="Disk Usage"
+              title="Disk Usage (aggregate)"
               data={diskHistory?.data ?? []}
               color="#f59e0b"
               unit="%"
@@ -220,6 +222,97 @@ export default function VMDetailPage() {
               icon={<Network className="w-4 h-4" />}
             />
           </div>
+
+          {/* Disk Mounts Breakdown */}
+          {diskMounts.length > 0 && (
+            <div className="glass-card overflow-hidden">
+              <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border/50">
+                <HardDrive className="w-4 h-4 text-amber-400" />
+                <h3 className="text-sm font-semibold">Disk Mounts</h3>
+                <span className="text-xs text-muted-foreground">
+                  {diskMounts.length} filesystem terdeteksi
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Mountpoint</th>
+                      <th>Device</th>
+                      <th>Type</th>
+                      <th className="text-right">Total</th>
+                      <th className="text-right">Used</th>
+                      <th className="text-right">Avail</th>
+                      <th className="min-w-[140px]">Usage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {diskMounts.map((mount) => {
+                      const level =
+                        mount.usage_percent >= 85
+                          ? "high"
+                          : mount.usage_percent >= 70
+                            ? "medium"
+                            : "low";
+                      const valueColor =
+                        level === "high"
+                          ? "text-rose-500 dark:text-rose-400 font-semibold"
+                          : level === "medium"
+                            ? "text-amber-500 dark:text-amber-400 font-semibold"
+                            : "text-muted-foreground";
+                      return (
+                        <tr key={mount.mountpoint}>
+                          <td>
+                            <span className="font-mono text-sm font-medium">
+                              {mount.mountpoint}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="font-mono text-xs text-muted-foreground">
+                              {mount.device || "—"}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="text-xs bg-secondary px-2 py-0.5 rounded-md">
+                              {mount.fstype || "—"}
+                            </span>
+                          </td>
+                          <td className="text-right tabular-nums text-xs text-muted-foreground">
+                            {mount.total_gb.toFixed(1)} GB
+                          </td>
+                          <td
+                            className={`text-right tabular-nums text-xs ${valueColor}`}
+                          >
+                            {mount.used_gb.toFixed(1)} GB
+                          </td>
+                          <td className="text-right tabular-nums text-xs text-muted-foreground">
+                            {mount.avail_gb.toFixed(1)} GB
+                          </td>
+                          <td>
+                            <div className="flex items-center gap-2">
+                              <div className="progress-bar flex-1 h-1.5">
+                                <div
+                                  className={`progress-fill ${level} h-full`}
+                                  style={{
+                                    width: `${Math.min(mount.usage_percent, 100)}%`,
+                                  }}
+                                />
+                              </div>
+                              <span
+                                className={`text-xs tabular-nums w-10 text-right ${valueColor}`}
+                              >
+                                {mount.usage_percent.toFixed(0)}%
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -1,6 +1,7 @@
 """
 VM endpoints: CRUD + metrics + history + forecast.
 """
+
 import json
 import uuid
 from typing import List, Optional
@@ -12,9 +13,12 @@ from app.core.logging import get_logger
 from app.forecasting.service import forecast_service
 
 logger = get_logger(__name__)
+from app.forecasting.storage import list_forecast_history
 from app.models.models import ForecastAlgorithm, ForecastMetric
+from app.prometheus.client import prometheus_service
 from app.schemas.schemas import (
     DashboardSummary,
+    DiskMount,
     ForecastHistoryItem,
     ForecastResponse,
     VMCreate,
@@ -24,7 +28,6 @@ from app.schemas.schemas import (
     VMResponse,
     VMUpdate,
 )
-from app.forecasting.storage import list_forecast_history
 from app.services.vm_service import vm_service
 
 router = APIRouter(prefix="/vms", tags=["Virtual Machines"])
@@ -42,14 +45,21 @@ async def list_vms(
     return VMListResponse(total=total, vms=[VMResponse.model_validate(v) for v in vms])
 
 
-@router.post("", response_model=VMResponse, status_code=status.HTTP_201_CREATED,
-             summary="Register a new VM", dependencies=[AdminOnly])
+@router.post(
+    "",
+    response_model=VMResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register a new VM",
+    dependencies=[AdminOnly],
+)
 async def create_vm(body: VMCreate, db: DBSession, current_user: CurrentUser):
     vm = await vm_service.create(db, body)
     return VMResponse.model_validate(vm)
 
 
-@router.get("/summary", response_model=DashboardSummary, summary="Dashboard summary stats")
+@router.get(
+    "/summary", response_model=DashboardSummary, summary="Dashboard summary stats"
+)
 async def get_dashboard_summary(db: DBSession, current_user: CurrentUser):
     return await vm_service.get_dashboard_summary(db)
 
@@ -62,9 +72,15 @@ async def get_vm(vm_id: uuid.UUID, db: DBSession, current_user: CurrentUser):
     return VMResponse.model_validate(vm)
 
 
-@router.patch("/{vm_id}", response_model=VMResponse, summary="Update VM metadata",
-              dependencies=[AdminOnly])
-async def update_vm(vm_id: uuid.UUID, body: VMUpdate, db: DBSession, current_user: CurrentUser):
+@router.patch(
+    "/{vm_id}",
+    response_model=VMResponse,
+    summary="Update VM metadata",
+    dependencies=[AdminOnly],
+)
+async def update_vm(
+    vm_id: uuid.UUID, body: VMUpdate, db: DBSession, current_user: CurrentUser
+):
     vm = await vm_service.get_by_id(db, vm_id)
     if not vm:
         raise HTTPException(status_code=404, detail="VM not found")
@@ -72,8 +88,12 @@ async def update_vm(vm_id: uuid.UUID, body: VMUpdate, db: DBSession, current_use
     return VMResponse.model_validate(updated)
 
 
-@router.delete("/{vm_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Deregister VM",
-               dependencies=[AdminOnly])
+@router.delete(
+    "/{vm_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Deregister VM",
+    dependencies=[AdminOnly],
+)
 async def delete_vm(vm_id: uuid.UUID, db: DBSession, current_user: CurrentUser):
     vm = await vm_service.get_by_id(db, vm_id)
     if not vm:
@@ -81,7 +101,9 @@ async def delete_vm(vm_id: uuid.UUID, db: DBSession, current_user: CurrentUser):
     await vm_service.delete(db, vm)
 
 
-@router.get("/{vm_id}/metrics", response_model=VMMetrics, summary="Get current VM metrics")
+@router.get(
+    "/{vm_id}/metrics", response_model=VMMetrics, summary="Get current VM metrics"
+)
 async def get_vm_metrics(vm_id: uuid.UUID, db: DBSession, current_user: CurrentUser):
     vm = await vm_service.get_by_id(db, vm_id)
     if not vm:
@@ -89,13 +111,37 @@ async def get_vm_metrics(vm_id: uuid.UUID, db: DBSession, current_user: CurrentU
     return await vm_service.collect_metrics(db, vm)
 
 
-@router.get("/{vm_id}/history", response_model=VMHistoryResponse, summary="Get metric history")
+@router.get(
+    "/{vm_id}/disk-mounts",
+    response_model=List[DiskMount],
+    summary="Get per-mountpoint disk usage",
+)
+async def get_vm_disk_mounts(
+    vm_id: uuid.UUID, db: DBSession, current_user: CurrentUser
+):
+    """Returns disk usage breakdown per filesystem mount point, excluding virtual filesystems."""
+    vm = await vm_service.get_by_id(db, vm_id)
+    if not vm:
+        raise HTTPException(status_code=404, detail="VM not found")
+    if not vm.prometheus_source:
+        return []
+    instance = vm.prometheus_instance or f"{vm.ip_address}:9100"
+    return await prometheus_service.get_disk_mounts(
+        instance, url=vm.prometheus_source.url
+    )
+
+
+@router.get(
+    "/{vm_id}/history", response_model=VMHistoryResponse, summary="Get metric history"
+)
 async def get_vm_history(
     vm_id: uuid.UUID,
     db: DBSession,
     current_user: CurrentUser,
-    metric: str = Query(default="cpu", regex="^(cpu|ram|disk|network_rx|network_tx|load)$"),
-    hours: int = Query(default=24, ge=1, le=720),
+    metric: str = Query(
+        default="cpu", regex="^(cpu|ram|disk|network_rx|network_tx|load)$"
+    ),
+    hours: int = Query(default=24, ge=1, le=1440),
     step: str = Query(default="5m"),
 ):
     vm = await vm_service.get_by_id(db, vm_id)
@@ -104,7 +150,11 @@ async def get_vm_history(
     return await vm_service.get_history(vm, metric, hours, step)
 
 
-@router.get("/{vm_id}/forecast", response_model=ForecastResponse, summary="Get forecast (cache atau generate)")
+@router.get(
+    "/{vm_id}/forecast",
+    response_model=ForecastResponse,
+    summary="Get forecast (cache atau generate)",
+)
 async def get_vm_forecast(
     vm_id: uuid.UUID,
     db: DBSession,
@@ -112,7 +162,9 @@ async def get_vm_forecast(
     metric: ForecastMetric = Query(default=ForecastMetric.CPU),
     algorithm: ForecastAlgorithm = Query(default=ForecastAlgorithm.AUTO),
     period_days: int = Query(default=7, ge=1, le=90),
-    force_refresh: bool = Query(default=False, description="Paksa generate ulang dari Prometheus"),
+    force_refresh: bool = Query(
+        default=False, description="Paksa generate ulang dari Prometheus"
+    ),
 ):
     vm = await vm_service.get_by_id(db, vm_id)
     if not vm:
@@ -140,7 +192,9 @@ async def generate_vm_forecast(
     if not vm:
         raise HTTPException(status_code=404, detail="VM not found")
     try:
-        return await forecast_service.generate_and_save(vm, metric, algorithm, period_days)
+        return await forecast_service.generate_and_save(
+            vm, metric, algorithm, period_days
+        )
     except Exception as exc:
         logger.exception("forecast_generate_failed", vm_id=str(vm_id))
         raise HTTPException(

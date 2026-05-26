@@ -8,7 +8,16 @@
  */
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { User, VMMetrics, WSAlertData } from "@/types";
+import type {
+  User,
+  VMMetrics,
+  WSAlertData,
+  ForecastScanState,
+  ForecastScanStartData,
+  ForecastScanProgressData,
+  ForecastScanCompleteData,
+  ScanJobEvent,
+} from "@/types";
 
 // ─── Auth Store ───────────────────────────────────────────────────────────────
 
@@ -80,8 +89,8 @@ export const useAuthStore = create<AuthState>()(
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },
-    }
-  )
+    },
+  ),
 );
 
 // ─── Realtime Metrics Store ───────────────────────────────────────────────────
@@ -128,4 +137,81 @@ export const useUIStore = create<UIState>((set) => ({
   sidebarOpen: true,
   setSidebarOpen: (v) => set({ sidebarOpen: v }),
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+}));
+
+// ─── Forecast Scan Store ──────────────────────────────────────────────────────
+
+const INITIAL_SCAN_STATE: ForecastScanState = {
+  isRunning: false,
+  scanId: null,
+  total: 0,
+  completed: 0,
+  errors: 0,
+  vmCount: 0,
+  algorithm: "",
+  periodDays: 7,
+  events: [],
+};
+
+interface ForecastScanStoreState {
+  scan: ForecastScanState;
+  onScanStart: (data: ForecastScanStartData) => void;
+  onScanProgress: (data: ForecastScanProgressData) => void;
+  onScanComplete: (data: ForecastScanCompleteData) => void;
+  resetScan: () => void;
+}
+
+export const useForecastScanStore = create<ForecastScanStoreState>((set) => ({
+  scan: INITIAL_SCAN_STATE,
+
+  onScanStart: (data) =>
+    set({
+      scan: {
+        isRunning: true,
+        scanId: data.scan_id,
+        total: data.total,
+        completed: 0,
+        errors: 0,
+        vmCount: data.vm_count,
+        algorithm: data.algorithm,
+        periodDays: data.period_days,
+        events: [],
+      },
+    }),
+
+  onScanProgress: (data) =>
+    set((state) => {
+      const event: ScanJobEvent = {
+        vm_id: data.vm_id,
+        hostname: data.hostname,
+        metric: data.metric,
+        algorithm: data.algorithm,
+        status: data.status,
+        error: data.error,
+        ts: Date.now(),
+      };
+      // Only add terminal events (done/error) and running to avoid duplicate "running" spam
+      const shouldAdd = data.status === "done" || data.status === "error";
+      return {
+        scan: {
+          ...state.scan,
+          completed: data.completed,
+          events: shouldAdd
+            ? [event, ...state.scan.events].slice(0, 200)
+            : state.scan.events,
+        },
+      };
+    }),
+
+  onScanComplete: (data) =>
+    set((state) => ({
+      scan: {
+        ...state.scan,
+        isRunning: false,
+        completed: data.completed,
+        errors: data.errors,
+      },
+    })),
+
+  resetScan: () => set({ scan: INITIAL_SCAN_STATE }),
 }));

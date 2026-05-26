@@ -20,8 +20,8 @@ QUERIES_BY_IP = {
         'node_memory_MemTotal_bytes{{instance=~"{ip_regex}"}}) * 100)'
     ),
     "disk_usage_percent": (
-        '100 - ((node_filesystem_avail_bytes{{instance=~"{ip_regex}",mountpoint="/",fstype!="tmpfs"}} / '
-        'node_filesystem_size_bytes{{instance=~"{ip_regex}",mountpoint="/",fstype!="tmpfs"}}) * 100)'
+        'max by (instance) (100 - ((node_filesystem_avail_bytes{{instance=~"{ip_regex}",fstype!~"tmpfs|devtmpfs|squashfs|overlay|aufs"}} / '
+        'node_filesystem_size_bytes{{instance=~"{ip_regex}",fstype!~"tmpfs|devtmpfs|squashfs|overlay|aufs"}}) * 100))'
     ),
 }
 
