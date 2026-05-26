@@ -9,7 +9,8 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { TopMetricsPanel } from "@/components/dashboard/TopMetricsPanel";
-import { VMTable, type SortState } from "@/components/vm/VMTable";
+import { VMTable, type SortState, type SortField, type SortDir } from "@/components/vm/VMTable";
+import { Pagination } from "@/components/ui/Pagination";
 import { AlertList } from "@/components/alerts/AlertList";
 import { useRealtimeStore } from "@/stores";
 import {
@@ -20,8 +21,11 @@ import {
   EyeOff,
   RotateCw,
   Clock,
+  Search,
+  X,
 } from "lucide-react";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import type { VM, VMStatus } from "@/types";
 import {
@@ -39,28 +43,22 @@ function getVmStatus(
   return realtime[vm.id]?.status ?? vm.status;
 }
 
-function DashboardVMTable({
-  vms,
-  isLoading,
-}: {
-  vms: VM[];
-  isLoading: boolean;
-}) {
-  const [sort, setSort] = useState<SortState>({
-    field: "hostname",
-    dir: "asc",
-  });
-  return (
-    <VMTable
-      vms={vms}
-      isLoading={isLoading}
-      sort={sort}
-      onSortChange={setSort}
-    />
-  );
-}
+const STATUS_PRIORITY: Record<VMStatus, number> = {
+  critical: 0,
+  warning: 1,
+  healthy: 2,
+  unknown: 3,
+  down: 4,
+};
+
+const DEFAULT_PAGE_SIZE = 10;
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const queryClient = useQueryClient();
 
   // Refresh interval state in ms (default to 10 seconds, stored in localStorage)
@@ -117,7 +115,28 @@ export default function DashboardPage() {
   const wsConnected = useRealtimeStore((s) => s.wsConnected);
   const realtimeMetrics = useRealtimeStore((s) => s.metrics);
 
-  const [showDown, setShowDown] = useState(false);
+  const searchQuery = searchParams.get("q") ?? "";
+  const showDown = searchParams.get("showDown") === "true";
+  const page = Number(searchParams.get("page")) || 1;
+  const pageSize = Number(searchParams.get("pageSize")) || DEFAULT_PAGE_SIZE;
+  const sortField = (searchParams.get("sortField") as SortField) || "hostname";
+  const sortDir = (searchParams.get("sortDir") as SortDir) || "asc";
+  const sort: SortState = { field: sortField, dir: sortDir };
+
+  const updateParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === null || value === "") {
+          params.delete(key);
+        } else {
+          params.set(key, value);
+        }
+      });
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, pathname, router]
+  );
 
   // Update last updated timestamp when query finishes fetching
   const isAnyFetching = summaryFetching || vmsFetching || alertsFetching;
@@ -162,10 +181,83 @@ export default function DashboardPage() {
       if (!showDown && status === "down") {
         return false;
       }
+      
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch =
+        q === "" ||
+        vm.hostname.toLowerCase().includes(q) ||
+        vm.ip_address.toLowerCase().includes(q) ||
+        (vm.cluster ?? "").toLowerCase().includes(q) ||
+        (vm.tags ?? "").toLowerCase().includes(q);
 
-      return true;
+      return matchesSearch;
     });
-  }, [allVms, showDown, realtimeMetrics]);
+  }, [allVms, showDown, searchQuery, realtimeMetrics]);
+
+  const sortedVms = useMemo(() => {
+    const arr = [...filteredVms];
+    const dir = sort.dir === "asc" ? 1 : -1;
+
+    arr.sort((a, b) => {
+      const rtA = realtimeMetrics[a.id];
+      const rtB = realtimeMetrics[b.id];
+
+      switch (sort.field) {
+        case "hostname":
+          return dir * a.hostname.localeCompare(b.hostname);
+        case "ip_address":
+          return dir * a.ip_address.localeCompare(b.ip_address);
+        case "status": {
+          const sA = STATUS_PRIORITY[getVmStatus(a, realtimeMetrics)] ?? 99;
+          const sB = STATUS_PRIORITY[getVmStatus(b, realtimeMetrics)] ?? 99;
+          return dir * (sA - sB);
+        }
+        case "cpu": {
+          const cpuA = rtA?.cpu_usage ?? -1;
+          const cpuB = rtB?.cpu_usage ?? -1;
+          return dir * (cpuA - cpuB);
+        }
+        case "ram": {
+          const ramA = rtA?.ram_usage ?? -1;
+          const ramB = rtB?.ram_usage ?? -1;
+          return dir * (ramA - ramB);
+        }
+        case "disk": {
+          const diskA = rtA?.disk_usage ?? -1;
+          const diskB = rtB?.disk_usage ?? -1;
+          return dir * (diskA - diskB);
+        }
+        case "last_seen": {
+          const lsA = a.last_seen ? new Date(a.last_seen).getTime() : 0;
+          const lsB = b.last_seen ? new Date(b.last_seen).getTime() : 0;
+          return dir * (lsA - lsB);
+        }
+        default:
+          return 0;
+      }
+    });
+
+    return arr;
+  }, [filteredVms, sort, realtimeMetrics]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedVms.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+
+  const paginatedVms = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return sortedVms.slice(start, start + pageSize);
+  }, [sortedVms, safePage, pageSize]);
+  
+  useEffect(() => {
+    if (page > totalPages && totalPages > 0) {
+      updateParams({ page: String(totalPages) });
+    }
+  }, [page, totalPages, updateParams]);
+  
+  const clearSearch = useCallback(() => {
+    updateParams({ q: null, page: "1" });
+    searchInputRef.current?.focus();
+  }, [updateParams]);
 
   return (
     <div className="space-y-6">
@@ -257,17 +349,40 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* VM Table */}
         <div className="xl:col-span-2 glass-card overflow-hidden">
-          <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50">
-            <Server className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">
-              Virtual Machines
-            </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 border-b border-border/50">
+            <div className="flex items-center gap-2">
+              <Server className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-semibold text-foreground whitespace-nowrap">
+                Virtual Machines
+              </h2>
+            </div>
+            
+            <div className="flex-1 min-w-[150px] max-w-sm relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-foreground transition-colors" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Cari VM..."
+                value={searchQuery}
+                onChange={(e) => updateParams({ q: e.target.value, page: "1" })}
+                className="w-full bg-background border border-border rounded-lg pl-8 pr-8 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
 
             {/* Show/Hide Down Toggle Button */}
             <button
               type="button"
-              onClick={() => setShowDown((v) => !v)}
-              className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all whitespace-nowrap shrink-0 ${
+              onClick={() => updateParams({ showDown: showDown ? null : "true", page: "1" })}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all whitespace-nowrap shrink-0 sm:ml-auto ${
                 showDown
                   ? "bg-secondary text-foreground border-border"
                   : "bg-background text-muted-foreground border-border hover:bg-secondary hover:text-foreground"
@@ -286,12 +401,22 @@ export default function DashboardPage() {
                 </span>
               )}
             </button>
-
-            <span className="text-xs text-muted-foreground border-l border-border/50 pl-3">
-              {filteredVms.length} of {allVms.length} shown
-            </span>
           </div>
-          <DashboardVMTable vms={filteredVms} isLoading={vmsLoading} />
+          <VMTable
+            vms={paginatedVms}
+            isLoading={vmsLoading}
+            sort={sort}
+            onSortChange={(s) => updateParams({ sortField: s.field, sortDir: s.dir, page: "1" })}
+          />
+          {!vmsLoading && sortedVms.length > 0 && (
+            <Pagination
+              page={safePage}
+              pageSize={pageSize}
+              total={sortedVms.length}
+              onPageChange={(p: number) => updateParams({ page: String(p) })}
+              onPageSizeChange={(size: number) => updateParams({ pageSize: String(size), page: "1" })}
+            />
+          )}
         </div>
 
         {/* Active Alerts */}
