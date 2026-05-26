@@ -271,6 +271,16 @@ async def sync_vms_from_prometheus(
     url = await resolve_prometheus_url(db, source_id)
     targets = await prometheus_service.list_targets(url=url)
 
+    # Prioritize standard node_exporter ports so they aren't skipped by processed_ips logic
+    def get_port_priority(t):
+        inst = t.get("labels", {}).get("instance", "")
+        if "9100" in inst or "9101" in inst:
+            return 0
+        return 1
+    
+    targets.sort(key=get_port_priority)
+
+
     # Query node_uname_info dari Prometheus untuk mapping instance IP ke OS Hostname
     filters = []
     if job and job != "all":

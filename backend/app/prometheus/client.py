@@ -47,10 +47,10 @@ QUERIES = {
         'node_filesystem_avail_bytes{{instance="{instance}",fstype!~"tmpfs|devtmpfs|squashfs|overlay|aufs"}}'
     ),
     "network_rx_bytes": (
-        'rate(node_network_receive_bytes_total{{instance="{instance}",device!="lo"}}[5m])'
+        'rate(node_network_receive_bytes_total{{instance="{instance}",device!~"lo|veth.*|docker.*|br-.*|cali.*"}}[5m])'
     ),
     "network_tx_bytes": (
-        'rate(node_network_transmit_bytes_total{{instance="{instance}",device!="lo"}}[5m])'
+        'rate(node_network_transmit_bytes_total{{instance="{instance}",device!~"lo|veth.*|docker.*|br-.*|cali.*"}}[5m])'
     ),
     "uptime_seconds": 'node_time_seconds{{instance="{instance}"}} - node_boot_time_seconds{{instance="{instance}"}}',
     "load_avg_1m": 'node_load1{{instance="{instance}"}}',

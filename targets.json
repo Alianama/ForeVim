@@ -1,0 +1,3481 @@
+{
+    "status": "success",
+    "data": {
+        "activeTargets": [
+            {
+                "discoveredLabels": {
+                    "__address__": "https://18.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://18.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2F18.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2F18.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:17.220858659Z",
+                "lastScrapeDuration": 0.050452041,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://mps.inconis.com",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://mps.inconis.com",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fmps.inconis.com",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fmps.inconis.com",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:16.48220881Z",
+                "lastScrapeDuration": 0.278024147,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://hrms.justclick.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://hrms.justclick.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fhrms.justclick.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fhrms.justclick.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:20.435522848Z",
+                "lastScrapeDuration": 0.163119692,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://sfm.justclick.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://sfm.justclick.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fsfm.justclick.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fsfm.justclick.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:24.126393422Z",
+                "lastScrapeDuration": 0.136005649,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://kba10.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://kba10.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fkba10.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fkba10.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:26.696771036Z",
+                "lastScrapeDuration": 0.290059676,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://justclick.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://justclick.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fjustclick.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fjustclick.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:29.627537264Z",
+                "lastScrapeDuration": 0.164511249,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://simpurusiang.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://simpurusiang.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fsimpurusiang.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fsimpurusiang.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:25.958759942Z",
+                "lastScrapeDuration": 0.136197261,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://stie-gema.ac.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://stie-gema.ac.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fstie-gema.ac.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fstie-gema.ac.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:26.312678282Z",
+                "lastScrapeDuration": 0.090896319,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://test-esq.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://test-esq.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ftest-esq.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ftest-esq.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:25.323300825Z",
+                "lastScrapeDuration": 0.132416727,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://simrs.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://simrs.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fsimrs.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fsimrs.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:29.770494025Z",
+                "lastScrapeDuration": 0.104385645,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://hcms.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://hcms.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fhcms.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fhcms.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:21.211271046Z",
+                "lastScrapeDuration": 0.040769071,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://esq.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://esq.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fesq.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fesq.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:23.786528846Z",
+                "lastScrapeDuration": 0.092106682,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://ytrf.or.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://ytrf.or.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fytrf.or.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fytrf.or.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:20.727228405Z",
+                "lastScrapeDuration": 0.165735092,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://jul.inconis.com",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://jul.inconis.com",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fjul.inconis.com",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fjul.inconis.com",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:16.318215247Z",
+                "lastScrapeDuration": 0.067446698,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://sflaw.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://sflaw.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fsflaw.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fsflaw.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:25.097357345Z",
+                "lastScrapeDuration": 0.087330067,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://demo-scm.justclick.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://demo-scm.justclick.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdemo-scm.justclick.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdemo-scm.justclick.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:20.148002228Z",
+                "lastScrapeDuration": 0.045398744,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://kba.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://kba.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fkba.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fkba.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:16.273247013Z",
+                "lastScrapeDuration": 0.100145416,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fnti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fnti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:20.033409141Z",
+                "lastScrapeDuration": 0.063853307,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://erp.inconis.com",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://erp.inconis.com",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ferp.inconis.com",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ferp.inconis.com",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:20.413225543Z",
+                "lastScrapeDuration": 0.056472252,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://dev.inconis.com",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://dev.inconis.com",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdev.inconis.com",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdev.inconis.com",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:19.781933425Z",
+                "lastScrapeDuration": 0.214809997,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://msdm.justclick.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://msdm.justclick.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fmsdm.justclick.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fmsdm.justclick.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:23.021353078Z",
+                "lastScrapeDuration": 0.353049183,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://perdasi.justclick.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://perdasi.justclick.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fperdasi.justclick.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fperdasi.justclick.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:18.538286369Z",
+                "lastScrapeDuration": 0.212675463,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://ldtqn.com",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://ldtqn.com",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fldtqn.com",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fldtqn.com",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:21.998201441Z",
+                "lastScrapeDuration": 0.270483751,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://erp.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://erp.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ferp.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ferp.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:25.283586394Z",
+                "lastScrapeDuration": 0.102563303,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://dev18-smart.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://dev18-smart.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdev18-smart.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdev18-smart.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:19.03503347Z",
+                "lastScrapeDuration": 0.056892586,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://hse.justclick.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://hse.justclick.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fhse.justclick.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fhse.justclick.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:21.136840146Z",
+                "lastScrapeDuration": 0.097756388,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://smart.justclick.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://smart.justclick.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fsmart.justclick.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fsmart.justclick.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:18.027128334Z",
+                "lastScrapeDuration": 0.121768845,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://training.justclick.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://training.justclick.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ftraining.justclick.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ftraining.justclick.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:23.917347344Z",
+                "lastScrapeDuration": 0.442175452,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://lutimgemilang.com",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://lutimgemilang.com",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Flutimgemilang.com",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Flutimgemilang.com",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:15.750643621Z",
+                "lastScrapeDuration": 0.196251005,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://demo-lamlo.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://demo-lamlo.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdemo-lamlo.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdemo-lamlo.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:20.261655774Z",
+                "lastScrapeDuration": 0.219274159,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://stie-admission.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://stie-admission.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fstie-admission.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fstie-admission.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:17.757637034Z",
+                "lastScrapeDuration": 0.117252772,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://inconis.com",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://inconis.com",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Finconis.com",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Finconis.com",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.861625869Z",
+                "lastScrapeDuration": 0.090707007,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://portal.inconis.com",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://portal.inconis.com",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fportal.inconis.com",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fportal.inconis.com",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:16.002505192Z",
+                "lastScrapeDuration": 0.050669724,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://bumd.justclick.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://bumd.justclick.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fbumd.justclick.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fbumd.justclick.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:21.700265596Z",
+                "lastScrapeDuration": 0.181436594,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://hoka.justclick.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://hoka.justclick.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fhoka.justclick.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fhoka.justclick.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:21.505615424Z",
+                "lastScrapeDuration": 0.13866888,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://gagnikel.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://gagnikel.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fgagnikel.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fgagnikel.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:21.854685845Z",
+                "lastScrapeDuration": 0.064248721,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://dev.gagnikel.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://dev.gagnikel.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdev.gagnikel.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdev.gagnikel.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:18.275551159Z",
+                "lastScrapeDuration": 0.131206833,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://test.gagnikel.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://test.gagnikel.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ftest.gagnikel.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ftest.gagnikel.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:20.319235545Z",
+                "lastScrapeDuration": 0.066159723,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://erp-nka.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://erp-nka.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ferp-nka.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ferp-nka.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:24.265331583Z",
+                "lastScrapeDuration": 0.092002881,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://erp.lamlopharmacy.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://erp.lamlopharmacy.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ferp.lamlopharmacy.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Ferp.lamlopharmacy.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:15.758768273Z",
+                "lastScrapeDuration": 0.078692298,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://dev.nti.co.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://dev.nti.co.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdev.nti.co.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdev.nti.co.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:20.281517954Z",
+                "lastScrapeDuration": 0.102907187,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://gpa.or.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://gpa.or.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fgpa.or.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fgpa.or.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.791436701Z",
+                "lastScrapeDuration": 0.181960239,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "https://demo-erp.justclick.id",
+                    "__metrics_path__": "/probe",
+                    "__param_module": "http_2xx",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "blackbox"
+                },
+                "labels": {
+                    "instance": "https://demo-erp.justclick.id",
+                    "job": "blackbox"
+                },
+                "scrapePool": "blackbox",
+                "scrapeUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdemo-erp.justclick.id",
+                "globalUrl": "http://192.168.9.16:9115/probe?module=http_2xx&target=https%3A%2F%2Fdemo-erp.justclick.id",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:17.661675357Z",
+                "lastScrapeDuration": 0.116427264,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "cadvisor:8080",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "cadvisor"
+                },
+                "labels": {
+                    "instance": "cadvisor:8080",
+                    "job": "cadvisor"
+                },
+                "scrapePool": "cadvisor",
+                "scrapeUrl": "http://cadvisor:8080/metrics",
+                "globalUrl": "http://cadvisor:8080/metrics",
+                "lastError": "Get \"http://cadvisor:8080/metrics\": dial tcp: lookup cadvisor on 127.0.0.11:53: no such host",
+                "lastScrape": "2026-05-26T04:44:27.405987463Z",
+                "lastScrapeDuration": 0.047225985,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.100.16:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "gag_nikel"
+                },
+                "labels": {
+                    "instance": "192.168.100.16:9100",
+                    "job": "gag_nikel"
+                },
+                "scrapePool": "gag_nikel",
+                "scrapeUrl": "http://192.168.100.16:9100/metrics",
+                "globalUrl": "http://192.168.100.16:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:26.308495886Z",
+                "lastScrapeDuration": 0.015444027,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.100.17:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "gag_nikel"
+                },
+                "labels": {
+                    "instance": "192.168.100.17:9100",
+                    "job": "gag_nikel"
+                },
+                "scrapePool": "gag_nikel",
+                "scrapeUrl": "http://192.168.100.17:9100/metrics",
+                "globalUrl": "http://192.168.100.17:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:27.384607528Z",
+                "lastScrapeDuration": 0.010492682,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.100.18:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "gag_nikel"
+                },
+                "labels": {
+                    "instance": "192.168.100.18:9100",
+                    "job": "gag_nikel"
+                },
+                "scrapePool": "gag_nikel",
+                "scrapeUrl": "http://192.168.100.18:9100/metrics",
+                "globalUrl": "http://192.168.100.18:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:30.168741546Z",
+                "lastScrapeDuration": 0.010250867,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.100.200:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "gag_nikel"
+                },
+                "labels": {
+                    "instance": "192.168.100.200:9100",
+                    "job": "gag_nikel"
+                },
+                "scrapePool": "gag_nikel",
+                "scrapeUrl": "http://192.168.100.200:9100/metrics",
+                "globalUrl": "http://192.168.100.200:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.388256089Z",
+                "lastScrapeDuration": 0.01214302,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.100.19:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "gag_nikel"
+                },
+                "labels": {
+                    "instance": "192.168.100.19:9100",
+                    "job": "gag_nikel"
+                },
+                "scrapePool": "gag_nikel",
+                "scrapeUrl": "http://192.168.100.19:9100/metrics",
+                "globalUrl": "http://192.168.100.19:9100/metrics",
+                "lastError": "Get \"http://192.168.100.19:9100/metrics\": context deadline exceeded",
+                "lastScrape": "2026-05-26T04:44:21.206243093Z",
+                "lastScrapeDuration": 5.000746116,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.100.20:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "gag_nikel"
+                },
+                "labels": {
+                    "instance": "192.168.100.20:9100",
+                    "job": "gag_nikel"
+                },
+                "scrapePool": "gag_nikel",
+                "scrapeUrl": "http://192.168.100.20:9100/metrics",
+                "globalUrl": "http://192.168.100.20:9100/metrics",
+                "lastError": "Get \"http://192.168.100.20:9100/metrics\": context deadline exceeded",
+                "lastScrape": "2026-05-26T04:44:24.834891603Z",
+                "lastScrapeDuration": 5.00021639,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.204:9081",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "instance": "git.nti.co.id",
+                    "job": "gitlab-ci-pipelines-exporter"
+                },
+                "labels": {
+                    "instance": "git.nti.co.id",
+                    "job": "gitlab-ci-pipelines-exporter"
+                },
+                "scrapePool": "gitlab-ci-pipelines-exporter",
+                "scrapeUrl": "http://192.168.9.204:9081/metrics",
+                "globalUrl": "http://192.168.9.204:9081/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:19.419342476Z",
+                "lastScrapeDuration": 0.012051049,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.204:9880",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "environment": "production",
+                    "instance": "gitlab-omnibus-services",
+                    "job": "gitlab-rails",
+                    "stage": "main",
+                    "tier": "sv",
+                    "type": "web"
+                },
+                "labels": {
+                    "environment": "production",
+                    "instance": "gitlab-omnibus-services",
+                    "job": "gitlab-rails",
+                    "stage": "main",
+                    "tier": "sv",
+                    "type": "web"
+                },
+                "scrapePool": "gitlab-rails",
+                "scrapeUrl": "http://192.168.9.204:9880/metrics",
+                "globalUrl": "http://192.168.9.204:9880/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:15.846963093Z",
+                "lastScrapeDuration": 0.436108282,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.204:10000",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "gitlab-runner",
+                    "name": "runner-02"
+                },
+                "labels": {
+                    "instance": "192.168.9.204:10000",
+                    "job": "gitlab-runner",
+                    "name": "runner-02"
+                },
+                "scrapePool": "gitlab-runner",
+                "scrapeUrl": "http://192.168.9.204:10000/metrics",
+                "globalUrl": "http://192.168.9.204:10000/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:21.506716096Z",
+                "lastScrapeDuration": 0.008473349,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.204:9229",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "environment": "production",
+                    "instance": "gitlab-omnibus-services",
+                    "job": "gitlab-workhorse",
+                    "stage": "main",
+                    "tier": "sv",
+                    "type": "web"
+                },
+                "labels": {
+                    "environment": "production",
+                    "instance": "gitlab-omnibus-services",
+                    "job": "gitlab-workhorse",
+                    "stage": "main",
+                    "tier": "sv",
+                    "type": "web"
+                },
+                "scrapePool": "gitlab-workhorse",
+                "scrapeUrl": "http://192.168.9.204:9229/metrics",
+                "globalUrl": "http://192.168.9.204:9229/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:19.443540261Z",
+                "lastScrapeDuration": 0.052501286,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.24:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "inconis"
+                },
+                "labels": {
+                    "instance": "192.168.9.24:9100",
+                    "job": "inconis"
+                },
+                "scrapePool": "inconis",
+                "scrapeUrl": "http://192.168.9.24:9100/metrics",
+                "globalUrl": "http://192.168.9.24:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:26.481492011Z",
+                "lastScrapeDuration": 0.010714325,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "49.128.186.99:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "inconis"
+                },
+                "labels": {
+                    "instance": "49.128.186.99:9100",
+                    "job": "inconis"
+                },
+                "scrapePool": "inconis",
+                "scrapeUrl": "http://49.128.186.99:9100/metrics",
+                "globalUrl": "http://49.128.186.99:9100/metrics",
+                "lastError": "Get \"http://49.128.186.99:9100/metrics\": dial tcp 49.128.186.99:9100: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:28.635234348Z",
+                "lastScrapeDuration": 0.000517456,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.21:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "inconis"
+                },
+                "labels": {
+                    "instance": "192.168.9.21:9100",
+                    "job": "inconis"
+                },
+                "scrapePool": "inconis",
+                "scrapeUrl": "http://192.168.9.21:9100/metrics",
+                "globalUrl": "http://192.168.9.21:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:30.232873963Z",
+                "lastScrapeDuration": 0.048196165,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.23:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "inconis"
+                },
+                "labels": {
+                    "instance": "192.168.9.23:9100",
+                    "job": "inconis"
+                },
+                "scrapePool": "inconis",
+                "scrapeUrl": "http://192.168.9.23:9100/metrics",
+                "globalUrl": "http://192.168.9.23:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:26.324502328Z",
+                "lastScrapeDuration": 0.016108396,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.87:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "inconis"
+                },
+                "labels": {
+                    "instance": "192.168.9.87:9100",
+                    "job": "inconis"
+                },
+                "scrapePool": "inconis",
+                "scrapeUrl": "http://192.168.9.87:9100/metrics",
+                "globalUrl": "http://192.168.9.87:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:26.827002445Z",
+                "lastScrapeDuration": 0.01044971,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.25:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "inconis"
+                },
+                "labels": {
+                    "instance": "192.168.9.25:9100",
+                    "job": "inconis"
+                },
+                "scrapePool": "inconis",
+                "scrapeUrl": "http://192.168.9.25:9100/metrics",
+                "globalUrl": "http://192.168.9.25:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:25.908308342Z",
+                "lastScrapeDuration": 0.010528801,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.26:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "inconis"
+                },
+                "labels": {
+                    "instance": "192.168.9.26:9100",
+                    "job": "inconis"
+                },
+                "scrapePool": "inconis",
+                "scrapeUrl": "http://192.168.9.26:9100/metrics",
+                "globalUrl": "http://192.168.9.26:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.772009448Z",
+                "lastScrapeDuration": 0.013368874,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.251:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "inconis"
+                },
+                "labels": {
+                    "instance": "192.168.9.251:9100",
+                    "job": "inconis"
+                },
+                "scrapePool": "inconis",
+                "scrapeUrl": "http://192.168.9.251:9100/metrics",
+                "globalUrl": "http://192.168.9.251:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:25.784842916Z",
+                "lastScrapeDuration": 0.010103407,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.22:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "inconis"
+                },
+                "labels": {
+                    "instance": "192.168.9.22:9100",
+                    "job": "inconis"
+                },
+                "scrapePool": "inconis",
+                "scrapeUrl": "http://192.168.9.22:9100/metrics",
+                "globalUrl": "http://192.168.9.22:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:26.329296476Z",
+                "lastScrapeDuration": 0.013207812,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.190",
+                    "__metrics_path__": "/ipmi",
+                    "__param_module": "default",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "1m",
+                    "__scrape_timeout__": "30s",
+                    "job": "ipmi"
+                },
+                "labels": {
+                    "instance": "192.168.9.190",
+                    "job": "ipmi"
+                },
+                "scrapePool": "ipmi",
+                "scrapeUrl": "http://192.168.9.16:9290/ipmi?module=default&target=192.168.9.190",
+                "globalUrl": "http://192.168.9.16:9290/ipmi?module=default&target=192.168.9.190",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:20.484683946Z",
+                "lastScrapeDuration": 0.392069354,
+                "health": "up",
+                "scrapeInterval": "1m",
+                "scrapeTimeout": "30s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.201",
+                    "__metrics_path__": "/ipmi",
+                    "__param_module": "default",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "1m",
+                    "__scrape_timeout__": "30s",
+                    "job": "ipmi"
+                },
+                "labels": {
+                    "instance": "192.168.9.201",
+                    "job": "ipmi"
+                },
+                "scrapePool": "ipmi",
+                "scrapeUrl": "http://192.168.9.16:9290/ipmi?module=default&target=192.168.9.201",
+                "globalUrl": "http://192.168.9.16:9290/ipmi?module=default&target=192.168.9.201",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:05.914957236Z",
+                "lastScrapeDuration": 0.901327201,
+                "health": "up",
+                "scrapeInterval": "1m",
+                "scrapeTimeout": "30s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.100.110",
+                    "__metrics_path__": "/ipmi",
+                    "__param_module": "default",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "1m",
+                    "__scrape_timeout__": "30s",
+                    "job": "ipmi"
+                },
+                "labels": {
+                    "instance": "192.168.100.110",
+                    "job": "ipmi"
+                },
+                "scrapePool": "ipmi",
+                "scrapeUrl": "http://192.168.9.16:9290/ipmi?module=default&target=192.168.100.110",
+                "globalUrl": "http://192.168.9.16:9290/ipmi?module=default&target=192.168.100.110",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:43:45.164786372Z",
+                "lastScrapeDuration": 0.348541572,
+                "health": "up",
+                "scrapeInterval": "1m",
+                "scrapeTimeout": "30s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.100.120",
+                    "__metrics_path__": "/ipmi",
+                    "__param_module": "default",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "1m",
+                    "__scrape_timeout__": "30s",
+                    "job": "ipmi"
+                },
+                "labels": {
+                    "instance": "192.168.100.120",
+                    "job": "ipmi"
+                },
+                "scrapePool": "ipmi",
+                "scrapeUrl": "http://192.168.9.16:9290/ipmi?module=default&target=192.168.100.120",
+                "globalUrl": "http://192.168.9.16:9290/ipmi?module=default&target=192.168.100.120",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:21.757357553Z",
+                "lastScrapeDuration": 0.381950877,
+                "health": "up",
+                "scrapeInterval": "1m",
+                "scrapeTimeout": "30s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.71:9165",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "keepalived"
+                },
+                "labels": {
+                    "instance": "192.168.9.71:9165",
+                    "job": "keepalived"
+                },
+                "scrapePool": "keepalived",
+                "scrapeUrl": "http://192.168.9.71:9165/metrics",
+                "globalUrl": "http://192.168.9.71:9165/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:18.168964503Z",
+                "lastScrapeDuration": 1.929342144,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.72:9165",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "keepalived"
+                },
+                "labels": {
+                    "instance": "192.168.9.72:9165",
+                    "job": "keepalived"
+                },
+                "scrapePool": "keepalived",
+                "scrapeUrl": "http://192.168.9.72:9165/metrics",
+                "globalUrl": "http://192.168.9.72:9165/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:22.501948041Z",
+                "lastScrapeDuration": 1.4571571589999999,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.73:9165",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "keepalived"
+                },
+                "labels": {
+                    "instance": "192.168.9.73:9165",
+                    "job": "keepalived"
+                },
+                "scrapePool": "keepalived",
+                "scrapeUrl": "http://192.168.9.73:9165/metrics",
+                "globalUrl": "http://192.168.9.73:9165/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:23.554011381Z",
+                "lastScrapeDuration": 1.79614968,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.13:60001",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "1s",
+                    "__scrape_timeout__": "1s",
+                    "job": "kube-metrics"
+                },
+                "labels": {
+                    "instance": "192.168.9.13:60001",
+                    "job": "kube-metrics"
+                },
+                "scrapePool": "kube-metrics",
+                "scrapeUrl": "http://192.168.9.13:60001/metrics",
+                "globalUrl": "http://192.168.9.13:60001/metrics",
+                "lastError": "Get \"http://192.168.9.13:60001/metrics\": dial tcp 192.168.9.13:60001: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:29.388022918Z",
+                "lastScrapeDuration": 0.000618507,
+                "health": "down",
+                "scrapeInterval": "1s",
+                "scrapeTimeout": "1s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.74:8405",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "load-balancer-metrics"
+                },
+                "labels": {
+                    "instance": "192.168.9.74:8405",
+                    "job": "load-balancer-metrics"
+                },
+                "scrapePool": "load-balancer-metrics",
+                "scrapeUrl": "http://192.168.9.74:8405/metrics",
+                "globalUrl": "http://192.168.9.74:8405/metrics",
+                "lastError": "Get \"http://192.168.9.74:8405/metrics\": dial tcp 192.168.9.74:8405: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:27.556310754Z",
+                "lastScrapeDuration": 0.000624217,
+                "health": "down",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.75:8405",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "load-balancer-metrics"
+                },
+                "labels": {
+                    "instance": "192.168.9.75:8405",
+                    "job": "load-balancer-metrics"
+                },
+                "scrapePool": "load-balancer-metrics",
+                "scrapeUrl": "http://192.168.9.75:8405/metrics",
+                "globalUrl": "http://192.168.9.75:8405/metrics",
+                "lastError": "Get \"http://192.168.9.75:8405/metrics\": dial tcp 192.168.9.75:8405: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:29.300783949Z",
+                "lastScrapeDuration": 0.000521195,
+                "health": "down",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.204:8060",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "environment": "production",
+                    "instance": "gitlab-omnibus-services",
+                    "job": "nginx",
+                    "stage": "main",
+                    "tier": "sv",
+                    "type": "web"
+                },
+                "labels": {
+                    "environment": "production",
+                    "instance": "gitlab-omnibus-services",
+                    "job": "nginx",
+                    "stage": "main",
+                    "tier": "sv",
+                    "type": "web"
+                },
+                "scrapePool": "nginx",
+                "scrapeUrl": "http://192.168.9.204:8060/metrics",
+                "globalUrl": "http://192.168.9.204:8060/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:18.781102399Z",
+                "lastScrapeDuration": 0.002431668,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.73:9113",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "nginx_cluster"
+                },
+                "labels": {
+                    "instance": "192.168.9.73:9113",
+                    "job": "nginx_cluster"
+                },
+                "scrapePool": "nginx_cluster",
+                "scrapeUrl": "http://192.168.9.73:9113/metrics",
+                "globalUrl": "http://192.168.9.73:9113/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:18.082663663Z",
+                "lastScrapeDuration": 0.002993794,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.71:9113",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "nginx_cluster"
+                },
+                "labels": {
+                    "instance": "192.168.9.71:9113",
+                    "job": "nginx_cluster"
+                },
+                "scrapePool": "nginx_cluster",
+                "scrapeUrl": "http://192.168.9.71:9113/metrics",
+                "globalUrl": "http://192.168.9.71:9113/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:23.891026999Z",
+                "lastScrapeDuration": 0.002558808,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.72:9113",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "nginx_cluster"
+                },
+                "labels": {
+                    "instance": "192.168.9.72:9113",
+                    "job": "nginx_cluster"
+                },
+                "scrapePool": "nginx_cluster",
+                "scrapeUrl": "http://192.168.9.72:9113/metrics",
+                "globalUrl": "http://192.168.9.72:9113/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:15.815989701Z",
+                "lastScrapeDuration": 0.00783316,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.14:9113",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "nginx_single"
+                },
+                "labels": {
+                    "instance": "192.168.9.14:9113",
+                    "job": "nginx_single"
+                },
+                "scrapePool": "nginx_single",
+                "scrapeUrl": "http://192.168.9.14:9113/metrics",
+                "globalUrl": "http://192.168.9.14:9113/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:19.389261843Z",
+                "lastScrapeDuration": 0.004958467,
+                "health": "up",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.204:9101",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "environment": "production",
+                    "instance": "gitlab-omnibus-services",
+                    "job": "node",
+                    "stage": "main",
+                    "tier": "sv",
+                    "type": "web"
+                },
+                "labels": {
+                    "environment": "production",
+                    "instance": "gitlab-omnibus-services",
+                    "job": "node",
+                    "stage": "main",
+                    "tier": "sv",
+                    "type": "web"
+                },
+                "scrapePool": "node",
+                "scrapeUrl": "http://192.168.9.204:9101/metrics",
+                "globalUrl": "http://192.168.9.204:9101/metrics",
+                "lastError": "Get \"http://192.168.9.204:9101/metrics\": dial tcp 192.168.9.204:9101: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:21.550073982Z",
+                "lastScrapeDuration": 0.000964161,
+                "health": "down",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.33:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.33:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.33:9100/metrics",
+                "globalUrl": "http://192.168.9.33:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.976765353Z",
+                "lastScrapeDuration": 0.025175041,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.30:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.30:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.30:9100/metrics",
+                "globalUrl": "http://192.168.9.30:9100/metrics",
+                "lastError": "Get \"http://192.168.9.30:9100/metrics\": dial tcp 192.168.9.30:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:23.468251376Z",
+                "lastScrapeDuration": 3.060272791,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.16:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.16:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.16:9100/metrics",
+                "globalUrl": "http://192.168.9.16:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:27.291763052Z",
+                "lastScrapeDuration": 0.026881199,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.12:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.12:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.12:9100/metrics",
+                "globalUrl": "http://192.168.9.12:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.56690216Z",
+                "lastScrapeDuration": 0.012314591,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.39:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.39:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.39:9100/metrics",
+                "globalUrl": "http://192.168.9.39:9100/metrics",
+                "lastError": "Get \"http://192.168.9.39:9100/metrics\": dial tcp 192.168.9.39:9100: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:29.063788042Z",
+                "lastScrapeDuration": 0.000719919,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.104:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.104:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.104:9100/metrics",
+                "globalUrl": "http://192.168.9.104:9100/metrics",
+                "lastError": "Get \"http://192.168.9.104:9100/metrics\": dial tcp 192.168.9.104:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:26.856954228Z",
+                "lastScrapeDuration": 3.062902553,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.106:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.106:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.106:9100/metrics",
+                "globalUrl": "http://192.168.9.106:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.571734049Z",
+                "lastScrapeDuration": 0.010333149,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.10.97:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.10.97:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.10.97:9100/metrics",
+                "globalUrl": "http://192.168.10.97:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:27.84399342Z",
+                "lastScrapeDuration": 0.027636829,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.38:9101",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.38:9101",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.38:9101/metrics",
+                "globalUrl": "http://192.168.9.38:9101/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.899890138Z",
+                "lastScrapeDuration": 0.012847759,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.10.103:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.10.103:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.10.103:9100/metrics",
+                "globalUrl": "http://192.168.10.103:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:26.653575886Z",
+                "lastScrapeDuration": 0.17771789,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.105:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.105:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.105:9100/metrics",
+                "globalUrl": "http://192.168.9.105:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:27.296092986Z",
+                "lastScrapeDuration": 0.018536654,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.102:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.102:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.102:9100/metrics",
+                "globalUrl": "http://192.168.9.102:9100/metrics",
+                "lastError": "Get \"http://192.168.9.102:9100/metrics\": dial tcp 192.168.9.102:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:22.848566296Z",
+                "lastScrapeDuration": 3.071772084,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.10.99:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.10.99:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.10.99:9100/metrics",
+                "globalUrl": "http://192.168.10.99:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:25.865521209Z",
+                "lastScrapeDuration": 0.10842075,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.10.98:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.10.98:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.10.98:9100/metrics",
+                "globalUrl": "http://192.168.10.98:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:29.626026352Z",
+                "lastScrapeDuration": 0.04933393,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.60:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.60:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.60:9100/metrics",
+                "globalUrl": "http://192.168.9.60:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:27.128622486Z",
+                "lastScrapeDuration": 0.020610727,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.19:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.19:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.19:9100/metrics",
+                "globalUrl": "http://192.168.9.19:9100/metrics",
+                "lastError": "Get \"http://192.168.9.19:9100/metrics\": dial tcp 192.168.9.19:9100: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:26.570551859Z",
+                "lastScrapeDuration": 0.000623407,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.51:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.51:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.51:9100/metrics",
+                "globalUrl": "http://192.168.9.51:9100/metrics",
+                "lastError": "Get \"http://192.168.9.51:9100/metrics\": context deadline exceeded",
+                "lastScrape": "2026-05-26T04:44:24.140517082Z",
+                "lastScrapeDuration": 5.000317201,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.53:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.53:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.53:9100/metrics",
+                "globalUrl": "http://192.168.9.53:9100/metrics",
+                "lastError": "Get \"http://192.168.9.53:9100/metrics\": dial tcp 192.168.9.53:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:23.032578622Z",
+                "lastScrapeDuration": 3.079591965,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.57:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.57:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.57:9100/metrics",
+                "globalUrl": "http://192.168.9.57:9100/metrics",
+                "lastError": "Get \"http://192.168.9.57:9100/metrics\": dial tcp 192.168.9.57:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:24.930686774Z",
+                "lastScrapeDuration": 3.069004338,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.99:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.99:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.99:9100/metrics",
+                "globalUrl": "http://192.168.9.99:9100/metrics",
+                "lastError": "Get \"http://192.168.9.99:9100/metrics\": dial tcp 192.168.9.99:9100: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:29.260543986Z",
+                "lastScrapeDuration": 0.000737929,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.10.100:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.10.100:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.10.100:9100/metrics",
+                "globalUrl": "http://192.168.10.100:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:25.479092753Z",
+                "lastScrapeDuration": 0.038646256,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.10.101:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.10.101:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.10.101:9100/metrics",
+                "globalUrl": "http://192.168.10.101:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:27.428402739Z",
+                "lastScrapeDuration": 0.180013776,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.103:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.103:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.103:9100/metrics",
+                "globalUrl": "http://192.168.9.103:9100/metrics",
+                "lastError": "Get \"http://192.168.9.103:9100/metrics\": dial tcp 192.168.9.103:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:25.728349126Z",
+                "lastScrapeDuration": 3.071387967,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.36:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.36:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.36:9100/metrics",
+                "globalUrl": "http://192.168.9.36:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.450538807Z",
+                "lastScrapeDuration": 0.021831353,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "nodeexporter:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "nodeexporter:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://nodeexporter:9100/metrics",
+                "globalUrl": "http://nodeexporter:9100/metrics",
+                "lastError": "Get \"http://nodeexporter:9100/metrics\": dial tcp: lookup nodeexporter on 127.0.0.11:53: no such host",
+                "lastScrape": "2026-05-26T04:44:27.222630344Z",
+                "lastScrapeDuration": 0.042099677,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.14:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.14:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.14:9100/metrics",
+                "globalUrl": "http://192.168.9.14:9100/metrics",
+                "lastError": "Get \"http://192.168.9.14:9100/metrics\": dial tcp 192.168.9.14:9100: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:27.645539939Z",
+                "lastScrapeDuration": 0.000690838,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.13:9105",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.13:9105",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.13:9105/metrics",
+                "globalUrl": "http://192.168.9.13:9105/metrics",
+                "lastError": "Get \"http://192.168.9.13:9105/metrics\": dial tcp 192.168.9.13:9105: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:29.324037866Z",
+                "lastScrapeDuration": 0.000498086,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.15:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.15:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.15:9100/metrics",
+                "globalUrl": "http://192.168.9.15:9100/metrics",
+                "lastError": "Get \"http://192.168.9.15:9100/metrics\": dial tcp 192.168.9.15:9100: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:27.431565542Z",
+                "lastScrapeDuration": 0.000644668,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.40:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.40:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.40:9100/metrics",
+                "globalUrl": "http://192.168.9.40:9100/metrics",
+                "lastError": "Get \"http://192.168.9.40:9100/metrics\": dial tcp 192.168.9.40:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:28.070151491Z",
+                "lastScrapeDuration": 1.241648565,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.52:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.52:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.52:9100/metrics",
+                "globalUrl": "http://192.168.9.52:9100/metrics",
+                "lastError": "Get \"http://192.168.9.52:9100/metrics\": dial tcp 192.168.9.52:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:27.180419758Z",
+                "lastScrapeDuration": 3.059897741,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.32:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.32:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.32:9100/metrics",
+                "globalUrl": "http://192.168.9.32:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:29.713219402Z",
+                "lastScrapeDuration": 0.009157736,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.10:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.10:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.10:9100/metrics",
+                "globalUrl": "http://192.168.9.10:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:25.600028782Z",
+                "lastScrapeDuration": 0.013705168,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.18:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.18:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.18:9100/metrics",
+                "globalUrl": "http://192.168.9.18:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:27.664738973Z",
+                "lastScrapeDuration": 0.032356732,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.55:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.55:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.55:9100/metrics",
+                "globalUrl": "http://192.168.9.55:9100/metrics",
+                "lastError": "Get \"http://192.168.9.55:9100/metrics\": dial tcp 192.168.9.55:9100: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:27.689709364Z",
+                "lastScrapeDuration": 0.000551097,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.59:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.59:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.59:9100/metrics",
+                "globalUrl": "http://192.168.9.59:9100/metrics",
+                "lastError": "Get \"http://192.168.9.59:9100/metrics\": dial tcp 192.168.9.59:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:24.63877598Z",
+                "lastScrapeDuration": 3.076676798,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.35:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.35:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.35:9100/metrics",
+                "globalUrl": "http://192.168.9.35:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:25.551756766Z",
+                "lastScrapeDuration": 0.015547369,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.37:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.37:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.37:9100/metrics",
+                "globalUrl": "http://192.168.9.37:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:29.520178575Z",
+                "lastScrapeDuration": 0.024032769,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.100:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.100:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.100:9100/metrics",
+                "globalUrl": "http://192.168.9.100:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.899916909Z",
+                "lastScrapeDuration": 0.027808691,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.101:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.101:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.101:9100/metrics",
+                "globalUrl": "http://192.168.9.101:9100/metrics",
+                "lastError": "Get \"http://192.168.9.101:9100/metrics\": dial tcp 192.168.9.101:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:23.001154135Z",
+                "lastScrapeDuration": 3.078363421,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "49.128.186.179:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "49.128.186.179:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://49.128.186.179:9100/metrics",
+                "globalUrl": "http://49.128.186.179:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:29.908983745Z",
+                "lastScrapeDuration": 0.011335972,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.54:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.54:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.54:9100/metrics",
+                "globalUrl": "http://192.168.9.54:9100/metrics",
+                "lastError": "Get \"http://192.168.9.54:9100/metrics\": dial tcp 192.168.9.54:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:26.164884578Z",
+                "lastScrapeDuration": 3.050786001,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.58:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.58:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.58:9100/metrics",
+                "globalUrl": "http://192.168.9.58:9100/metrics",
+                "lastError": "Get \"http://192.168.9.58:9100/metrics\": dial tcp 192.168.9.58:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:23.13746051Z",
+                "lastScrapeDuration": 3.070758152,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.34:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.34:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.34:9100/metrics",
+                "globalUrl": "http://192.168.9.34:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:26.690843821Z",
+                "lastScrapeDuration": 0.024019796,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.41:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.41:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.41:9100/metrics",
+                "globalUrl": "http://192.168.9.41:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.508506211Z",
+                "lastScrapeDuration": 0.019325502,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.202:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.202:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.202:9100/metrics",
+                "globalUrl": "http://192.168.9.202:9100/metrics",
+                "lastError": "Get \"http://192.168.9.202:9100/metrics\": dial tcp 192.168.9.202:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:22.672533941Z",
+                "lastScrapeDuration": 3.058927978,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.203:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.203:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.203:9100/metrics",
+                "globalUrl": "http://192.168.9.203:9100/metrics",
+                "lastError": "Get \"http://192.168.9.203:9100/metrics\": dial tcp 192.168.9.203:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:26.741862477Z",
+                "lastScrapeDuration": 3.054316504,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.204:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.204:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.204:9100/metrics",
+                "globalUrl": "http://192.168.9.204:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:26.646655827Z",
+                "lastScrapeDuration": 0.175814248,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.88:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.88:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.88:9100/metrics",
+                "globalUrl": "http://192.168.9.88:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:22.431866775Z",
+                "lastScrapeDuration": 0.012690136,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.200:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.200:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.200:9100/metrics",
+                "globalUrl": "http://192.168.9.200:9100/metrics",
+                "lastError": "Get \"http://192.168.9.200:9100/metrics\": dial tcp 192.168.9.200:9100: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:25.897516052Z",
+                "lastScrapeDuration": 0.000511456,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.10.102:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.10.102:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.10.102:9100/metrics",
+                "globalUrl": "http://192.168.10.102:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:29.373961379Z",
+                "lastScrapeDuration": 0.187434473,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.11:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.11:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.11:9100/metrics",
+                "globalUrl": "http://192.168.9.11:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:30.026010016Z",
+                "lastScrapeDuration": 0.010091476,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.27:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.27:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.27:9100/metrics",
+                "globalUrl": "http://192.168.9.27:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.451422396Z",
+                "lastScrapeDuration": 0.019187481,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.28:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.28:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.28:9100/metrics",
+                "globalUrl": "http://192.168.9.28:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.255928334Z",
+                "lastScrapeDuration": 0.011964328,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.29:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.29:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.29:9100/metrics",
+                "globalUrl": "http://192.168.9.29:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:29.711834897Z",
+                "lastScrapeDuration": 0.014469387,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.205:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.205:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.205:9100/metrics",
+                "globalUrl": "http://192.168.9.205:9100/metrics",
+                "lastError": "Get \"http://192.168.9.205:9100/metrics\": dial tcp 192.168.9.205:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:25.037396711Z",
+                "lastScrapeDuration": 3.058759362,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.56:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "nodeexporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.56:9100",
+                    "job": "nodeexporter"
+                },
+                "scrapePool": "nodeexporter",
+                "scrapeUrl": "http://192.168.9.56:9100/metrics",
+                "globalUrl": "http://192.168.9.56:9100/metrics",
+                "lastError": "Get \"http://192.168.9.56:9100/metrics\": dial tcp 192.168.9.56:9100: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:24.343524033Z",
+                "lastScrapeDuration": 3.079981818,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.16:1321",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "15s",
+                    "__scrape_timeout__": "10s",
+                    "job": "nodejs-app"
+                },
+                "labels": {
+                    "instance": "192.168.9.16:1321",
+                    "job": "nodejs-app"
+                },
+                "scrapePool": "nodejs-app",
+                "scrapeUrl": "http://192.168.9.16:1321/metrics",
+                "globalUrl": "http://192.168.9.16:1321/metrics",
+                "lastError": "Get \"http://192.168.9.16:1321/metrics\": dial tcp 192.168.9.16:1321: connect: connection refused",
+                "lastScrape": "2026-05-26T04:44:16.60807782Z",
+                "lastScrapeDuration": 0.000409895,
+                "health": "down",
+                "scrapeInterval": "15s",
+                "scrapeTimeout": "10s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.23:9187",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "postgres_exporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.23:9187",
+                    "job": "postgres_exporter"
+                },
+                "scrapePool": "postgres_exporter",
+                "scrapeUrl": "http://192.168.9.23:9187/metrics",
+                "globalUrl": "http://192.168.9.23:9187/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:25.885153607Z",
+                "lastScrapeDuration": 0.250050814,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.40:9187",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "postgres_exporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.40:9187",
+                    "job": "postgres_exporter"
+                },
+                "scrapePool": "postgres_exporter",
+                "scrapeUrl": "http://192.168.9.40:9187/metrics",
+                "globalUrl": "http://192.168.9.40:9187/metrics",
+                "lastError": "Get \"http://192.168.9.40:9187/metrics\": dial tcp 192.168.9.40:9187: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:26.247606393Z",
+                "lastScrapeDuration": 3.064655322,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.10:9187",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "postgres_exporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.10:9187",
+                    "job": "postgres_exporter"
+                },
+                "scrapePool": "postgres_exporter",
+                "scrapeUrl": "http://192.168.9.10:9187/metrics",
+                "globalUrl": "http://192.168.9.10:9187/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.375097686Z",
+                "lastScrapeDuration": 1.402455339,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "localhost:9090",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "1s",
+                    "__scrape_timeout__": "1s",
+                    "job": "prometheus"
+                },
+                "labels": {
+                    "instance": "localhost:9090",
+                    "job": "prometheus"
+                },
+                "scrapePool": "prometheus",
+                "scrapeUrl": "http://localhost:9090/metrics",
+                "globalUrl": "http://adcf9b190500:9090/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:30.263864767Z",
+                "lastScrapeDuration": 0.013068061,
+                "health": "up",
+                "scrapeInterval": "1s",
+                "scrapeTimeout": "1s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.185:9100",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "proxmox"
+                },
+                "labels": {
+                    "instance": "192.168.9.185:9100",
+                    "job": "proxmox"
+                },
+                "scrapePool": "proxmox",
+                "scrapeUrl": "http://192.168.9.185:9100/metrics",
+                "globalUrl": "http://192.168.9.185:9100/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:28.724834312Z",
+                "lastScrapeDuration": 0.214753878,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "pushgateway:9091",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "1s",
+                    "__scrape_timeout__": "1s",
+                    "job": "pushgateway"
+                },
+                "labels": {
+                    "instance": "pushgateway:9091",
+                    "job": "pushgateway"
+                },
+                "scrapePool": "pushgateway",
+                "scrapeUrl": "http://pushgateway:9091/metrics",
+                "globalUrl": "http://pushgateway:9091/metrics",
+                "lastError": "Get \"http://pushgateway:9091/metrics\": dial tcp: lookup pushgateway on 127.0.0.11:53: no such host",
+                "lastScrape": "2026-05-26T04:44:30.251384481Z",
+                "lastScrapeDuration": 0.041799162,
+                "health": "down",
+                "scrapeInterval": "1s",
+                "scrapeTimeout": "1s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.1",
+                    "__metrics_path__": "/snmp",
+                    "__param_auth": "public_v2",
+                    "__param_module": "mikrotik",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "1m",
+                    "__scrape_timeout__": "30s",
+                    "job": "snmp"
+                },
+                "labels": {
+                    "instance": "192.168.9.1",
+                    "job": "snmp"
+                },
+                "scrapePool": "snmp",
+                "scrapeUrl": "http://192.168.9.16:9116/snmp?auth=public_v2&module=mikrotik&target=192.168.9.1",
+                "globalUrl": "http://192.168.9.16:9116/snmp?auth=public_v2&module=mikrotik&target=192.168.9.1",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:10.4440752Z",
+                "lastScrapeDuration": 0.378264334,
+                "health": "up",
+                "scrapeInterval": "1m",
+                "scrapeTimeout": "30s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.16:9130",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "1m",
+                    "__scrape_timeout__": "1m",
+                    "job": "unpoller-unifi-tebet"
+                },
+                "labels": {
+                    "instance": "192.168.9.16:9130",
+                    "job": "unpoller-unifi-tebet"
+                },
+                "scrapePool": "unpoller-unifi-tebet",
+                "scrapeUrl": "http://192.168.9.16:9130/metrics",
+                "globalUrl": "http://192.168.9.16:9130/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:43:53.441020916Z",
+                "lastScrapeDuration": 0.147424721,
+                "health": "up",
+                "scrapeInterval": "1m",
+                "scrapeTimeout": "1m"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.17:9182",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "win_exporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.17:9182",
+                    "job": "win_exporter"
+                },
+                "scrapePool": "win_exporter",
+                "scrapeUrl": "http://192.168.9.17:9182/metrics",
+                "globalUrl": "http://192.168.9.17:9182/metrics",
+                "lastError": "",
+                "lastScrape": "2026-05-26T04:44:26.136386531Z",
+                "lastScrapeDuration": 1.528474511,
+                "health": "up",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            },
+            {
+                "discoveredLabels": {
+                    "__address__": "192.168.9.254:9182",
+                    "__metrics_path__": "/metrics",
+                    "__scheme__": "http",
+                    "__scrape_interval__": "5s",
+                    "__scrape_timeout__": "5s",
+                    "job": "win_exporter"
+                },
+                "labels": {
+                    "instance": "192.168.9.254:9182",
+                    "job": "win_exporter"
+                },
+                "scrapePool": "win_exporter",
+                "scrapeUrl": "http://192.168.9.254:9182/metrics",
+                "globalUrl": "http://192.168.9.254:9182/metrics",
+                "lastError": "Get \"http://192.168.9.254:9182/metrics\": dial tcp 192.168.9.254:9182: connect: no route to host",
+                "lastScrape": "2026-05-26T04:44:23.766644744Z",
+                "lastScrapeDuration": 3.049530986,
+                "health": "down",
+                "scrapeInterval": "5s",
+                "scrapeTimeout": "5s"
+            }
+        ],
+        "droppedTargets": [],
+        "droppedTargetCounts": {
+            "blackbox": 0,
+            "cadvisor": 0,
+            "gag_nikel": 0,
+            "gitlab-ci-pipelines-exporter": 0,
+            "gitlab-rails": 0,
+            "gitlab-runner": 0,
+            "gitlab-workhorse": 0,
+            "inconis": 0,
+            "ipmi": 0,
+            "keepalived": 0,
+            "kube-metrics": 0,
+            "load-balancer-metrics": 0,
+            "nginx": 0,
+            "nginx_cluster": 0,
+            "nginx_single": 0,
+            "node": 0,
+            "nodeexporter": 0,
+            "nodejs-app": 0,
+            "postgres_exporter": 0,
+            "prometheus": 0,
+            "proxmox": 0,
+            "pushgateway": 0,
+            "snmp": 0,
+            "unpoller-unifi-tebet": 0,
+            "win_exporter": 0
+        }
+    }
+}

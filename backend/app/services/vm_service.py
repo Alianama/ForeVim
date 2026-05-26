@@ -153,8 +153,8 @@ class VMService:
             disk_usage=disk,
             disk_total_gb=round(disk_total / 1e9, 2) if disk_total else None,
             disk_used_gb=round((disk_total - disk_avail) / 1e9, 2) if disk_total and disk_avail else None,
-            network_rx_mbps=round(net_rx / 1e6, 4) if net_rx else None,
-            network_tx_mbps=round(net_tx / 1e6, 4) if net_tx else None,
+            network_rx_mbps=round((net_rx * 8) / 1e6, 4) if net_rx else None,
+            network_tx_mbps=round((net_tx * 8) / 1e6, 4) if net_tx else None,
             uptime_seconds=raw.get("uptime_seconds"),
             load_avg_1m=raw.get("load_avg_1m"),
             load_avg_5m=raw.get("load_avg_5m"),
@@ -209,11 +209,15 @@ class VMService:
             url=source_url,
         )
 
+        multiplier = 1.0
+        if metric in ("network_rx", "network_tx"):
+            multiplier = 8.0 / 1e6
+
         return VMHistoryResponse(
             vm_id=vm.id,
             metric=metric,
             step=step,
-            data=[MetricDataPoint(timestamp=ts, value=val) for ts, val in raw],
+            data=[MetricDataPoint(timestamp=ts, value=round(val * multiplier, 4)) for ts, val in raw],
         )
 
     async def get_dashboard_summary(self, db: AsyncSession) -> DashboardSummary:
