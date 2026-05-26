@@ -365,3 +365,19 @@ export function useActiveScan() {
     refetchInterval: false, // driven by WebSocket, not polling
   });
 }
+
+export function useVMRecommendation(
+  id: string,
+  algorithm: ForecastAlgorithm,
+  periodDays: number,
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    queryKey: ["vms", id, "recommendation", algorithm, periodDays] as const,
+    queryFn: () => vmService.recommendation(id, algorithm, periodDays),
+    enabled: options?.enabled !== false && !!id,
+    staleTime: 5 * 60_000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
+}

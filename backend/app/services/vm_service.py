@@ -122,6 +122,7 @@ class VMService:
         raw = await prometheus_service.get_current_metrics(instance, url=source_url)
 
         cpu = raw.get("cpu_usage")
+        cpu_cores = raw.get("cpu_cores")
         ram = raw.get("ram_usage_percent")
         disk = raw.get("disk_usage_percent")
         ram_total = raw.get("ram_total_bytes")
@@ -147,6 +148,7 @@ class VMService:
             vm_id=vm.id,
             hostname=vm.hostname,
             cpu_usage=cpu,
+            cpu_cores=int(cpu_cores) if cpu_cores else None,
             ram_usage=ram,
             ram_total_gb=round(ram_total / 1e9, 2) if ram_total else None,
             ram_used_gb=round((ram_total - ram_avail) / 1e9, 2) if ram_total and ram_avail else None,

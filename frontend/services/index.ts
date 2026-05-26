@@ -14,6 +14,7 @@ import {
   LoginRequest,
   TokenResponse,
   LoginResponse,
+  RecommendationResponse,
   User,
   VM,
   VMCreate,
@@ -148,6 +149,19 @@ export const vmService = {
       `/vms/${id}/forecast/history`,
       {
         params: { limit },
+      },
+    );
+    return data;
+  },
+  recommendation: async (
+    id: string,
+    algorithm: ForecastAlgorithm = "auto",
+    periodDays: number = 7,
+  ): Promise<RecommendationResponse> => {
+    const { data } = await api.get<RecommendationResponse>(
+      `/vms/${id}/recommendation`,
+      {
+        params: { algorithm, period_days: periodDays },
       },
     );
     return data;

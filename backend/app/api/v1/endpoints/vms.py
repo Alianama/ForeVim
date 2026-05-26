@@ -21,6 +21,7 @@ from app.schemas.schemas import (
     DiskMount,
     ForecastHistoryItem,
     ForecastResponse,
+    RecommendationResponse,
     VMCreate,
     VMHistoryResponse,
     VMListResponse,
@@ -29,6 +30,7 @@ from app.schemas.schemas import (
     VMUpdate,
 )
 from app.services.vm_service import vm_service
+from app.forecasting.recommender import analyze_metric
 
 router = APIRouter(prefix="/vms", tags=["Virtual Machines"])
 
@@ -231,3 +233,60 @@ async def get_vm_forecast_history(
         )
         for r in rows
     ]
+
+@router.get(
+    "/{vm_id}/recommendation",
+    response_model=RecommendationResponse,
+    summary="Dapatkan rekomendasi resource VM berdasarkan forecast",
+)
+async def get_vm_recommendation(
+    vm_id: uuid.UUID,
+    db: DBSession,
+    current_user: CurrentUser,
+    algorithm: ForecastAlgorithm = Query(default=ForecastAlgorithm.AUTO),
+    period_days: int = Query(default=7, ge=1, le=90),
+):
+    vm = await vm_service.get_by_id(db, vm_id)
+    if not vm:
+        raise HTTPException(status_code=404, detail="VM not found")
+
+    # Get current capacity
+    current_metrics = None
+    if vm.prometheus_source and vm.prometheus_instance:
+        try:
+            current_metrics = await vm_service.collect_metrics(db, vm)
+        except Exception:
+            logger.warning("failed_fetch_current_metrics", vm_id=str(vm_id))
+
+    current_cpu = None
+    current_ram = None
+    current_disk = None
+    if current_metrics:
+        current_cpu = current_metrics.cpu_cores
+        current_ram = current_metrics.ram_total_gb
+        current_disk = current_metrics.disk_total_gb
+
+    # Get forecasts for CPU, RAM, DISK
+    cpu_fcst = await forecast_service.get_cached_or_generate(
+        vm, ForecastMetric.CPU, algorithm, period_days, force_refresh=False
+    )
+    ram_fcst = await forecast_service.get_cached_or_generate(
+        vm, ForecastMetric.RAM, algorithm, period_days, force_refresh=False
+    )
+    disk_fcst = await forecast_service.get_cached_or_generate(
+        vm, ForecastMetric.DISK, algorithm, period_days, force_refresh=False
+    )
+
+    rec_cpu = analyze_metric("cpu", cpu_fcst, current_capacity=current_cpu)
+    rec_ram = analyze_metric("ram", ram_fcst, current_capacity=current_ram)
+    rec_disk = analyze_metric("disk", disk_fcst, current_capacity=current_disk)
+
+    from datetime import datetime, timezone
+    return RecommendationResponse(
+        vm_id=vm.id,
+        period_days=period_days,
+        cpu=rec_cpu,
+        ram=rec_ram,
+        disk=rec_disk,
+        generated_at=datetime.now(timezone.utc),
+    )

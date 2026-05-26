@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import type { ForecastAlgorithm, ForecastMetric } from "@/types";
 import { FORECAST_ALGORITHMS } from "@/lib/forecast-algorithms";
+import { VMRecommender } from "@/components/vm/VMRecommender";
 
 type Tab = "metrics" | "forecast" | "alerts";
 const METRIC_TABS = ["cpu", "ram", "disk", "network_rx"] as const;
@@ -318,7 +319,13 @@ export default function VMDetailPage() {
 
       {/* Tab: Forecast */}
       {activeTab === "forecast" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
+          <VMRecommender 
+            vmId={id} 
+            algorithm={forecastAlgo} 
+            periodDays={forecastPeriod} 
+          />
+
           <div className="flex flex-wrap items-center gap-3">
             {/* Metric selector */}
             <div className="flex items-center gap-1.5">

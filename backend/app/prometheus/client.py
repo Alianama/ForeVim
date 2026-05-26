@@ -23,6 +23,7 @@ QUERIES = {
     "cpu_usage": (
         '100 - (avg by (instance) (rate(node_cpu_seconds_total{{instance="{instance}",mode="idle"}}[5m])) * 100)'
     ),
+    "cpu_cores": 'count by (instance) (node_cpu_seconds_total{{instance="{instance}", mode="idle"}})',
     "ram_usage_percent": (
         '100 - ((node_memory_MemAvailable_bytes{{instance="{instance}"}} / '
         'node_memory_MemTotal_bytes{{instance="{instance}"}}) * 100)'
@@ -220,6 +221,7 @@ class PrometheusService:
 
         tasks = [
             _q("cpu_usage"),
+            _q("cpu_cores"),
             _q("ram_usage_percent"),
             _q("ram_total_bytes"),
             _q("ram_available_bytes"),

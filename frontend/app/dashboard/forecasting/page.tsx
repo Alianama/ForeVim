@@ -22,6 +22,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ForecastChart } from "@/components/charts/ForecastChart";
+import { VMRecommender } from "@/components/vm/VMRecommender";
 import { SearchableVMSelect } from "@/components/vm/SearchableVMSelect";
 import { Button } from "@/components/ui/button";
 import {
@@ -1046,6 +1047,11 @@ export default function ForecastingPage() {
 
           {selectedVmId ? (
             <>
+              <VMRecommender
+                vmId={selectedVmId}
+                algorithm={algorithm}
+                periodDays={periodDays}
+              />
               <ForecastChart
                 data={forecast}
                 isLoading={forecastLoading && !forecast}

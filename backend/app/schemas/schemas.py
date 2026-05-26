@@ -207,6 +207,7 @@ class VMMetrics(BaseModel):
     vm_id: uuid.UUID
     hostname: str
     cpu_usage: Optional[float] = None
+    cpu_cores: Optional[int] = None
     ram_usage: Optional[float] = None
     ram_total_gb: Optional[float] = None
     ram_used_gb: Optional[float] = None
@@ -279,6 +280,25 @@ class ForecastHistoryItem(BaseSchema):
     accuracy_score: Optional[float] = None
     generated_at: datetime
     has_forecast: bool = True
+
+
+# ─── Recommendation ─────────────────────────────────────────────────────────────
+
+
+class ResourceRecommendation(BaseModel):
+    action: str  # INCREASE, DECREASE, KEEP
+    current_capacity: Optional[float] = None
+    recommended_capacity: Optional[float] = None
+    reason: str
+
+
+class RecommendationResponse(BaseModel):
+    vm_id: uuid.UUID
+    period_days: int
+    cpu: ResourceRecommendation
+    ram: ResourceRecommendation
+    disk: ResourceRecommendation
+    generated_at: datetime
 
 
 # ─── Alert ────────────────────────────────────────────────────────────────────

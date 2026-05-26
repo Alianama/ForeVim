@@ -331,3 +331,21 @@ export interface DiskMount {
   avail_gb: number;
   usage_percent: number;
 }
+
+// ─── Recommendation ─────────────────────────────────────────────────────────────
+
+export interface ResourceRecommendation {
+  action: "INCREASE" | "DECREASE" | "KEEP";
+  current_capacity: number | null;
+  recommended_capacity: number | null;
+  reason: string;
+}
+
+export interface RecommendationResponse {
+  vm_id: string;
+  period_days: number;
+  cpu: ResourceRecommendation;
+  ram: ResourceRecommendation;
+  disk: ResourceRecommendation;
+  generated_at: string;
+}
