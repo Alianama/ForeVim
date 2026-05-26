@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
 
+# pyrefly: ignore [missing-import]
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -43,11 +44,17 @@ MIN_FORECAST_POINTS = 12
 def _resolve_step_and_interval(period_days: int) -> Tuple[str, int]:
     if period_days <= 1:
         return "5m", 5
-    if period_days <= 7:
+    if period_days <= 3:
         return "10m", 10
-    if period_days <= 30:
+    if period_days <= 7:
         return "30m", 30
-    return "1h", 60
+    if period_days <= 14:
+        return "1h", 60
+    if period_days <= 30:
+        return "2h", 120
+    if period_days <= 60:
+        return "4h", 240
+    return "6h", 360
 
 
 class ForecastService:
@@ -96,7 +103,7 @@ class ForecastService:
             for ts, val in display_hist
         ]
 
-        if len(history_raw) < min_points:
+        if len(history_raw) < MIN_RAW_POINTS:
             logger.warning(
                 "insufficient_historical_data",
                 vm_id=str(vm.id),
@@ -121,7 +128,7 @@ class ForecastService:
                 generated_at=datetime.now(timezone.utc),
             )
 
-        periods = min(int(period_days * 24 * (60 / interval_minutes)), 500)
+        periods = int(period_days * 24 * (60 / interval_minutes))
         forecast_points, accuracy, accuracy_metric, model_info, resolved_algorithm = (
             await self._run_models(
                 history_raw,

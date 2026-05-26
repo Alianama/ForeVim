@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     FORECAST_HISTORY_HOURS: int = 168  # 7 days lookback
     # Background forecast tiap jam memakan CPU (statsmodels); default off — forecast on-demand via API
     FORECAST_SCHEDULER_ENABLED: bool = False
-    FORECAST_MAX_LOOKBACK_HOURS: int = 336  # 14 hari max query Prometheus
+    FORECAST_MAX_LOOKBACK_HOURS: int = 2160  # 90 hari max query Prometheus
 
     # ── Alerting ──────────────────────────────────────────────────────────────
     ALERT_CPU_THRESHOLD: float = 85.0

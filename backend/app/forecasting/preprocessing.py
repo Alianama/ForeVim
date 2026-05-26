@@ -127,7 +127,7 @@ def required_lookback_hours(
     interval_minutes: int,
     *,
     min_hours: int = 48,
-    max_hours: int = 720,
+    max_hours: int = 2160,
 ) -> int:
     """At least 2 daily seasons + forecast horizon, capped for Prometheus retention."""
     daily_points = max(1, int(1440 / interval_minutes))

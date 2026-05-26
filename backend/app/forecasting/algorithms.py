@@ -32,7 +32,7 @@ _ExponentialSmoothing = None
 try:
     from statsmodels.tsa.holtwinters import ExponentialSmoothing as _ExponentialSmoothing
 
-    _ = _ExponentialSmoothing  # trigger class body
+    _ = _ExponentialSmoothing  # type: ignore # noqa
     STATSMODELS_HW_AVAILABLE = True
 except Exception as exc:
     STATSMODELS_HW_AVAILABLE = False
@@ -383,7 +383,7 @@ class ARIMAForecaster(ForecastAlgorithmBase):
                 enforce_invertibility=False,
             )
             # Cap periods to avoid very long ARIMA fitting for large forecasts
-            arima_periods = min(periods, 200)
+            arima_periods = min(periods, 1500)
             result = model.fit(disp=False, maxiter=60)
 
             train, test = self._holdout_split(values)
