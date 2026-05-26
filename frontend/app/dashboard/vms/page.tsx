@@ -27,6 +27,7 @@ import {
   Download,
 } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { ReportBuilder } from "@/components/reports/ReportBuilder";
 import { toast } from "sonner";
 import { prometheusService, vmService } from "@/services";
@@ -63,15 +64,33 @@ export default function VMsPage() {
   const [origins, setOrigins] = useState<string[]>([]);
   const [selectedOrigin, setSelectedOrigin] = useState<string>("all");
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [showDown, setShowDown] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [sort, setSort] = useState<SortState>({
-    field: "hostname",
-    dir: "asc",
-  });
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const searchQuery = searchParams.get("q") ?? "";
+  const statusFilter = searchParams.get("status") ?? "all";
+  const showDown = searchParams.get("showDown") === "true";
+  const page = Number(searchParams.get("page")) || 1;
+  const pageSize = Number(searchParams.get("pageSize")) || DEFAULT_PAGE_SIZE;
+  const sortField = (searchParams.get("sortField") as SortField) || "hostname";
+  const sortDir = (searchParams.get("sortDir") as "asc" | "desc") || "asc";
+  const sort: SortState = { field: sortField, dir: sortDir };
+
+  const updateParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === null || value === "") {
+          params.delete(key);
+        } else {
+          params.set(key, value);
+        }
+      });
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, pathname, router]
+  );
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -217,14 +236,10 @@ export default function VMsPage() {
   }, [metricsQueries, paginatedVms]);
 
   useEffect(() => {
-    setPage(1);
-  }, [searchQuery, statusFilter, showDown, pageSize, sort]);
-
-  useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages);
+    if (page > totalPages && totalPages > 0) {
+      updateParams({ page: String(totalPages) });
     }
-  }, [page, totalPages]);
+  }, [page, totalPages, updateParams]);
 
   // ── Select options ────────────────────────────────────────────────────────
   const sourceOptions: SelectOption[] = activeSources.map((src) => ({
@@ -264,9 +279,9 @@ export default function VMsPage() {
   };
 
   const clearSearch = useCallback(() => {
-    setSearchQuery("");
+    updateParams({ q: null, page: "1" });
     searchInputRef.current?.focus();
-  }, []);
+  }, [updateParams]);
 
   return (
     <div className="space-y-6">
@@ -305,7 +320,7 @@ export default function VMsPage() {
               type="text"
               placeholder="Cari hostname, IP, cluster, tag..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => updateParams({ q: e.target.value, page: "1" })}
               className="
                 w-full bg-background border border-border rounded-lg
                 pl-9 pr-9 py-2.5 text-sm
@@ -337,7 +352,7 @@ export default function VMsPage() {
             ].map((btn) => (
               <button
                 key={btn.value}
-                onClick={() => setStatusFilter(btn.value)}
+                onClick={() => updateParams({ status: btn.value, page: "1" })}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all whitespace-nowrap ${
                   statusFilter === btn.value
                     ? "bg-primary text-primary-foreground border-primary shadow-sm"
@@ -352,7 +367,7 @@ export default function VMsPage() {
           {/* Show Down toggle */}
           <button
             type="button"
-            onClick={() => setShowDown((v) => !v)}
+            onClick={() => updateParams({ showDown: showDown ? null : "true", page: "1" })}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all whitespace-nowrap shrink-0 ${
               showDown
                 ? "bg-secondary text-foreground border-border"
@@ -456,7 +471,7 @@ export default function VMsPage() {
           vms={paginatedVms}
           isLoading={isLoading}
           sort={sort}
-          onSortChange={setSort}
+          onSortChange={(s) => updateParams({ sortField: s.field, sortDir: s.dir, page: "1" })}
           metricsMap={apiMetricsMap}
         />
         {!isLoading && sortedVms.length > 0 && (
@@ -464,11 +479,8 @@ export default function VMsPage() {
             page={safePage}
             pageSize={pageSize}
             total={sortedVms.length}
-            onPageChange={setPage}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setPage(1);
-            }}
+            onPageChange={(p) => updateParams({ page: String(p) })}
+            onPageSizeChange={(size) => updateParams({ pageSize: String(size), page: "1" })}
           />
         )}
       </div>

@@ -144,61 +144,8 @@ export function VMTable({
 }: Props) {
   const router = useRouter();
   const realtimeMetrics = useRealtimeStore((s) => s.metrics);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  // Sort vms based on sort state
-  const sortedVms = useMemo(() => {
-    return [...vms].sort((a, b) => {
-      const rtA = realtimeMetrics[a.id];
-      const rtB = realtimeMetrics[b.id];
-      const apiA = metricsMap?.[a.id];
-      const apiB = metricsMap?.[b.id];
-
-      const getSortValue = (vm: VM, rt: typeof rtA, api: typeof apiA) => {
-        switch (sort.field) {
-          case "hostname":
-            return vm.hostname.toLowerCase();
-          case "ip_address":
-            return vm.ip_address;
-          case "status":
-            return rt?.status ?? api?.status ?? vm.status;
-          case "cpu":
-            return rt?.cpu_usage ?? api?.cpu_usage ?? 0;
-          case "ram":
-            return rt?.ram_usage ?? api?.ram_usage ?? 0;
-          case "disk":
-            return rt?.disk_usage ?? api?.disk_usage ?? 0;
-          case "last_seen":
-            return vm.last_seen ? new Date(vm.last_seen).getTime() : 0;
-          default:
-            return 0;
-        }
-      };
-
-      const valA = getSortValue(a, rtA, apiA);
-      const valB = getSortValue(b, rtB, apiB);
-
-      if (valA < valB) return sort.dir === "asc" ? -1 : 1;
-      if (valA > valB) return sort.dir === "asc" ? 1 : -1;
-      return 0;
-    });
-  }, [vms, sort, realtimeMetrics, metricsMap]);
-
-  const totalPages = Math.ceil(sortedVms.length / itemsPerPage);
-  const paginatedVms = sortedVms.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  // Reset to page 1 when vms or sort changes
-  if (currentPage > totalPages && totalPages > 0) {
-    setCurrentPage(1);
-  }
+  // We just use `vms` directly since sorting and pagination are handled by the parent component.
+  const displayVms = vms;
 
   return (
     <div className="flex flex-col">
@@ -266,7 +213,7 @@ export function VMTable({
             )}
 
             {!isLoading &&
-              paginatedVms.map((vm) => {
+              displayVms.map((vm) => {
                 const rt = realtimeMetrics[vm.id];
                 const api = metricsMap?.[vm.id];
                 const cpu = rt?.cpu_usage ?? api?.cpu_usage ?? null;
@@ -331,45 +278,7 @@ export function VMTable({
         </table>
       </div>
 
-      {/* Pagination */}
-      {!isLoading && sortedVms.length > 0 && totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-border/50">
-          <div className="text-xs text-muted-foreground">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, sortedVms.length)} of{" "}
-            {sortedVms.length} entries
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="p-1.5 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                  currentPage === page
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-secondary text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="p-1.5 rounded-md hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Nested pagination removed */}
     </div>
   );
 }
