@@ -40,7 +40,13 @@ export interface User {
 
 // ─── VM ───────────────────────────────────────────────────────────────────────
 
-export type VMStatus = "healthy" | "warning" | "critical" | "unknown" | "down";
+export type VMStatus =
+  | "healthy"
+  | "high"
+  | "warning"
+  | "critical"
+  | "unknown"
+  | "down";
 
 export interface VM {
   id: string;
@@ -202,6 +208,7 @@ export interface Alert {
 export interface DashboardSummary {
   total_vms: number;
   healthy_vms: number;
+  high_vms: number;
   warning_vms: number;
   critical_vms: number;
   unknown_vms: number;
@@ -348,4 +355,35 @@ export interface RecommendationResponse {
   ram: ResourceRecommendation;
   disk: ResourceRecommendation;
   generated_at: string;
+}
+
+// ─── Notification Config ─────────────────────────────────────────────────────────
+
+export interface NotificationConfig {
+  cpu_high_threshold: number;
+  cpu_critical_threshold: number;
+  ram_high_threshold: number;
+  ram_critical_threshold: number;
+  disk_high_threshold: number;
+  disk_critical_threshold: number;
+  notify_on_high: boolean;
+  notify_on_critical: boolean;
+  frontend_url: string;
+  telegram_enabled: boolean;
+  telegram_bot_token: string | null;
+  telegram_chat_id: string | null;
+  telegram_thread_id: string | null;
+  email_enabled: boolean;
+  smtp_host: string | null;
+  smtp_port: number | null;
+  smtp_username: string | null;
+  smtp_from_email: string | null;
+  smtp_to_emails: string | null;
+  smtp_password: string | null;
+  smtp_use_tls: boolean;
+  snmp_enabled: boolean;
+  snmp_host: string | null;
+  snmp_port: number | null;
+  snmp_community: string | null;
+  snmp_version: string | null;
 }

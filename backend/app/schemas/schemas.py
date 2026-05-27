@@ -18,6 +18,7 @@ from app.models.models import (
     ForecastMetric,
     UserRole,
     VMStatus,
+    NotificationConfig,
 )
 
 # ─── Base ─────────────────────────────────────────────────────────────────────
@@ -328,7 +329,8 @@ class AlertAcknowledgeRequest(BaseModel):
 class DashboardSummary(BaseModel):
     total_vms: int
     healthy_vms: int
-    warning_vms: int
+    high_vms: int
+    warning_vms: int  # legacy, kept for compatibility
     critical_vms: int
     unknown_vms: int
     down_vms: int
@@ -368,3 +370,72 @@ class HealthResponse(BaseModel):
     database: str
     prometheus: str
     timestamp: datetime
+
+
+# ─── Notification Config ───────────────────────────────────────────────────────────────
+
+
+class NotificationConfigUpdate(BaseModel):
+    # Thresholds
+    cpu_high_threshold: Optional[float] = None
+    cpu_critical_threshold: Optional[float] = None
+    ram_high_threshold: Optional[float] = None
+    ram_critical_threshold: Optional[float] = None
+    disk_high_threshold: Optional[float] = None
+    disk_critical_threshold: Optional[float] = None
+    # Notification toggles
+    notify_on_high: Optional[bool] = None
+    notify_on_critical: Optional[bool] = None
+    frontend_url: Optional[str] = None
+    # Telegram
+    telegram_enabled: Optional[bool] = None
+    telegram_bot_token: Optional[str] = None
+    telegram_chat_id: Optional[str] = None
+    telegram_thread_id: Optional[str] = None
+    # Email
+    email_enabled: Optional[bool] = None
+    smtp_host: Optional[str] = None
+    smtp_port: Optional[int] = None
+    smtp_username: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_from_email: Optional[str] = None
+    smtp_to_emails: Optional[str] = None
+    smtp_use_tls: Optional[bool] = None
+    # SNMP
+    snmp_enabled: Optional[bool] = None
+    snmp_host: Optional[str] = None
+    snmp_port: Optional[int] = None
+    snmp_community: Optional[str] = None
+    snmp_version: Optional[str] = None
+
+
+class NotificationConfigResponse(BaseSchema):
+    cpu_high_threshold: float
+    cpu_critical_threshold: float
+    ram_high_threshold: float
+    ram_critical_threshold: float
+    disk_high_threshold: float
+    disk_critical_threshold: float
+    notify_on_high: bool
+    notify_on_critical: bool
+    frontend_url: str
+    telegram_enabled: bool
+    telegram_bot_token: Optional[str] = None  # masked on GET
+    telegram_chat_id: Optional[str] = None
+    telegram_thread_id: Optional[str] = None
+    email_enabled: bool
+    smtp_host: Optional[str] = None
+    smtp_port: Optional[int] = None
+    smtp_username: Optional[str] = None
+    smtp_from_email: Optional[str] = None
+    smtp_to_emails: Optional[str] = None
+    smtp_use_tls: bool
+    snmp_enabled: bool
+    snmp_host: Optional[str] = None
+    snmp_port: Optional[int] = None
+    snmp_community: Optional[str] = None
+    snmp_version: Optional[str] = None
+
+
+class TestNotificationRequest(BaseModel):
+    message: Optional[str] = "This is a test notification from ForeVim! ✅"

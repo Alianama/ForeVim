@@ -32,13 +32,13 @@ export function ForecastChart({ data, isLoading, metric }: Props) {
     return (
       <div className="chart-container h-80 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2 px-6 text-center">
         <AlertCircle className="w-8 h-8 opacity-40" />
-        <p>Belum ada data forecast.</p>
+        <p>No forecast data yet.</p>
         {data?.model_info && (
           <p className="text-xs text-amber-600 dark:text-amber-400 max-w-md">{data.model_info}</p>
         )}
         <p className="text-xs">
-          Pilih VM lalu klik <strong>Jalankan Forecast</strong>. Pastikan VM sudah di-sync dengan
-          Prometheus source.
+          Select a VM then click <strong>Run Forecast</strong>. Ensure the VM has been synced with
+          a Prometheus source.
         </p>
       </div>
     );
@@ -78,8 +78,8 @@ export function ForecastChart({ data, isLoading, metric }: Props) {
     animation: true,
     legend: {
       data: hasForecast
-        ? ["Historis", "Forecast", "Interval 95%"]
-        : ["Historis (Prometheus)"],
+        ? ["Historical", "Forecast", "95% Confidence Interval"]
+        : ["Historical (Prometheus)"],
       textStyle: { color: "hsl(215,20%,65%)", fontSize: 11 },
       top: 0,
     },
@@ -101,7 +101,7 @@ export function ForecastChart({ data, isLoading, metric }: Props) {
     },
     series: [
       {
-        name: "Historis",
+        name: "Historical",
         type: "line",
         data: hasForecast ? historicalSeries : data.historical.map((d) => d.value),
         smooth: true,
@@ -161,15 +161,15 @@ export function ForecastChart({ data, isLoading, metric }: Props) {
         <div className="flex items-center gap-2 text-sm font-medium">
           <TrendingUp className="w-4 h-4 text-primary" />
           <span>
-            {metric.toUpperCase()} — {data.period_days} hari
-            {!hasForecast && hasHistorical && " (historis saja)"}
+            {metric.toUpperCase()} — {data.period_days} days
+            {!hasForecast && hasHistorical && " (historical only)"}
           </span>
         </div>
         <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground">
           <span className="font-medium text-foreground">{algoLabel}</span>
           {accuracyLabel && (
             <span>
-              Akurasi: <span className="font-mono text-foreground">{accuracyLabel}</span>
+              Accuracy: <span className="font-mono text-foreground">{accuracyLabel}</span>
             </span>
           )}
         </div>
@@ -180,7 +180,7 @@ export function ForecastChart({ data, isLoading, metric }: Props) {
           <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           <span>
             {data.model_info ||
-              "Garis historis dari Prometheus ada, tetapi prediksi belum terbentuk. Coba algoritma Moving Average atau periode lebih pendek."}
+              "Historical data from Prometheus is available, but prediction could not be formed. Try the Moving Average algorithm or a shorter period."}
           </span>
         </div>
       )}

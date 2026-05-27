@@ -56,35 +56,35 @@ const FORMAT_OPTIONS: {
   {
     id: "xlsx",
     label: "Excel",
-    desc: ".xlsx — multi-sheet dengan tabel lengkap",
+    desc: ".xlsx — multi-sheet with full tables",
     icon: FileSpreadsheet,
     color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30",
   },
   {
     id: "pdf",
     label: "PDF",
-    desc: ".pdf — dokumen siap cetak dengan grafik",
+    desc: ".pdf — print-ready document with charts",
     icon: FileText,
     color: "text-red-500 bg-red-500/10 border-red-500/30",
   },
   {
     id: "pptx",
     label: "PowerPoint",
-    desc: ".pptx — presentasi dengan grafik interaktif",
+    desc: ".pptx — presentation with interactive charts",
     icon: Presentation,
     color: "text-orange-500 bg-orange-500/10 border-orange-500/30",
   },
   {
     id: "docx",
     label: "Word",
-    desc: ".docx — dokumen terformat dengan tabel",
+    desc: ".docx — formatted document with tables",
     icon: FileText,
     color: "text-blue-500 bg-blue-500/10 border-blue-500/30",
   },
   {
     id: "csv",
     label: "CSV",
-    desc: ".csv — data mentah untuk analisis lanjutan",
+    desc: ".csv — raw data for advanced analysis",
     icon: FileDown,
     color: "text-slate-500 bg-slate-500/10 border-slate-500/30",
   },
@@ -205,11 +205,11 @@ export function ReportBuilder({
 
   const handleGenerate = async () => {
     if (!title.trim()) {
-      toast.error("Judul laporan wajib diisi");
+      toast.error("Report title is required");
       return;
     }
     if (!sections.some((s) => s.enabled)) {
-      toast.error("Pilih minimal satu section");
+      toast.error("Select at least one section");
       return;
     }
 
@@ -217,11 +217,11 @@ export function ReportBuilder({
     try {
       const reportData = buildReportData();
       await generateReport(reportData, format);
-      toast.success(`Laporan berhasil dibuat dan diunduh!`);
+      toast.success(`Report successfully created and downloaded!`);
       onClose();
     } catch (err: any) {
       console.error("Report generation error:", err);
-      toast.error(`Gagal membuat laporan: ${err?.message ?? "Unknown error"}`);
+      toast.error(`Failed to create report: ${err?.message ?? "Unknown error"}`);
     } finally {
       setIsGenerating(false);
     }
@@ -252,7 +252,7 @@ export function ReportBuilder({
             <div className="flex-1">
               <h2 className="text-base font-semibold">Generate Report</h2>
               <p className="text-xs text-muted-foreground">
-                Ekspor data monitoring ke berbagai format
+                Export monitoring data to various formats
               </p>
             </div>
             <button
@@ -269,25 +269,25 @@ export function ReportBuilder({
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
-                  JUDUL LAPORAN *
+                  REPORT TITLE *
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Contoh: VM Monitoring Report — Januari 2025"
+                  placeholder="Example: VM Monitoring Report — January 2025"
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50"
                 />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
-                  SUBJUDUL (opsional)
+                  SUBTITLE (optional)
                 </label>
                 <input
                   type="text"
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
-                  placeholder="Contoh: Infrastruktur Produksi Q1 2025"
+                  placeholder="Example: Production Infrastructure Q1 2025"
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50"
                 />
               </div>
@@ -296,7 +296,7 @@ export function ReportBuilder({
             {/* Format Selector */}
             <div>
               <label className="block text-xs font-semibold text-muted-foreground mb-2">
-                FORMAT FILE
+                FILE FORMAT
               </label>
               <div className="grid grid-cols-5 gap-2">
                 {FORMAT_OPTIONS.map((f) => {
@@ -333,13 +333,13 @@ export function ReportBuilder({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-semibold text-muted-foreground">
-                  KONTEN LAPORAN
+                  REPORT CONTENT
                 </label>
                 <button
                   onClick={() => toggleAll(!allEnabled)}
                   className="text-xs text-primary hover:underline"
                 >
-                  {allEnabled ? "Hapus semua" : "Pilih semua"}
+                  {allEnabled ? "Deselect all" : "Select all"}
                 </button>
               </div>
               <div className="space-y-1.5 bg-secondary/30 rounded-xl p-3">
@@ -373,9 +373,9 @@ export function ReportBuilder({
             {(format === "pdf" || format === "pptx") && (
               <div className="flex items-center justify-between py-3 px-4 bg-secondary/30 rounded-xl">
                 <div>
-                  <div className="text-sm font-medium">Sertakan Grafik</div>
+                  <div className="text-sm font-medium">Include Charts</div>
                   <div className="text-xs text-muted-foreground">
-                    Tambahkan bar chart untuk Top CPU/RAM/Disk
+                    Add bar charts for Top CPU/RAM/Disk
                   </div>
                 </div>
                 <button
@@ -400,7 +400,7 @@ export function ReportBuilder({
                 ) : (
                   <ChevronDown className="w-3.5 h-3.5" />
                 )}
-                FILTER LANJUTAN
+                ADVANCED FILTERS
               </button>
               {showAdvanced && (
                 <div className="mt-3 grid grid-cols-2 gap-3">
@@ -415,7 +415,7 @@ export function ReportBuilder({
                       <SelectContent>
                         {environments.map((e) => (
                           <SelectItem key={e} value={e}>
-                            {e === "all" ? "Semua" : e}
+                            {e === "all" ? "All" : e}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -432,7 +432,7 @@ export function ReportBuilder({
                       <SelectContent>
                         {clusters.map((c) => (
                           <SelectItem key={c} value={c}>
-                            {c === "all" ? "Semua" : c}
+                            {c === "all" ? "All" : c}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -448,14 +448,14 @@ export function ReportBuilder({
                 Preview
               </div>
               <div>
-                {filteredVms.length} VM{" "}
+                {filteredVms.length} VMs{" "}
                 {filterEnv !== "all" || filterCluster !== "all"
                   ? "(filtered)"
-                  : "(semua)"}
+                  : "(all)"}
               </div>
               <div>
-                {sections.filter((s) => s.enabled).length} dari{" "}
-                {sections.length} section aktif
+                {sections.filter((s) => s.enabled).length} of{" "}
+                {sections.length} sections active
               </div>
               <div>
                 Format:{" "}
@@ -464,7 +464,7 @@ export function ReportBuilder({
                 </span>
               </div>
               {(format === "pdf" || format === "pptx") && (
-                <div>Grafik: {includeCharts ? "Disertakan" : "Tabel saja"}</div>
+                <div>Charts: {includeCharts ? "Included" : "Table only"}</div>
               )}
             </div>
           </div>
@@ -472,15 +472,15 @@ export function ReportBuilder({
           {/* Footer */}
           <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-border shrink-0">
             <p className="text-xs text-muted-foreground">
-              {filteredVms.length} VM ·{" "}
-              {sections.filter((s) => s.enabled).length} section
+              {filteredVms.length} VMs ·{" "}
+              {sections.filter((s) => s.enabled).length} sections
             </p>
             <div className="flex gap-2">
               <button
                 onClick={onClose}
                 className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all border border-border"
               >
-                Batal
+                Cancel
               </button>
               <button
                 onClick={handleGenerate}
@@ -492,7 +492,7 @@ export function ReportBuilder({
                 ) : (
                   <Download className="w-4 h-4" />
                 )}
-                {isGenerating ? "Membuat laporan…" : "Generate & Download"}
+                {isGenerating ? "Generating report…" : "Generate & Download"}
               </button>
             </div>
           </div>

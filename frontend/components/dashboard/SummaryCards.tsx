@@ -47,7 +47,7 @@ function StatCard({
 
 export function SummaryCards({ data, isLoading }: Props) {
   const d = data ?? {
-    total_vms: 0, healthy_vms: 0, warning_vms: 0, critical_vms: 0,
+    total_vms: 0, healthy_vms: 0, high_vms: 0, warning_vms: 0, critical_vms: 0,
     unknown_vms: 0, down_vms: 0, avg_cpu: 0, avg_ram: 0, avg_disk: 0,
     active_alerts: 0, critical_alerts: 0,
   };
@@ -63,7 +63,7 @@ export function SummaryCards({ data, isLoading }: Props) {
         color="bg-emerald-500/15 text-emerald-400" loading={isLoading}
       />
       <StatCard
-        icon={AlertTriangle} label="Warning" value={d.warning_vms}
+        icon={AlertTriangle} label="High" value={d.high_vms}
         color="bg-amber-500/15 text-amber-400" loading={isLoading}
       />
       <StatCard

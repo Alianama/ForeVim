@@ -99,7 +99,7 @@ function ForecastCell({
     return (
       <div className="flex items-center gap-1.5">
         <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
-        <span className="text-xs text-muted-foreground/50">Belum ada</span>
+        <span className="text-xs text-muted-foreground/50">None</span>
       </div>
     );
   }
@@ -150,7 +150,7 @@ function ScanProgressPanel({ onClose }: { onClose: () => void }) {
 
   const algoLabel =
     FORECAST_ALGORITHMS.find((a) => a.value === scan.algorithm)
-      ?.label.replace(" (Rekomendasi)", "")
+      ?.label.replace(" (Recommended)", "")
       .replace(" (ETS)", "") ?? scan.algorithm;
 
   return (
@@ -168,7 +168,7 @@ function ScanProgressPanel({ onClose }: { onClose: () => void }) {
         />
         <div className="flex-1 min-w-0">
           <span className="text-sm font-semibold">
-            {scan.isRunning ? "Scan sedang berjalan…" : "Scan selesai"}
+            {scan.isRunning ? "Scan in progress…" : "Scan completed"}
           </span>
           <span className="ml-2 text-xs text-muted-foreground tabular-nums">
             {scan.completed}/{scan.total}
@@ -211,18 +211,18 @@ function ScanProgressPanel({ onClose }: { onClose: () => void }) {
         {scan.events.length === 0 && scan.isRunning && (
           <div className="px-4 py-3 text-xs text-muted-foreground text-center">
             <RefreshCw className="w-3 h-3 animate-spin inline mr-1.5" />
-            Memulai scan…
+            Starting scan…
           </div>
         )}
         {scan.events.length === 0 && !scan.isRunning && scan.total > 0 && (
           <div className="px-4 py-3 text-xs text-center">
             {scan.errors === 0 ? (
               <span className="text-emerald-400">
-                ✓ {scan.completed} task selesai dengan sukses
+                ✓ {scan.completed} tasks completed successfully
               </span>
             ) : (
               <span className="text-amber-400">
-                {scan.completed - scan.errors} sukses, {scan.errors} error
+                {scan.completed - scan.errors} success, {scan.errors} error
               </span>
             )}
           </div>
@@ -347,7 +347,7 @@ export default function ForecastingPage() {
   const vms = vmsData?.vms ?? [];
   const [selectedVmId, setSelectedVmId] = useState<string>("");
   const [metric, setMetric] = useState<ForecastMetric>("cpu");
-  const [algorithm, setAlgorithm] = useState<ForecastAlgorithm>("auto");
+  const [algorithm, setAlgorithm] = useState<ForecastAlgorithm>("arima");
   const [periodDays, setPeriodDays] = useState<number>(7);
   const [historyPage, setHistoryPage] = useState(1);
   const historyItemsPerPage = 5;
@@ -451,16 +451,16 @@ export default function ForecastingPage() {
         vm_ids: [],
       });
       setShowScanPanel(true);
-      toast.success("Scan dimulai! Pantau progress di bawah.");
+      toast.success("Scan started! Monitor progress below.");
     } catch (err: any) {
-      toast.error(err?.response?.data?.detail ?? "Gagal memulai scan");
+      toast.error(err?.response?.data?.detail ?? "Failed to start scan");
     } finally {
       setIsScanStarting(false);
     }
   };
 
   const handleScanVM = async (vmId: string) => {
-    if (scan.isRunning) return toast.error("Scan lain sedang berjalan");
+    if (scan.isRunning) return toast.error("Another scan is currently running");
     try {
       resetScan();
       await forecastService.startScan({
@@ -469,14 +469,14 @@ export default function ForecastingPage() {
         vm_ids: [vmId],
       });
       setShowScanPanel(true);
-      toast.success("Scan VM dimulai");
+      toast.success("VM scan started");
     } catch (err: any) {
-      toast.error(err?.response?.data?.detail ?? "Gagal memulai scan");
+      toast.error(err?.response?.data?.detail ?? "Failed to start scan");
     }
   };
 
   const handleGeneratePerVM = async () => {
-    if (!selectedVmId) return toast.error("Pilih VM terlebih dahulu");
+    if (!selectedVmId) return toast.error("Please select a VM first");
     try {
       await generateMutation.mutateAsync({
         id: selectedVmId,
@@ -484,10 +484,10 @@ export default function ForecastingPage() {
         algorithm,
         periodDays,
       });
-      toast.success("Forecast berhasil dihitung dan disimpan");
+      toast.success("Forecast successfully calculated and saved");
       refetchForecast();
     } catch (err: any) {
-      toast.error(err?.response?.data?.detail ?? "Gagal menghitung forecast");
+      toast.error(err?.response?.data?.detail ?? "Failed to calculate forecast");
     }
   };
 
@@ -507,7 +507,7 @@ export default function ForecastingPage() {
             Resource Forecasting
           </h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            Kelola dan pantau status forecast semua VM dalam satu tampilan
+            Manage and monitor forecast status of all VMs in a single view
           </p>
         </div>
         <button
@@ -615,7 +615,7 @@ export default function ForecastingPage() {
                   {FORECAST_ALGORITHMS.map((a) => (
                     <SelectItem key={a.value} value={a.value}>
                       {a.label
-                        .replace(" (Rekomendasi)", "")
+                        .replace(" (Recommended)", "")
                         .replace(" (ETS)", "")}
                     </SelectItem>
                   ))}
@@ -630,10 +630,10 @@ export default function ForecastingPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="7">7 hari</SelectItem>
-                  <SelectItem value="14">14 hari</SelectItem>
-                  <SelectItem value="30">30 hari</SelectItem>
-                  <SelectItem value="60">60 hari</SelectItem>
+                  <SelectItem value="7">7 days</SelectItem>
+                  <SelectItem value="14">14 days</SelectItem>
+                  <SelectItem value="30">30 days</SelectItem>
+                  <SelectItem value="60">60 days</SelectItem>
                 </SelectContent>
               </Select>
               <button
@@ -648,7 +648,7 @@ export default function ForecastingPage() {
                 )}
                 {scan.isRunning
                   ? `Scanning… ${scan.completed}/${scan.total}`
-                  : "Scan Semua VM"}
+                  : "Scan All VMs"}
               </button>
               <button
                 onClick={() => refetch()}
@@ -699,11 +699,11 @@ export default function ForecastingPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Semua Algoritma</SelectItem>
+                  <SelectItem value="all">All Algorithms</SelectItem>
                   {FORECAST_ALGORITHMS.map((a) => (
                     <SelectItem key={a.value} value={a.value}>
                       {a.label
-                        .replace(" (Rekomendasi)", "")
+                        .replace(" (Recommended)", "")
                         .replace(" (ETS)", "")}
                     </SelectItem>
                   ))}
@@ -713,7 +713,7 @@ export default function ForecastingPage() {
               {/* Status pills */}
               <div className="flex flex-wrap items-center gap-1.5">
                 {[
-                  { v: "all" as StatusFilter, l: "Semua" },
+                  { v: "all" as StatusFilter, l: "All" },
                   { v: "complete" as StatusFilter, l: "Complete" },
                   { v: "partial" as StatusFilter, l: "Partial" },
                   { v: "stale" as StatusFilter, l: "Stale" },
@@ -756,7 +756,7 @@ export default function ForecastingPage() {
                     <th className="min-w-[150px]">
                       <span className="text-amber-400">Disk</span>
                     </th>
-                    <th className="w-28 text-right pr-4">Aksi</th>
+                    <th className="w-28 text-right pr-4">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -780,7 +780,7 @@ export default function ForecastingPage() {
                         className="text-center py-16 text-muted-foreground text-sm"
                       >
                         <BarChart2 className="w-8 h-8 opacity-30 mx-auto mb-2" />
-                        Belum ada VM terdaftar.
+                        No registered VMs yet.
                       </td>
                     </tr>
                   )}
@@ -792,7 +792,7 @@ export default function ForecastingPage() {
                           colSpan={5}
                           className="text-center py-12 text-muted-foreground text-sm"
                         >
-                          Tidak ada VM yang cocok dengan filter.
+                          No VMs match the filter.
                         </td>
                       </tr>
                     )}
@@ -858,8 +858,8 @@ export default function ForecastingPage() {
                               disabled={!vm.has_prometheus || scan.isRunning}
                               title={
                                 !vm.has_prometheus
-                                  ? "VM belum terhubung ke Prometheus"
-                                  : "Jalankan forecast untuk VM ini"
+                                  ? "VM not connected to Prometheus"
+                                  : "Run forecast for this VM"
                               }
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-secondary hover:bg-primary/20 hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all border border-border"
                             >
@@ -880,8 +880,8 @@ export default function ForecastingPage() {
                 <div className="px-4 py-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
                   <span>
                     {filteredOverview.length === overview.length
-                      ? `${overview.length} VM`
-                      : `${filteredOverview.length} dari ${overview.length} VM`}
+                      ? `${overview.length} VMs`
+                      : `${filteredOverview.length} of ${overview.length} VMs`}
                   </span>
                   {(searchQuery ||
                     algoFilter !== "all" ||
@@ -895,7 +895,7 @@ export default function ForecastingPage() {
                       className="text-primary hover:underline flex items-center gap-1"
                     >
                       <X className="w-3 h-3" />
-                      Reset filter
+                      Reset filters
                     </button>
                   )}
                 </div>
@@ -1007,11 +1007,11 @@ export default function ForecastingPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">1 Hari</SelectItem>
-                  <SelectItem value="7">7 Hari</SelectItem>
-                  <SelectItem value="14">14 Hari</SelectItem>
-                  <SelectItem value="30">30 Hari</SelectItem>
-                  <SelectItem value="60">60 Hari</SelectItem>
+                  <SelectItem value="1">1 Day</SelectItem>
+                  <SelectItem value="7">7 Days</SelectItem>
+                  <SelectItem value="14">14 Days</SelectItem>
+                  <SelectItem value="30">30 Days</SelectItem>
+                  <SelectItem value="60">60 Days</SelectItem>
                 </SelectContent>
               </Select>
               <Button
@@ -1027,8 +1027,8 @@ export default function ForecastingPage() {
                   <Play className="w-4 h-4" />
                 )}
                 {generateMutation.isPending
-                  ? "Menghitung…"
-                  : "Jalankan Forecast"}
+                  ? "Calculating…"
+                  : "Run Forecast"}
               </Button>
             </div>
 
@@ -1039,8 +1039,8 @@ export default function ForecastingPage() {
                 </span>{" "}
                 ({selectedVm.ip_address})
                 {selectedVm.prometheus_source_id
-                  ? " · terhubung Prometheus"
-                  : " · belum punya Prometheus source — sync VM dulu"}
+                  ? " · connected to Prometheus"
+                  : " · no Prometheus source — sync VM first"}
               </p>
             )}
           </div>
@@ -1062,9 +1062,9 @@ export default function ForecastingPage() {
               <div className="glass-card overflow-hidden">
                 <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50">
                   <History className="w-4 h-4 text-primary" />
-                  <h2 className="text-sm font-semibold">Riwayat Forecast</h2>
+                  <h2 className="text-sm font-semibold">Forecast History</h2>
                   <span className="ml-auto text-xs text-muted-foreground">
-                    {history?.length ?? 0} entri tersimpan
+                    {history?.length ?? 0} saved entries
                   </span>
                 </div>
                 <div className="overflow-x-auto">
@@ -1086,8 +1086,7 @@ export default function ForecastingPage() {
                             colSpan={6}
                             className="text-center py-8 text-muted-foreground text-sm"
                           >
-                            Belum ada riwayat. Klik &quot;Jalankan
-                            Forecast&quot; untuk menyimpan hasil pertama.
+                            No history yet. Click "Run Forecast" to save the first result.
                           </td>
                         </tr>
                       )}
@@ -1106,7 +1105,7 @@ export default function ForecastingPage() {
                             {h.algorithm.replace(/_/g, " ")}
                           </td>
                           <td className="text-xs">
-                            {h.forecast_period_days} hari
+                            {h.forecast_period_days} days
                           </td>
                           <td className="text-xs font-mono">
                             {formatAccuracy(h.accuracy_score, "mape") ?? "—"}
@@ -1119,7 +1118,7 @@ export default function ForecastingPage() {
                                   : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
                               }`}
                             >
-                              {h.has_forecast ? "OK" : "Historis saja"}
+                              {h.has_forecast ? "OK" : "Historical only"}
                             </span>
                           </td>
                         </tr>
@@ -1179,7 +1178,7 @@ export default function ForecastingPage() {
             <div className="glass-card p-16 text-center text-muted-foreground flex flex-col items-center gap-3">
               <BarChart2 className="w-10 h-10 opacity-30" />
               <p className="text-sm">
-                Pilih VM dari dropdown, lalu klik &quot;Jalankan Forecast&quot;.
+                Select a VM from the dropdown, then click "Run Forecast".
               </p>
             </div>
           )}

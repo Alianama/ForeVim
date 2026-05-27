@@ -24,9 +24,10 @@ const NAV_ITEMS = [
   { href: "/dashboard/vms", icon: Server, label: "Virtual Machines" },
   { href: "/dashboard/alerts", icon: BellIcon, label: "Alerts" },
   { href: "/dashboard/forecasting", icon: BarChart2, label: "Forecasting" },
-  { href: "/dashboard/reports", icon: Download, label: "Laporan & Ekspor" },
+  { href: "/dashboard/reports", icon: Download, label: "Reports & Export" },
   { href: "/dashboard/sources", icon: Database, label: "Prometheus Sources" },
-  { href: "/dashboard/users", icon: SettingsIcon, label: "Users & Roles" },
+  { href: "/dashboard/settings", icon: SettingsIcon, label: "Notification Settings" },
+  { href: "/dashboard/users", icon: Lock, label: "Users & Roles" },
   { href: "/dashboard/profile", icon: Lock, label: "Profile & Security" },
 ];
 

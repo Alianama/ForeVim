@@ -68,10 +68,10 @@ export default function PrometheusSourcesPage() {
     try {
       await prometheusService.retention(source.id);
       setHealthMap((prev) => ({ ...prev, [source.id]: true }));
-      toast.success(`${source.name} terhubung`);
+      toast.success(`${source.name} connected`);
     } catch {
       setHealthMap((prev) => ({ ...prev, [source.id]: false }));
-      toast.error(`Gagal terhubung ke ${source.name}`);
+      toast.error(`Failed to connect to ${source.name}`);
     } finally {
       setTestingId(null);
     }
@@ -80,7 +80,7 @@ export default function PrometheusSourcesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.url.trim()) {
-      toast.error("Nama dan URL/IP wajib diisi");
+      toast.error("Name and URL/IP are required");
       return;
     }
 
@@ -94,10 +94,10 @@ export default function PrometheusSourcesPage() {
     try {
       if (formMode === "create") {
         await createMutation.mutateAsync(body);
-        toast.success("Prometheus source ditambahkan");
+        toast.success("Prometheus source added");
       } else if (editingSource) {
         await updateMutation.mutateAsync({ id: editingSource.id, body });
-        toast.success("Prometheus source diperbarui");
+        toast.success("Prometheus source updated");
       }
       setModalOpen(false);
       setForm(emptyForm);
@@ -105,20 +105,20 @@ export default function PrometheusSourcesPage() {
     } catch (err: unknown) {
       const detail =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-        "Gagal menyimpan source";
-      toast.error(typeof detail === "string" ? detail : "Gagal menyimpan source");
+        "Failed to save source";
+      toast.error(typeof detail === "string" ? detail : "Failed to save source");
     }
   };
 
   const handleDelete = async (source: PrometheusSource) => {
-    if (!confirm(`Hapus source "${source.name}"? VM yang terkait akan kehilangan referensi source.`)) {
+    if (!confirm(`Delete source "${source.name}"? Associated VMs will lose their source reference.`)) {
       return;
     }
     try {
       await deleteMutation.mutateAsync(source.id);
-      toast.success("Source dihapus");
+      toast.success("Source deleted");
     } catch {
-      toast.error("Gagal menghapus source");
+      toast.error("Failed to delete source");
     }
   };
 
@@ -133,13 +133,13 @@ export default function PrometheusSourcesPage() {
             Prometheus Sources
           </h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            Kelola satu atau lebih server Prometheus (IP/URL). VM akan mengambil metrik dari source yang dipilih.
+            Manage one or more Prometheus servers (IP/URL). VMs will pull metrics from the selected source.
           </p>
         </div>
         {isAdmin && (
           <Button onClick={openCreate} className="flex items-center gap-2 self-start sm:self-auto">
             <Plus className="w-4 h-4" />
-            Tambah Source
+            Add Source
           </Button>
         )}
       </div>
@@ -149,11 +149,11 @@ export default function PrometheusSourcesPage() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Nama</th>
+                <th>Name</th>
                 <th>URL / IP</th>
                 <th>Status</th>
-                <th>Koneksi</th>
-                {isAdmin && <th>Aksi</th>}
+                <th>Connection</th>
+                {isAdmin && <th>Action</th>}
               </tr>
             </thead>
             <tbody>
@@ -171,8 +171,8 @@ export default function PrometheusSourcesPage() {
               {!isLoading && sources?.length === 0 && (
                 <tr>
                   <td colSpan={isAdmin ? 5 : 4} className="text-center py-12 text-muted-foreground text-sm">
-                    Belum ada Prometheus source.{" "}
-                    {isAdmin ? "Klik \"Tambah Source\" untuk menambahkan IP Prometheus pertama." : "Hubungi administrator."}
+                    No Prometheus sources yet.{" "}
+                    {isAdmin ? "Click \"Add Source\" to add your first Prometheus IP." : "Please contact the administrator."}
                   </td>
                 </tr>
               )}
@@ -191,7 +191,7 @@ export default function PrometheusSourcesPage() {
                         className={`status-badge ${source.is_active ? "status-healthy" : "status-down"}`}
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                        {source.is_active ? "Aktif" : "Nonaktif"}
+                        {source.is_active ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td>
@@ -203,7 +203,7 @@ export default function PrometheusSourcesPage() {
                         )}
                         {healthMap[source.id] === false && (
                           <span className="flex items-center gap-1 text-xs text-rose-600">
-                            <XCircle className="w-3.5 h-3.5" /> Gagal
+                            <XCircle className="w-3.5 h-3.5" /> Failed
                           </span>
                         )}
                         <button
@@ -214,10 +214,10 @@ export default function PrometheusSourcesPage() {
                         >
                           {testingId === source.id ? (
                             <span className="flex items-center gap-1">
-                              <Loader2 className="w-3 h-3 animate-spin" /> Mengecek...
+                              <Loader2 className="w-3 h-3 animate-spin" /> Checking...
                             </span>
                           ) : (
-                            "Tes koneksi"
+                            "Test Connection"
                           )}
                         </button>
                       </div>
@@ -242,7 +242,7 @@ export default function PrometheusSourcesPage() {
                             disabled={deleteMutation.isPending}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
-                            Hapus
+                            Delete
                           </Button>
                         </div>
                       </td>
@@ -256,7 +256,7 @@ export default function PrometheusSourcesPage() {
 
       {!isAdmin && (
         <p className="text-xs text-muted-foreground">
-          Hanya admin yang dapat menambah, mengubah, atau menghapus Prometheus source.
+          Only admins can add, modify, or delete Prometheus sources.
         </p>
       )}
 
@@ -265,7 +265,7 @@ export default function PrometheusSourcesPage() {
           <div className="relative w-full max-w-md bg-card border border-border rounded-xl shadow-lg overflow-hidden">
             <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
               <h2 className="text-base font-bold text-foreground">
-                {formMode === "create" ? "Tambah Prometheus Source" : "Edit Prometheus Source"}
+                {formMode === "create" ? "Add Prometheus Source" : "Edit Prometheus Source"}
               </h2>
               <button
                 type="button"
@@ -279,7 +279,7 @@ export default function PrometheusSourcesPage() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
-                  Nama <span className="text-rose-500">*</span>
+                  Name <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -293,18 +293,18 @@ export default function PrometheusSourcesPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
-                  IP / URL Prometheus <span className="text-rose-500">*</span>
+                  Prometheus IP / URL <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="192.168.1.10:9090 atau http://prometheus:9090"
+                  placeholder="192.168.1.10:9090 or http://prometheus:9090"
                   value={form.url}
                   onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring font-mono"
                   required
                 />
                 <p className="text-[10px] text-muted-foreground mt-1">
-                  Port default 9090 jika tidak ditulis. Contoh: <code>10.0.0.5</code> →{" "}
+                  Default port is 9090 if not specified. Example: <code>10.0.0.5</code> →{" "}
                   <code>http://10.0.0.5:9090</code>
                 </p>
               </div>
@@ -316,15 +316,15 @@ export default function PrometheusSourcesPage() {
                   onChange={(e) => setForm((f) => ({ ...f, is_active: e.target.checked }))}
                   className="rounded border-border"
                 />
-                <span className="text-sm text-foreground">Source aktif</span>
+                <span className="text-sm text-foreground">Source active</span>
               </label>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/60">
                 <Button type="button" variant="outline" onClick={() => setModalOpen(false)} disabled={isSaving}>
-                  Batal
+                  Cancel
                 </Button>
                 <Button type="submit" disabled={isSaving} className="min-w-[100px]">
-                  {isSaving ? "Menyimpan..." : formMode === "create" ? "Tambah" : "Simpan"}
+                  {isSaving ? "Saving..." : formMode === "create" ? "Add" : "Save"}
                 </Button>
               </div>
             </form>

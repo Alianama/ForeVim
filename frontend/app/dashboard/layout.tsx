@@ -36,7 +36,7 @@ export default function DashboardLayout({
           <div className="w-12 h-12 rounded-full border-2 border-primary/20" />
           <div className="w-12 h-12 rounded-full border-2 border-t-primary animate-spin absolute inset-0" />
         </div>
-        <p className="text-muted-foreground text-sm">Memuat dashboard...</p>
+        <p className="text-muted-foreground text-sm">Loading dashboard...</p>
       </div>
     );
   }

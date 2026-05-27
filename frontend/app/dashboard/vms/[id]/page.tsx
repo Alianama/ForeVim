@@ -15,6 +15,7 @@ import { MetricsOverviewCards } from "@/components/vm/MetricsOverviewCards";
 import { MetricLineChart } from "@/components/charts/MetricLineChart";
 import { ForecastChart } from "@/components/charts/ForecastChart";
 import { AlertList } from "@/components/alerts/AlertList";
+import { useRealtimeStore } from "@/stores";
 import {
   ArrowLeft,
   Cpu,
@@ -24,7 +25,7 @@ import {
   TrendingUp,
   Terminal,
 } from "lucide-react";
-import type { ForecastAlgorithm, ForecastMetric } from "@/types";
+import type { ForecastAlgorithm, ForecastMetric, VMStatus } from "@/types";
 import { FORECAST_ALGORITHMS } from "@/lib/forecast-algorithms";
 import { VMRecommender } from "@/components/vm/VMRecommender";
 
@@ -39,7 +40,7 @@ export default function VMDetailPage() {
   const [historyHours, setHistoryHours] = useState(24);
   const [forecastMetric, setForecastMetric] = useState<ForecastMetric>("cpu");
   const [forecastPeriod, setForecastPeriod] = useState(7);
-  const [forecastAlgo, setForecastAlgo] = useState<ForecastAlgorithm>("auto");
+  const [forecastAlgo, setForecastAlgo] = useState<ForecastAlgorithm>("arima");
 
   const { data: retentionDays = 90 } = usePrometheusRetention();
 
@@ -52,6 +53,10 @@ export default function VMDetailPage() {
   const { data: vm, isLoading: vmLoading } = useVM(id);
   const { data: metrics } = useVMMetrics(id);
   const { data: diskMounts = [] } = useVMDiskMounts(id);
+  const realtimeMetrics = useRealtimeStore((s) => s.metrics);
+
+  // Compute live status: prefer realtime WebSocket > API metrics > DB
+  const liveStatus: VMStatus = (realtimeMetrics[id]?.status ?? metrics?.status ?? vm?.status ?? "unknown") as VMStatus;
 
   // History charts — hanya fetch saat tab "metrics" aktif
   const historyEnabled = activeTab === "metrics";
@@ -121,9 +126,9 @@ export default function VMDetailPage() {
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold">{vm.hostname}</h1>
-            <span className={`status-badge status-${vm.status}`}>
+            <span className={`status-badge status-${liveStatus}`}>
               <span className={`w-1.5 h-1.5 rounded-full bg-current`} />
-              {vm.status}
+              {liveStatus}
             </span>
             <button
               onClick={() => router.push(`/dashboard/vms/${vm.id}/ssh`)}
@@ -231,7 +236,7 @@ export default function VMDetailPage() {
                 <HardDrive className="w-4 h-4 text-amber-400" />
                 <h3 className="text-sm font-semibold">Disk Mounts</h3>
                 <span className="text-xs text-muted-foreground">
-                  {diskMounts.length} filesystem terdeteksi
+                  {diskMounts.length} filesystems detected
                 </span>
               </div>
               <div className="overflow-x-auto">

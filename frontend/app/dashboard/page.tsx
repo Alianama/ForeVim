@@ -9,7 +9,12 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { TopMetricsPanel } from "@/components/dashboard/TopMetricsPanel";
-import { VMTable, type SortState, type SortField, type SortDir } from "@/components/vm/VMTable";
+import {
+  VMTable,
+  type SortState,
+  type SortField,
+  type SortDir,
+} from "@/components/vm/VMTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { AlertList } from "@/components/alerts/AlertList";
 import { useRealtimeStore } from "@/stores";
@@ -45,10 +50,11 @@ function getVmStatus(
 
 const STATUS_PRIORITY: Record<VMStatus, number> = {
   critical: 0,
-  warning: 1,
-  healthy: 2,
-  unknown: 3,
-  down: 4,
+  high: 1,
+  warning: 2,
+  healthy: 3,
+  unknown: 4,
+  down: 5,
 };
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -75,6 +81,7 @@ export default function DashboardPage() {
 
     // Always force an immediate reload of the data source when the application is opened (mounted)
     queryClient.invalidateQueries({ queryKey: queryKeys.summary });
+    queryClient.refetchQueries({ queryKey: queryKeys.summary }); // Add this line to force refetch
     queryClient.invalidateQueries({ queryKey: queryKeys.vms });
     queryClient.invalidateQueries({
       queryKey: queryKeys.alerts(undefined, "active"),
@@ -135,7 +142,7 @@ export default function DashboardPage() {
       });
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
-    [searchParams, pathname, router]
+    [searchParams, pathname, router],
   );
 
   // Update last updated timestamp when query finishes fetching
@@ -181,7 +188,7 @@ export default function DashboardPage() {
       if (!showDown && status === "down") {
         return false;
       }
-      
+
       const q = searchQuery.trim().toLowerCase();
       const matchesSearch =
         q === "" ||
@@ -247,13 +254,13 @@ export default function DashboardPage() {
     const start = (safePage - 1) * pageSize;
     return sortedVms.slice(start, start + pageSize);
   }, [sortedVms, safePage, pageSize]);
-  
+
   useEffect(() => {
     if (page > totalPages && totalPages > 0) {
       updateParams({ page: String(totalPages) });
     }
   }, [page, totalPages, updateParams]);
-  
+
   const clearSearch = useCallback(() => {
     updateParams({ q: null, page: "1" });
     searchInputRef.current?.focus();
@@ -305,11 +312,11 @@ export default function DashboardPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="5000">5 Detik</SelectItem>
-                <SelectItem value="10000">10 Detik</SelectItem>
-                <SelectItem value="60000">1 Menit</SelectItem>
-                <SelectItem value="1800000">30 Menit</SelectItem>
-                <SelectItem value="0">Manual / Nonaktif</SelectItem>
+                <SelectItem value="5000">5 Seconds</SelectItem>
+                <SelectItem value="10000">10 Seconds</SelectItem>
+                <SelectItem value="60000">1 Minute</SelectItem>
+                <SelectItem value="1800000">30 Minutes</SelectItem>
+                <SelectItem value="0">Manual / Disabled</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -356,13 +363,13 @@ export default function DashboardPage() {
                 Virtual Machines
               </h2>
             </div>
-            
+
             <div className="flex-1 min-w-[150px] max-w-sm relative group">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-foreground transition-colors" />
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Cari VM..."
+                placeholder="Search VM..."
                 value={searchQuery}
                 onChange={(e) => updateParams({ q: e.target.value, page: "1" })}
                 className="w-full bg-background border border-border rounded-lg pl-8 pr-8 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
@@ -381,7 +388,9 @@ export default function DashboardPage() {
             {/* Show/Hide Down Toggle Button */}
             <button
               type="button"
-              onClick={() => updateParams({ showDown: showDown ? null : "true", page: "1" })}
+              onClick={() =>
+                updateParams({ showDown: showDown ? null : "true", page: "1" })
+              }
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all whitespace-nowrap shrink-0 sm:ml-auto ${
                 showDown
                   ? "bg-secondary text-foreground border-border"
@@ -406,7 +415,9 @@ export default function DashboardPage() {
             vms={paginatedVms}
             isLoading={vmsLoading}
             sort={sort}
-            onSortChange={(s) => updateParams({ sortField: s.field, sortDir: s.dir, page: "1" })}
+            onSortChange={(s) =>
+              updateParams({ sortField: s.field, sortDir: s.dir, page: "1" })
+            }
           />
           {!vmsLoading && sortedVms.length > 0 && (
             <Pagination
@@ -414,7 +425,9 @@ export default function DashboardPage() {
               pageSize={pageSize}
               total={sortedVms.length}
               onPageChange={(p: number) => updateParams({ page: String(p) })}
-              onPageSizeChange={(size: number) => updateParams({ pageSize: String(size), page: "1" })}
+              onPageSizeChange={(size: number) =>
+                updateParams({ pageSize: String(size), page: "1" })
+              }
             />
           )}
         </div>

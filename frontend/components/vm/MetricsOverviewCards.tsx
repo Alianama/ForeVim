@@ -78,6 +78,7 @@ function MetricCard({
 export function MetricsOverviewCards({ vm, metrics }: Props) {
   const rt = useRealtimeStore((s) => s.metrics[vm.id]);
   const m = rt ? { ...metrics, ...rt } : metrics;
+  const displayStatus = m?.status ?? vm.status;
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -131,8 +132,8 @@ export function MetricsOverviewCards({ vm, metrics }: Props) {
             ? formatDistanceToNow(new Date(Date.now() - m.uptime_seconds * 1000))
             : "—"}
         </div>
-        <div className={`text-xs status-badge status-${vm.status} self-start`}>
-          {vm.status}
+        <div className={`text-xs status-badge status-${displayStatus} self-start`}>
+          {displayStatus}
         </div>
       </div>
     </div>

@@ -38,10 +38,11 @@ const DEFAULT_PAGE_SIZE = 20;
 
 const STATUS_PRIORITY: Record<VMStatus, number> = {
   critical: 0,
-  warning: 1,
-  healthy: 2,
-  unknown: 3,
-  down: 4,
+  high: 1,
+  warning: 2,
+  healthy: 3,
+  unknown: 4,
+  down: 5,
 };
 
 function getVmStatus(
@@ -262,7 +263,7 @@ export default function VMsPage() {
   const handleSync = async () => {
     if (!selectedSourceId) {
       toast.error(
-        "Pilih Prometheus source terlebih dahulu di halaman Prometheus Sources",
+        "Please select a Prometheus source first on the Prometheus Sources page",
       );
       return;
     }
@@ -295,7 +296,7 @@ export default function VMsPage() {
           <p className="text-muted-foreground text-sm mt-0.5">
             Manage and monitor your infrastructure
             {vmsData?.total != null && (
-              <span className="ml-1">· {vmsData.total} terdaftar</span>
+              <span className="ml-1">· {vmsData.total} registered</span>
             )}
           </p>
         </div>
@@ -318,7 +319,7 @@ export default function VMsPage() {
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Cari hostname, IP, cluster, tag..."
+              placeholder="Search hostname, IP, cluster, tag..."
               value={searchQuery}
               onChange={(e) => updateParams({ q: e.target.value, page: "1" })}
               className="
@@ -343,8 +344,9 @@ export default function VMsPage() {
           {/* Status pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
             {[
-              { label: "Semua", value: "all" },
+              { label: "All", value: "all" },
               { label: "Healthy", value: "healthy" },
+              { label: "High", value: "high" },
               { label: "Warning", value: "warning" },
               { label: "Critical", value: "critical" },
               { label: "Down", value: "down" },
@@ -373,7 +375,7 @@ export default function VMsPage() {
                 ? "bg-secondary text-foreground border-border"
                 : "bg-background text-muted-foreground border-border hover:bg-secondary hover:text-foreground"
             }`}
-            title={showDown ? "Sembunyikan VM down" : "Tampilkan VM down"}
+            title={showDown ? "Hide down VMs" : "Show down VMs"}
           >
             {showDown ? (
               <Eye className="w-3.5 h-3.5" />
@@ -397,8 +399,8 @@ export default function VMsPage() {
                 options={sourceOptions}
                 value={selectedSourceId}
                 onChange={setSelectedSourceId}
-                placeholder="Pilih source..."
-                searchPlaceholder="Cari source..."
+                placeholder="Select source..."
+                searchPlaceholder="Search source..."
                 label="Prometheus:"
                 compact
                 className="flex-1"
@@ -413,7 +415,7 @@ export default function VMsPage() {
                 value={selectedOrigin}
                 onChange={setSelectedOrigin}
                 placeholder="Origin..."
-                searchPlaceholder="Cari origin..."
+                searchPlaceholder="Search origin..."
                 label="Origin:"
                 compact
                 className="flex-1"
@@ -427,7 +429,7 @@ export default function VMsPage() {
               value={selectedJob}
               onChange={setSelectedJob}
               placeholder="Job..."
-              searchPlaceholder="Cari job..."
+              searchPlaceholder="Search job..."
               label="Job:"
               compact
               className="flex-1"
@@ -451,7 +453,7 @@ export default function VMsPage() {
       {searchQuery && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>
-            {filteredVms.length} hasil untuk &quot;
+            {filteredVms.length} results for &quot;
             <span className="font-medium text-foreground">{searchQuery}</span>
             &quot;
           </span>

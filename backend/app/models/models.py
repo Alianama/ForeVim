@@ -36,7 +36,8 @@ class UserRole(str, enum.Enum):
 
 class VMStatus(str, enum.Enum):
     HEALTHY = "healthy"
-    WARNING = "warning"
+    HIGH = "high"       # replaces WARNING — metric above high threshold
+    WARNING = "warning"  # kept for DB backwards compatibility
     CRITICAL = "critical"
     UNKNOWN = "unknown"
     DOWN = "down"
@@ -44,7 +45,8 @@ class VMStatus(str, enum.Enum):
 
 class AlertSeverity(str, enum.Enum):
     INFO = "info"
-    WARNING = "warning"
+    HIGH = "high"      # replaces WARNING in new alert model
+    WARNING = "warning"  # kept for DB backwards compat
     CRITICAL = "critical"
 
 
@@ -237,3 +239,48 @@ class NotificationPreference(TimestampMixin, Base):
 
     # Relationships
     user = relationship("User", back_populates="notification_preferences")
+
+
+class NotificationConfig(TimestampMixin, Base):
+    """Global system-wide notification configuration (one row)."""
+    __tablename__ = "notification_config"
+
+    id = Column(Integer, primary_key=True, default=1)  # always 1 row
+
+    # ── Thresholds ────────────────────────────────────────────────────────────
+    cpu_high_threshold = Column(Float, default=70.0, nullable=False)
+    cpu_critical_threshold = Column(Float, default=90.0, nullable=False)
+    ram_high_threshold = Column(Float, default=75.0, nullable=False)
+    ram_critical_threshold = Column(Float, default=90.0, nullable=False)
+    disk_high_threshold = Column(Float, default=70.0, nullable=False)
+    disk_critical_threshold = Column(Float, default=85.0, nullable=False)
+
+    # ── Notification toggles ──────────────────────────────────────────────────
+    notify_on_high = Column(Boolean, default=True, nullable=False)
+    notify_on_critical = Column(Boolean, default=True, nullable=False)
+
+    # ── Frontend URL (for deeplinks in alerts) ────────────────────────────────
+    frontend_url = Column(String(500), default="http://localhost:3000", nullable=False)
+
+    # ── Telegram ─────────────────────────────────────────────────────────────
+    telegram_enabled = Column(Boolean, default=False, nullable=False)
+    telegram_bot_token = Column(String(500), nullable=True)
+    telegram_chat_id = Column(String(100), nullable=True)
+    telegram_thread_id = Column(String(100), nullable=True)  # for group topics
+
+    # ── Email (SMTP) ──────────────────────────────────────────────────────────
+    email_enabled = Column(Boolean, default=False, nullable=False)
+    smtp_host = Column(String(255), nullable=True)
+    smtp_port = Column(Integer, default=587, nullable=True)
+    smtp_username = Column(String(255), nullable=True)
+    smtp_password = Column(String(500), nullable=True)
+    smtp_from_email = Column(String(255), nullable=True)
+    smtp_to_emails = Column(Text, nullable=True)  # comma-separated
+    smtp_use_tls = Column(Boolean, default=True, nullable=False)
+
+    # ── SNMP ─────────────────────────────────────────────────────────────────
+    snmp_enabled = Column(Boolean, default=False, nullable=False)
+    snmp_host = Column(String(255), nullable=True)
+    snmp_port = Column(Integer, default=162, nullable=True)
+    snmp_community = Column(String(100), default="public", nullable=True)
+    snmp_version = Column(String(10), default="2c", nullable=True)  # 1, 2c, 3
