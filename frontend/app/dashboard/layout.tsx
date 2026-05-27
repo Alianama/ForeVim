@@ -49,8 +49,20 @@ export default function DashboardLayout({
         style={{ marginLeft: sidebarOpen ? "256px" : "70px" }}
       >
         <TopBar />
-        <main className="flex-1 overflow-y-auto p-6 animate-fade-in">
-          {children}
+        <main className="flex-1 overflow-y-auto p-6 animate-fade-in flex flex-col justify-between">
+          <div className="flex-1 pb-8">
+            {children}
+          </div>
+          <footer className="mt-auto pt-4 border-t border-border/20 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10.5px] text-muted-foreground select-none">
+            <div>
+              Copyright © 2024 - 2026 <span className="font-semibold text-foreground">ForeVim</span>. All rights reserved.
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span>Open Source under MIT License</span>
+              <span className="opacity-40">·</span>
+              <span className="font-medium text-foreground/75">Designed & Developed by Ali Purnama</span>
+            </div>
+          </footer>
         </main>
       </div>
     </div>

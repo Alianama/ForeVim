@@ -105,7 +105,7 @@ export function TopMetricsPanel({ vms, metrics }: Props) {
       <div className="flex items-center gap-3 px-5 py-3 border-b border-border/50">
         <span className="text-sm font-semibold">Top Resource Usage</span>
         <span className="text-xs text-muted-foreground hidden md:block">
-          10 VM dengan penggunaan tertinggi saat ini
+          10 VM With Most High Resource Usage
         </span>
         <div className="ml-auto flex gap-1">
           {tabs.map(({ id, label, icon: Icon }) => (
