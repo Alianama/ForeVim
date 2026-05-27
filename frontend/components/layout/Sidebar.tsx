@@ -26,7 +26,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/alerts", icon: BellIcon, label: "Alerts" },
   { href: "/dashboard/forecasting", icon: BarChart2, label: "Forecasting" },
   { href: "/dashboard/reports", icon: Download, label: "Reports & Export" },
-  { href: "/dashboard/sources", icon: Database, label: "Prometheus Sources" },
+  { href: "/dashboard/sources", icon: Database, label: "Sources" },
   { href: "/dashboard/settings", icon: SettingsIcon, label: "Notification Settings" },
   { href: "/dashboard/users", icon: Lock, label: "Users & Roles" },
   { href: "/dashboard/profile", icon: Lock, label: "Profile & Security" },
@@ -67,7 +67,7 @@ export function Sidebar() {
         </div>
         {sidebarOpen && (
           <div className="overflow-hidden">
-            <span className="font-bold gradient-text text-sm whitespace-nowrap">
+            <span className="font-bold text-zinc-900 dark:text-zinc-100 text-sm whitespace-nowrap">
               ForeVim
             </span>
             <p className="text-[10px] text-muted-foreground whitespace-nowrap">

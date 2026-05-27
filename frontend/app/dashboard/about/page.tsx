@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { 
   Heart, 
   Github, 
@@ -12,15 +13,39 @@ import {
   Server, 
   Cpu, 
   Database,
-  Info
+  Info,
+  ChevronRight,
+  Smartphone
 } from "lucide-react";
-import { useAuthStore } from "@/stores";
+
+type TabId = "sponsors" | "platform" | "developer";
+
+const TABS: { id: TabId; label: string; icon: React.ReactNode; desc: string }[] = [
+  {
+    id: "sponsors",
+    label: "Support & Sponsors",
+    icon: <Heart className="w-4 h-4" />,
+    desc: "Ko-fi & Trakteer live checkout",
+  },
+  {
+    id: "platform",
+    label: "Platform Info",
+    icon: <Sparkles className="w-4 h-4" />,
+    desc: "ForeVim architecture & core features",
+  },
+  {
+    id: "developer",
+    label: "The Developer",
+    icon: <Terminal className="w-4 h-4" />,
+    desc: "Ali Purnama - Tech Enthusiast",
+  },
+];
 
 export default function AboutPage() {
-  const user = useAuthStore((s) => s.user);
+  const [activeTab, setActiveTab] = useState<TabId>("sponsors");
 
   return (
-    <div className="space-y-8 max-w-5xl animate-fade-in pb-12">
+    <div className="space-y-6 max-w-6xl animate-fade-in pb-4">
       {/* ── Page Header ── */}
       <div className="flex items-center justify-between">
         <div>
@@ -34,258 +59,323 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* ── Core Grid Layout ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* ── Unified Tabbed Glass Card (Single Page - No Scroll) ── */}
+      <div className="flex flex-col md:flex-row gap-6 min-h-[500px]">
         
-        {/* Left Column: Platform Overview & Details */}
-        <div className="lg:col-span-2 space-y-6">
-          
-          {/* Platform Glassmorphic Card */}
-          <div className="glass-card p-6 space-y-6 relative overflow-hidden border border-border/80">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -z-10" />
-            
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-foreground">ForeVim Observability</h2>
-                <p className="text-xs text-muted-foreground">Version 1.0.0 · Platform Overview</p>
-              </div>
-            </div>
-
-            <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-              <p>
-                <strong>ForeVim</strong> is a state-of-the-art virtual machine observability and intelligent resource planning platform. 
-                Designed to bridge the gap between traditional monitoring and proactive infrastructure management, ForeVim enables 
-                operators to forecast resource exhaustion, analyze usage patterns, and optimize server sizes automatically.
-              </p>
-              <p>
-                By scraping data directly from <strong>Prometheus Sources</strong>, ForeVim employs advanced time-series analysis 
-                including Triple Exponential Smoothing (Holt-Winters), Moving Averages, and ARIMA algorithms to project 
-                future CPU, Memory, and Disk utilization with 95% confidence intervals.
-              </p>
-            </div>
-
-            {/* Core Features list with custom icons */}
-            <div className="pt-4 border-t border-border/40 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
-                  <Cpu className="w-4 h-4" />
+        {/* Sidebar tabs (Left) */}
+        <div className="w-full md:w-64 shrink-0 flex flex-col gap-2">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-start gap-3 px-4 py-3.5 rounded-xl text-left transition-all border group ${
+                  isActive
+                    ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
+                    : "text-muted-foreground bg-card hover:bg-secondary hover:text-foreground border-transparent"
+                }`}
+              >
+                <span className={`mt-0.5 shrink-0 transition-transform group-hover:scale-110 ${isActive ? "text-primary" : "text-muted-foreground/60"}`}>
+                  {tab.icon}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-semibold block">{tab.label}</span>
+                  <span className="text-[10px] text-muted-foreground leading-tight block mt-0.5 truncate">
+                    {tab.desc}
+                  </span>
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">✨ AI Resource Analyzer</h4>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Automated sizing recommendations rounded to nearest 2GB.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
-                  <Database className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">SARIMA & HW Forecasts</h4>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">High-fidelity predictive models evaluating up to 30 days of data.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
-                  <Server className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">Multi-Source Prometheus</h4>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Seamless synchronization across isolated clusters and endpoints.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center shrink-0">
-                  <Terminal className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">Reactive Notifications</h4>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Instant alerts dispatched via Telegram, Email SMTP, and SNMP Traps.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Developer Card (Ali Purnama) */}
-          <div className="glass-card p-6 space-y-6 border border-border/80">
-            <div>
-              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-primary" />
-                Meet the Developer
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">The mind behind ForeVim architecture and UI styling</p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-              {/* Profile Image */}
-              <div className="w-16 h-16 rounded-2xl overflow-hidden border border-border/80 shadow-lg shrink-0 select-none">
-                <img 
-                  src="/ali-purnama.jpg" 
-                  alt="Ali Purnama" 
-                  className="w-full h-full object-cover"
+                <ChevronRight
+                  className={`w-3.5 h-3.5 shrink-0 mt-1 transition-transform ${
+                    isActive ? "text-primary translate-x-0.5" : "text-muted-foreground/30 group-hover:translate-x-0.5"
+                  }`}
                 />
-              </div>
-
-              <div className="flex-1 space-y-3 text-center sm:text-left">
-                <div>
-                  <h4 className="text-base font-bold text-foreground">Ali Purnama</h4>
-                  <p className="text-xs text-primary font-medium mt-0.5">Tech Enthusiast</p>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Ali is a tech enthusiast dedicated to creating high-performance DevOps, cloud infrastructure, and 
-                  systems monitoring tools. Bringing modern user experiences and elegant aesthetics into enterprise software.
-                </p>
-
-                {/* Contact links */}
-                <div className="pt-2 flex flex-wrap justify-center sm:justify-start gap-2.5">
-                  <a
-                    href="https://alipurnama.my.id"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-xs text-foreground font-medium transition-all"
-                  >
-                    <Globe className="w-3.5 h-3.5" />
-                    alipurnama.my.id
-                    <ExternalLink className="w-3 h-3 opacity-50" />
-                  </a>
-
-                  <a
-                    href="https://github.com/alianama/forevim"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-xs text-foreground font-medium transition-all"
-                  >
-                    <Github className="w-3.5 h-3.5" />
-                    GitHub Repo
-                    <ExternalLink className="w-3 h-3 opacity-50" />
-                  </a>
-
-                  <a
-                    href="mailto:alipurnama69@gmail.com"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-xs text-foreground font-medium transition-all"
-                  >
-                    <Mail className="w-3.5 h-3.5" />
-                    alipurnama69@gmail.com
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Right Column: Sponsors CTA Card */}
-        <div className="space-y-6">
-          <div className="glass-card p-6 border border-border/80 relative overflow-hidden flex flex-col justify-between h-full min-h-[380px]">
-            {/* Top decorative gradient glow */}
-            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-rose-500 to-transparent" />
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-rose-500/10 rounded-full blur-3xl -z-10" />
+        {/* Content panel (Right) */}
+        <div className="flex-1 glass-card p-6 flex flex-col justify-between min-h-[460px] relative overflow-hidden">
+          
+          {/* Subtle brand background glows */}
+          <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl -z-10" />
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl -z-10" />
 
-            <div className="space-y-5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
-                  <Heart className="w-5 h-5 fill-current animate-heartbeat" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground text-sm">Become a Sponsor</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Support open-source development</p>
-                </div>
-              </div>
-
-              <div className="space-y-3.5 text-xs text-muted-foreground leading-relaxed">
-                <p>
-                  ForeVim is fully free and open-source software. To help sustain active updates, feature development, 
-                  and bug fixes, consider buying me a coffee or becoming a sponsor.
-                </p>
-                <p>
-                  Your sponsorship directly empowers:
-                </p>
-                <ul className="space-y-2 pl-1">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
-                    Adding new prediction algorithms
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
-                    Support for more metric databases (InfluxDB, OpenTSDB)
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
-                    Deep API optimizations and real-time dashboard enhancements
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Support Methods */}
-            <div className="pt-6 border-t border-border/40 mt-8 space-y-6">
+          {/* ── 1. SPONSORS TAB (Default & Top Priority) ── */}
+          {activeTab === "sponsors" && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full animate-fade-in">
               
-              {/* International Support (Ko-fi) */}
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                  <span>Global / International</span>
-                  <span className="text-[10px] lowercase font-normal opacity-60">USD / Paypal / Card</span>
+              {/* Left Column: Descriptions & Direct Buttons */}
+              <div className="lg:col-span-6 flex flex-col justify-between space-y-4">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+                      <Heart className="w-5 h-5 fill-current animate-heartbeat" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-bold text-foreground">Become a Sponsor</h2>
+                      <p className="text-[10px] text-muted-foreground">Support free open-source development</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground leading-relaxed font-semibold text-foreground">
+                      ForeVim is completely free and open-source. Your support directly funds:
+                    </p>
+                    <ul className="text-[11px] text-muted-foreground space-y-2 pl-1">
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 mt-1" />
+                        <span><strong>Core Platform Updates</strong>: Maintaining packages, patch upgrades, and security fixes.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 mt-1" />
+                        <span><strong>AI Predictor Engines</strong>: LSTM deep-learning forecasting models research and execution.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 mt-1" />
+                        <span><strong>Multi-DB Scrapers</strong>: Supporting scraper scaling for InfluxDB, OpenTSDB, and custom JSON targets.</span>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
+
+                {/* Gateway Action Buttons Column */}
+                <div className="space-y-3 pt-4 border-t border-border/40">
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
+                    Direct Support Gateways:
+                  </div>
+                  
+                  {/* Ko-fi Button */}
+                  <a
+                    href="https://ko-fi.com/alipurnama"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-600 dark:text-amber-400 transition-all group shadow-sm hover:shadow"
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <Coffee className="w-4 h-4 text-amber-500 fill-current animate-bounce" />
+                      Support Us via Ko-fi (Global Checkout)
+                    </span>
+                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground group-hover:text-amber-500 transition-colors">
+                      Open Page
+                      <ExternalLink className="w-3 h-3" />
+                    </span>
+                  </a>
+
+                  {/* Trakteer Button */}
+                  <a
+                    href="https://trakteer.id/alipurnama/tip"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/20 text-xs font-semibold text-rose-600 dark:text-rose-400 transition-all group shadow-sm hover:shadow"
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <Heart className="w-4 h-4 text-rose-500 fill-current animate-pulse" />
+                      Support Us via Trakteer (Indonesia Lokal)
+                    </span>
+                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground group-hover:text-rose-500 transition-colors">
+                      Open Page
+                      <ExternalLink className="w-3 h-3" />
+                    </span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Right Column: Single iPhone Mockup Rendering Ko-fi directly with embed parameters to bypass frame locks */}
+              <div className="lg:col-span-6 flex flex-col items-center justify-center min-h-[380px] space-y-3">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider select-none">
+                  📱 Ko-fi Live Donation
+                </div>
+                
+                {/* Realistically Styled iPhone Mockup */}
+                <div className="relative border-zinc-800 dark:border-zinc-800 bg-zinc-800 border-[10px] rounded-[2rem] h-[400px] w-[210px] shadow-2xl overflow-hidden flex flex-col shrink-0">
+                  
+                  {/* Dynamic Island Notch */}
+                  <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-16 h-3 bg-zinc-900 rounded-full z-20 flex items-center justify-center">
+                    <div className="w-1 h-1 rounded-full bg-zinc-700/80 mr-6" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-900/60" />
+                  </div>
+
+                  {/* Status Bar */}
+                  <div className="absolute top-0.5 left-0 right-0 px-4 flex items-center justify-between text-[7.5px] font-medium text-zinc-400 z-20 select-none">
+                    <span>09:41</span>
+                    <div className="flex items-center gap-1">
+                      <span className="w-1 h-1 rounded-full bg-amber-500 animate-ping" />
+                      <span>5G</span>
+                    </div>
+                  </div>
+
+                  {/* Iframe displaying Ko-fi widget URL directly with virtual zoom-out */}
+                  <div className="w-full h-full bg-card relative z-10 pt-5 overflow-hidden">
+                    <div className="w-full h-full relative overflow-hidden">
+                      <iframe 
+                        src="https://ko-fi.com/alipurnama/?hidefeed=true&widget=true&embed=true&preview=true"
+                        title="Ko-fi Live Support Gateway"
+                        className="absolute top-0 left-0 border-0 select-text origin-top-left"
+                        style={{
+                          width: "138%",
+                          height: "138%",
+                          transform: "scale(0.725)",
+                        }}
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Subtitle link under iPhone */}
                 <a
                   href="https://ko-fi.com/alipurnama"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/10 active:scale-[0.98] transition-all"
+                  className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors pt-1"
                 >
-                  <Coffee className="w-3.5 h-3.5 fill-white animate-bounce" />
-                  Support on Ko-fi (Global)
-                  <ExternalLink className="w-3 h-3 opacity-80" />
+                  Click to open direct Ko-fi page
+                  <ExternalLink className="w-2.5 h-2.5" />
                 </a>
               </div>
 
-              {/* Indonesia Local Support (Trakteer) */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                  <span>Lokal Indonesia</span>
-                  <span className="text-[10px] lowercase font-normal opacity-60">IDR / QRIS / E-Wallet</span>
-                </div>
-                
-                <div className="flex flex-col gap-2">
-                  <a
-                    href="https://trakteer.id/alipurnama"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-red-600 to-rose-500 hover:from-red-700 hover:to-rose-600 text-white font-bold text-xs rounded-xl shadow-md active:scale-[0.98] transition-all"
-                  >
-                    Trakteer Full Page
-                    <ExternalLink className="w-3 h-3 opacity-80" />
-                  </a>
+            </div>
+          )}
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <a
-                      href="https://trakteer.id/alipurnama/gift"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 py-2 px-3 bg-secondary hover:bg-secondary/80 border border-border text-xs text-foreground font-semibold rounded-lg active:scale-[0.98] transition-all"
-                    >
-                      Gift Page
-                      <ExternalLink className="w-2.5 h-2.5 opacity-60" />
-                    </a>
-
-                    <a
-                      href="https://trakteer.id/alipurnama/tip"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 py-2 px-3 bg-secondary hover:bg-secondary/80 border border-border text-xs text-foreground font-semibold rounded-lg active:scale-[0.98] transition-all"
-                    >
-                      Simple Page
-                      <ExternalLink className="w-2.5 h-2.5 opacity-60" />
-                    </a>
+          {/* ── 2. PLATFORM TAB ── */}
+          {activeTab === "platform" && (
+            <div className="space-y-5 animate-fade-in flex flex-col justify-between h-full">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-primary" />
                   </div>
+                  <div>
+                    <h2 className="text-base font-bold text-foreground">ForeVim Observability</h2>
+                    <p className="text-[10px] text-muted-foreground">Version 1.0.0 · Core Platform Overview</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3.5 text-xs text-muted-foreground leading-relaxed">
+                  <p>
+                    <strong>ForeVim</strong> (Forecasting Virtual Machine) is a state-of-the-art cloud monitoring and predictive infrastructure management tool. By scraping real-time metrics directly from <strong>Prometheus Sources</strong>, ForeVim bridges the gap between active telemetry and capacity planning.
+                  </p>
+                  <p>
+                    Utilizing Holt-Winters, Moving Averages, and ARIMA algorithms, ForeVim projects CPU, Memory, and Disk utilization trends up to 30 days ahead with 95% confidence intervals, preventing resource exhaustion before it impacts your workloads.
+                  </p>
                 </div>
               </div>
 
+              {/* Core Features Grid */}
+              <div className="pt-4 border-t border-border/40 grid grid-cols-2 gap-4">
+                <div className="flex gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
+                    <Cpu className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider">AI Analyzer</h4>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Sizing recommendations rounded to nearest 2GB.</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+                    <Database className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider">Forecasting</h4>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">HW & SARIMA evaluation with holdout MAPE checks.</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+                    <Server className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider">Prometheus</h4>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Integrated multi-source scrape endpoints.</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center shrink-0">
+                    <Heart className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider">Alert Routing</h4>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Telegrams, Email SMTPs, and SNMP Trap dispatch.</p>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* ── 3. DEVELOPER TAB ── */}
+          {activeTab === "developer" && (
+            <div className="space-y-4 animate-fade-in flex flex-col justify-between h-full">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    <Terminal className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-foreground">Meet the Developer</h2>
+                    <p className="text-[10px] text-muted-foreground">The mind behind ForeVim architecture & design</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 py-1">
+                  {/* Profile Image */}
+                  <div className="w-14 h-14 rounded-xl overflow-hidden border border-border/80 shadow-md shrink-0 select-none">
+                    <img 
+                      src="/ali-purnama.jpg" 
+                      alt="Ali Purnama" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">Ali Purnama</h3>
+                    <p className="text-xs text-primary font-medium mt-0.5">Tech Enthusiast</p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Ali is a tech enthusiast dedicated to creating high-performance cloud monitoring, DevOps workflow automations, and beautiful systems observability tools. He focuses on introducing pixel-perfect aesthetics and highly interactive user interfaces into the enterprise software layer.
+                </p>
+              </div>
+
+              {/* Developer Links */}
+              <div className="pt-4 border-t border-border/40 flex flex-wrap gap-2.5">
+                <a
+                  href="https://alipurnama.my.id"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-xs text-foreground font-semibold transition-all"
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  alipurnama.my.id
+                  <ExternalLink className="w-3 h-3 opacity-50" />
+                </a>
+
+                <a
+                  href="https://github.com/alianama/forevim"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-xs text-foreground font-semibold transition-all"
+                >
+                  <Github className="w-3.5 h-3.5" />
+                  GitHub Repository
+                  <ExternalLink className="w-3 h-3 opacity-50" />
+                </a>
+
+                <a
+                  href="mailto:alipurnama69@gmail.com"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-xs text-foreground font-semibold transition-all"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  alipurnama69@gmail.com
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

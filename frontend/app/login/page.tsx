@@ -106,7 +106,7 @@ export default function LoginPage() {
             <Activity className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-lg font-bold gradient-text">ForeVim</h1>
+            <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">ForeVim</h1>
             <p className="text-xs text-muted-foreground">VM Monitoring & Forecasting</p>
           </div>
         </div>
