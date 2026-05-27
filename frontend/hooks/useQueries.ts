@@ -336,6 +336,17 @@ export function useAcknowledgeAlert() {
   });
 }
 
+export function useResolveAlert() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => alertService.resolve(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["alerts"] });
+      qc.invalidateQueries({ queryKey: queryKeys.summary });
+    },
+  });
+}
+
 // ─── Users Hooks ──────────────────────────────────────────────────────────────
 
 export function useUsers() {
