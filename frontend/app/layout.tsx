@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   keywords: "VM monitoring, Prometheus, observability, forecasting, DevOps",
   authors: [{ name: "ForeVim" }],
   robots: "noindex",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

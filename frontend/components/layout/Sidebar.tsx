@@ -62,8 +62,8 @@ export function Sidebar() {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-border overflow-hidden">
-        <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0 border border-border/40">
-          <ActivityIcon size={16} className="text-foreground" />
+        <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 border border-border/40 bg-secondary flex items-center justify-center">
+          <img src="/logo.png" alt="ForeVim Logo" className="w-full h-full object-cover object-top" />
         </div>
         {sidebarOpen && (
           <div className="overflow-hidden">
