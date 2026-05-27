@@ -15,6 +15,7 @@ import {
   Database,
   Lock,
   Download,
+  Info,
 } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/stores";
 import { useAlerts } from "@/hooks/useQueries";
@@ -29,6 +30,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/settings", icon: SettingsIcon, label: "Notification Settings" },
   { href: "/dashboard/users", icon: Lock, label: "Users & Roles" },
   { href: "/dashboard/profile", icon: Lock, label: "Profile & Security" },
+  { href: "/dashboard/about", icon: Info, label: "About & Sponsors" },
 ];
 
 export function Sidebar() {
