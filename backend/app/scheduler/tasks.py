@@ -13,7 +13,7 @@ from sqlalchemy import delete, select
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
 from app.core.logging import get_logger
-from app.models.models import AnomalyLog, ForecastAlgorithm, ForecastMetric, VM
+from app.models.models import AnomalyLog, ForecastAlgorithm, ForecastMetric, VM, VMStatus
 from app.prometheus.client import prometheus_service
 from app.services.vm_service import vm_service
 from app.forecasting.service import forecast_service
@@ -71,15 +71,15 @@ async def task_generate_forecasts() -> None:
             return
     # DB connection released — now run forecasts without holding any connections
     for vm in vms:
-        if not vm.prometheus_source:
+        if not vm.prometheus_source or vm.status == VMStatus.DOWN:
             continue
         for metric in [ForecastMetric.CPU, ForecastMetric.RAM, ForecastMetric.DISK]:
             try:
                 await forecast_service.generate_and_save(
                     vm,
                     metric,
-                    ForecastAlgorithm.HOLT_WINTERS,
-                    7,
+                    ForecastAlgorithm.ARIMA,
+                    settings.FORECAST_DEFAULT_PERIOD,
                 )
             except Exception as exc:
                 logger.warning("forecast_failed", vm=vm.hostname, metric=metric, error=str(exc))

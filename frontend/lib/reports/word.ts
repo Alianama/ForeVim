@@ -203,24 +203,40 @@ export async function generateWord(data: ReportData): Promise<void> {
 
   // Forecast status
   if (data.sections.includes("forecast_status")) {
-    children.push(section("Status Forecast"));
-    const fmtF = (f: any) =>
-      f
-        ? `${f.algorithm.replace(/_/g, " ")}${f.is_expired ? " (expired)" : ""}`
-        : "-";
+    children.push(section("Status Forecast per VM"));
+
+    // Helper: format a single metric's cells
+    const fmtF = (f: any, metricName: string): string[] => {
+      if (!f) return ["-", "-", "-", "-", "-", "-"];
+      const unit = metricName === "cpu" ? "Cores" : "GB";
+      const rec = f.recommendation;
+      const action = rec?.action ?? "-";
+      const curr = rec?.current_capacity != null ? `${rec.current_capacity.toFixed(1)} ${unit}` : "-";
+      const recm = rec?.recommended_capacity != null ? `${rec.recommended_capacity.toFixed(1)} ${unit}` : "-";
+      const mape = f.accuracy_score != null ? `${f.accuracy_score.toFixed(1)}%` : "-";
+      const period = f.period_days != null ? `${f.period_days}d` : "-";
+      const status = f.is_expired ? "Expired" : "Valid";
+      return [action, curr, recm, mape, period, status];
+    };
+
     children.push(
       new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
         rows: [
-          headerRow(["Hostname", "IP", "CPU", "RAM", "Disk"]),
+          headerRow([
+            "Hostname", "IP",
+            "CPU Aksi", "CPU Saat Ini", "CPU Rekomendasi", "CPU MAPE", "CPU Hari", "CPU Status",
+            "RAM Aksi", "RAM Saat Ini", "RAM Rekomendasi", "RAM MAPE", "RAM Hari", "RAM Status",
+            "Disk Aksi", "Disk Saat Ini", "Disk Rekomendasi", "Disk MAPE", "Disk Hari", "Disk Status",
+          ]),
           ...data.forecastOverview.map((vm, i) =>
             dataRow(
               [
                 vm.hostname,
                 vm.ip_address,
-                fmtF(vm.forecasts.cpu),
-                fmtF(vm.forecasts.ram),
-                fmtF(vm.forecasts.disk),
+                ...fmtF(vm.forecasts?.cpu, "cpu"),
+                ...fmtF(vm.forecasts?.ram, "ram"),
+                ...fmtF(vm.forecasts?.disk, "disk"),
               ],
               i % 2 === 1,
             ),
@@ -229,6 +245,7 @@ export async function generateWord(data: ReportData): Promise<void> {
       }),
     );
   }
+
 
   // Alerts
   if (data.sections.includes("alerts") && data.alerts.length > 0) {

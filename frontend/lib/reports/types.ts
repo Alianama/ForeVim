@@ -52,12 +52,13 @@ export interface ReportData {
   generatedAt: Date;
   sections: ReportSectionId[];
   includeCharts: boolean;
-  vmsWithMetrics: VmWithMetrics[];
+  vmsWithMetrics: VmWithMetrics[];   // active VMs only (status !== 'down')
+  shutdownVms: VmWithMetrics[];      // VMs with status === 'down'
   summary: DashboardSummary | null;
   topCpu: TopMetricEntry[];
   topRam: TopMetricEntry[];
   topDisk: TopMetricEntry[];
-  forecastOverview: ForecastOverviewItem[];
+  forecastOverview: ForecastOverviewItem[]; // active VMs only
   alerts: Alert[];
 }
 

@@ -26,8 +26,8 @@ function metricColor(value: number): [number, number, number] {
 }
 
 export async function generatePDF(data: ReportData): Promise<void> {
-  const { default: jsPDF } = await import("jspdf");
-  await import("jspdf-autotable");
+  const { jsPDF } = await import("jspdf");
+  const { default: autoTable } = await import("jspdf-autotable");
 
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = 210, H = 297;
@@ -131,7 +131,7 @@ export async function generatePDF(data: ReportData): Promise<void> {
   // ── VM List Table ───────────────────────────────────────────────────────────────
   if (data.sections.includes("vm_list")) {
     y = sectionTitle("Daftar VM & Metrik Terkini", y);
-    (pdf as any).autoTable({
+    autoTable(pdf, {
       startY: y,
       margin: { left: margin, right: margin },
       head: [["Hostname", "IP", "Env", "Status", "CPU%", "RAM%", "Disk%", "Last Seen"]],
@@ -195,7 +195,7 @@ export async function generatePDF(data: ReportData): Promise<void> {
       y += entries.length * (barH + barGap) + 4;
     }
 
-    (pdf as any).autoTable({
+    autoTable(pdf, {
       startY: y,
       margin: { left: margin, right: margin },
       head: [["Rank", "Hostname", "IP Address", "Nilai (%)", "Status"]],
@@ -212,16 +212,78 @@ export async function generatePDF(data: ReportData): Promise<void> {
   if (data.sections.includes("forecast_status")) {
     if (y > H - 60) { pdf.addPage(); addHeader(); y = 20; }
     y = sectionTitle("Status Forecast per VM", y);
-    const fmtF = (f: any) => f ? `${f.algorithm.replace(/_/g, " ")}${f.is_expired ? " \u26a0" : " \u2713"}` : "-";
-    (pdf as any).autoTable({
+
+    const actionColor = (action: string | undefined): [number, number, number] => {
+      if (action === "INCREASE") return COLORS.danger;
+      if (action === "DECREASE") return COLORS.primary;
+      if (action === "KEEP") return COLORS.success;
+      return COLORS.subtext;
+    };
+
+    const fmtAlgo = (f: any) => f ? `${f.algorithm ?? "-"}${f.is_expired ? " ⚠" : " ✓"}` : "-";
+    const fmtMape = (f: any) => f?.accuracy_score != null ? `${f.accuracy_score.toFixed(1)}%` : "-";
+    const fmtAction = (f: any) => f?.recommendation?.action ?? "-";
+    const fmtPeriod = (f: any) => f?.period_days != null ? `${f.period_days}d` : "-";
+    const fmtCap = (f: any, metric: string) => {
+      const rec = f?.recommendation;
+      if (!rec) return "-";
+      const unit = metric === "cpu" ? "Cores" : "GB";
+      const curr = rec.current_capacity != null ? `${rec.current_capacity.toFixed(1)}` : "?";
+      const recm = rec.recommended_capacity != null ? `${rec.recommended_capacity.toFixed(1)}` : "?";
+      return `${curr} → ${recm} ${unit}`;
+    };
+
+    // Table 1: recommendation actions overview
+    autoTable(pdf, {
       startY: y,
       margin: { left: margin, right: margin },
-      head: [["Hostname", "IP", "CPU", "RAM", "Disk"]],
+      head: [["Hostname", "IP", "CPU Aksi", "CPU Kapasitas", "RAM Aksi", "RAM Kapasitas", "Disk Aksi", "Disk Kapasitas"]],
       body: data.forecastOverview.map(vm => [
-        vm.hostname, vm.ip_address, fmtF(vm.forecasts.cpu), fmtF(vm.forecasts.ram), fmtF(vm.forecasts.disk),
+        vm.hostname,
+        vm.ip_address,
+        fmtAction(vm.forecasts?.cpu),
+        fmtCap(vm.forecasts?.cpu, "cpu"),
+        fmtAction(vm.forecasts?.ram),
+        fmtCap(vm.forecasts?.ram, "ram"),
+        fmtAction(vm.forecasts?.disk),
+        fmtCap(vm.forecasts?.disk, "disk"),
       ]),
-      styles: { fontSize: 8, cellPadding: 2 },
+      styles: { fontSize: 7.5, cellPadding: 2 },
       headStyles: { fillColor: COLORS.primary, textColor: [255, 255, 255], fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      columnStyles: {
+        0: { cellWidth: 32 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 18, halign: "center" },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 18, halign: "center" },
+        5: { cellWidth: 25 },
+        6: { cellWidth: 18, halign: "center" },
+      },
+      didParseCell: (hookData: any) => {
+        if (hookData.section === "body" && [2, 4, 6].includes(hookData.column.index)) {
+          const [r, g, b] = actionColor(hookData.cell.text[0]);
+          hookData.cell.styles.textColor = [r, g, b];
+          hookData.cell.styles.fontStyle = "bold";
+        }
+      },
+    });
+    y = (pdf as any).lastAutoTable.finalY + 6;
+
+    // Table 2: algorithm/MAPE/period detail
+    if (y > H - 50) { pdf.addPage(); addHeader(); y = 20; }
+    autoTable(pdf, {
+      startY: y,
+      margin: { left: margin, right: margin },
+      head: [["Hostname", "CPU Model", "CPU MAPE", "CPU Hari", "RAM Model", "RAM MAPE", "RAM Hari", "Disk Model", "Disk MAPE", "Disk Hari"]],
+      body: data.forecastOverview.map(vm => [
+        vm.hostname,
+        fmtAlgo(vm.forecasts?.cpu), fmtMape(vm.forecasts?.cpu), fmtPeriod(vm.forecasts?.cpu),
+        fmtAlgo(vm.forecasts?.ram), fmtMape(vm.forecasts?.ram), fmtPeriod(vm.forecasts?.ram),
+        fmtAlgo(vm.forecasts?.disk), fmtMape(vm.forecasts?.disk), fmtPeriod(vm.forecasts?.disk),
+      ]),
+      styles: { fontSize: 7.5, cellPadding: 2 },
+      headStyles: { fillColor: [80, 100, 140] as [number,number,number], textColor: [255, 255, 255], fontStyle: "bold" },
       alternateRowStyles: { fillColor: [248, 250, 252] },
     });
     y = (pdf as any).lastAutoTable.finalY + 8;
@@ -231,7 +293,7 @@ export async function generatePDF(data: ReportData): Promise<void> {
   if (data.sections.includes("alerts") && data.alerts.length > 0) {
     if (y > H - 60) { pdf.addPage(); addHeader(); y = 20; }
     y = sectionTitle("Active Alerts", y);
-    (pdf as any).autoTable({
+    autoTable(pdf, {
       startY: y,
       margin: { left: margin, right: margin },
       head: [["Severity", "Metric", "Pesan", "Nilai", "Dibuat"]],

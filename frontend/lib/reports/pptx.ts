@@ -276,41 +276,94 @@ export async function generatePPTX(data: ReportData): Promise<void> {
     data.sections.includes("forecast_status") &&
     data.forecastOverview.length > 0
   ) {
-    const slide = pptx.addSlide();
-    addSlideHeader(slide, "Status Forecast per VM");
-    const fmtF = (f: any) =>
-      f
-        ? `${f.algorithm.replace(/_/g, " ")}${f.is_expired ? " \u26a0" : " \u2713"}`
-        : "-";
-    const rows: any[] = [
-      [
-        { text: "Hostname", options: { bold: true } },
-        { text: "IP", options: { bold: true } },
-        { text: "CPU", options: { bold: true } },
-        { text: "RAM", options: { bold: true } },
-        { text: "Disk", options: { bold: true } },
-      ],
-      ...data.forecastOverview
-        .slice(0, 20)
-        .map((vm) => [
-          vm.hostname.substring(0, 20),
+    const fmtAction = (f: any) => f?.recommendation?.action ?? "-";
+    const fmtCap = (f: any, metric: string) => {
+      const rec = f?.recommendation;
+      if (!rec) return "-";
+      const unit = metric === "cpu" ? "C" : "GB";
+      const curr = rec.current_capacity != null ? `${rec.current_capacity.toFixed(1)}` : "?";
+      const recm = rec.recommended_capacity != null ? `${rec.recommended_capacity.toFixed(1)}` : "?";
+      return `${curr}→${recm} ${unit}`;
+    };
+    const fmtAlgo = (f: any) => f ? `${f.algorithm ?? "-"}${f.is_expired ? " ⚠" : " ✓"}` : "-";
+    const fmtMape = (f: any) => f?.accuracy_score != null ? `${f.accuracy_score.toFixed(1)}%` : "-";
+    const fmtPeriod = (f: any) => f?.period_days != null ? `${f.period_days}d` : "-";
+
+    // Slide: Forecast Recommendations
+    {
+      const slide = pptx.addSlide();
+      addSlideHeader(slide, "Forecast — Rekomendasi Kapasitas");
+      const rows: any[] = [
+        [
+          { text: "Hostname", options: { bold: true } },
+          { text: "IP", options: { bold: true } },
+          { text: "CPU Aksi", options: { bold: true } },
+          { text: "CPU Kapasitas", options: { bold: true } },
+          { text: "RAM Aksi", options: { bold: true } },
+          { text: "RAM Kapasitas", options: { bold: true } },
+          { text: "Disk Aksi", options: { bold: true } },
+          { text: "Disk Kapasitas", options: { bold: true } },
+        ],
+        ...data.forecastOverview.slice(0, 18).map(vm => [
+          vm.hostname.substring(0, 18),
           vm.ip_address,
-          fmtF(vm.forecasts.cpu),
-          fmtF(vm.forecasts.ram),
-          fmtF(vm.forecasts.disk),
+          fmtAction(vm.forecasts?.cpu),
+          fmtCap(vm.forecasts?.cpu, "cpu"),
+          fmtAction(vm.forecasts?.ram),
+          fmtCap(vm.forecasts?.ram, "ram"),
+          fmtAction(vm.forecasts?.disk),
+          fmtCap(vm.forecasts?.disk, "disk"),
         ]),
-    ];
-    slide.addTable(rows, {
-      x: 0.5,
-      y: 0.85,
-      w: 12.3,
-      h: 6,
-      fontSize: 9.5,
-      border: { pt: 0.5, color: "e2e8f0" },
-      align: "left",
-      rowH: 0.32,
-    });
-    addSlideFooter(slide);
+      ];
+      slide.addTable(rows, {
+        x: 0.3,
+        y: 0.85,
+        w: 12.7,
+        h: 6,
+        fontSize: 9,
+        border: { pt: 0.5, color: "e2e8f0" },
+        align: "left",
+        rowH: 0.31,
+      });
+      addSlideFooter(slide);
+    }
+
+    // Slide: Forecast Model Detail
+    {
+      const slide = pptx.addSlide();
+      addSlideHeader(slide, "Forecast — Detail Model SARIMA");
+      const rows: any[] = [
+        [
+          { text: "Hostname", options: { bold: true } },
+          { text: "CPU Model", options: { bold: true } },
+          { text: "CPU MAPE", options: { bold: true } },
+          { text: "CPU Hari", options: { bold: true } },
+          { text: "RAM Model", options: { bold: true } },
+          { text: "RAM MAPE", options: { bold: true } },
+          { text: "RAM Hari", options: { bold: true } },
+          { text: "Disk Model", options: { bold: true } },
+          { text: "Disk MAPE", options: { bold: true } },
+          { text: "Disk Hari", options: { bold: true } },
+        ],
+        ...data.forecastOverview.slice(0, 20).map(vm => [
+          vm.hostname.substring(0, 18),
+          fmtAlgo(vm.forecasts?.cpu), fmtMape(vm.forecasts?.cpu), fmtPeriod(vm.forecasts?.cpu),
+          fmtAlgo(vm.forecasts?.ram), fmtMape(vm.forecasts?.ram), fmtPeriod(vm.forecasts?.ram),
+          fmtAlgo(vm.forecasts?.disk), fmtMape(vm.forecasts?.disk), fmtPeriod(vm.forecasts?.disk),
+        ]),
+      ];
+      slide.addTable(rows, {
+        x: 0.3,
+        y: 0.85,
+        w: 12.7,
+        h: 6,
+        fontSize: 9,
+        border: { pt: 0.5, color: "e2e8f0" },
+        align: "left",
+        rowH: 0.31,
+      });
+      addSlideFooter(slide);
+    }
   }
 
   // ── Alerts ──────────────────────────────────────────────────────────────────

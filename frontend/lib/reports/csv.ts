@@ -52,17 +52,45 @@ export function generateCSV(data: ReportData): void {
     }
   }
 
+  // ── Forecast Status — full detail ──────────────────────────────────────────
   if (data.sections.includes("forecast_status")) {
     rows.push(["## Forecast Status"]);
-    rows.push(["Hostname", "IP", "CPU Algorithm", "CPU Last Run", "CPU MAPE", "RAM Algorithm", "RAM Last Run", "RAM MAPE", "Disk Algorithm", "Disk Last Run", "Disk MAPE"]);
+    rows.push([
+      "Hostname", "IP", "Cluster", "Has Prometheus",
+      // CPU
+      "CPU Algoritma", "CPU Periode (hari)", "CPU MAPE (%)", "CPU Aksi", "CPU Kapasitas Saat Ini", "CPU Kapasitas Rekomendasi", "CPU Alasan", "CPU Expired?", "CPU Dibuat",
+      // RAM
+      "RAM Algoritma", "RAM Periode (hari)", "RAM MAPE (%)", "RAM Aksi", "RAM Kapasitas Saat Ini", "RAM Kapasitas Rekomendasi", "RAM Alasan", "RAM Expired?", "RAM Dibuat",
+      // Disk
+      "Disk Algoritma", "Disk Periode (hari)", "Disk MAPE (%)", "Disk Aksi", "Disk Kapasitas Saat Ini", "Disk Kapasitas Rekomendasi", "Disk Alasan", "Disk Expired?", "Disk Dibuat",
+    ]);
+
+    const fmtForecast = (f: any, metricName: string) => {
+      if (!f) return ["", "", "", "", "", "", "", "", ""];
+      const unit = metricName === "cpu" ? " Cores" : " GB";
+      const rec = f.recommendation;
+      return [
+        f.algorithm ?? "",
+        String(f.period_days ?? ""),
+        f.accuracy_score != null ? f.accuracy_score.toFixed(1) : "",
+        rec?.action ?? "",
+        rec?.current_capacity != null ? `${rec.current_capacity.toFixed(1)}${unit}` : "",
+        rec?.recommended_capacity != null ? `${rec.recommended_capacity.toFixed(1)}${unit}` : "",
+        rec?.reason ?? "",
+        f.is_expired ? "Ya" : "Tidak",
+        f.generated_at ? new Date(f.generated_at).toLocaleString("id-ID") : "",
+      ];
+    };
+
     for (const vm of data.forecastOverview) {
-      const fmtForecast = (f: any) => f ? [f.algorithm, new Date(f.generated_at).toLocaleString("id-ID"), f.accuracy_score?.toFixed(1) ?? ""] : ["", "", ""];
       rows.push([
         vm.hostname,
         vm.ip_address,
-        ...fmtForecast(vm.forecasts.cpu),
-        ...fmtForecast(vm.forecasts.ram),
-        ...fmtForecast(vm.forecasts.disk),
+        vm.cluster ?? "",
+        vm.has_prometheus ? "Ya" : "Tidak",
+        ...fmtForecast(vm.forecasts?.cpu, "cpu"),
+        ...fmtForecast(vm.forecasts?.ram, "ram"),
+        ...fmtForecast(vm.forecasts?.disk, "disk"),
       ]);
     }
     rows.push([]);
@@ -88,3 +116,48 @@ function downloadBlob(blob: Blob, filename: string) {
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Separate CSV export for VMs with status "down" (shutdown).
+ * This is a standalone export — always CSV regardless of the selected report format.
+ */
+export function generateShutdownCSV(data: ReportData): void {
+  const rows: string[][] = [];
+
+  rows.push([`# Shutdown VMs Export — ${data.title}`]);
+  rows.push([`# Generated: ${data.generatedAt.toLocaleString("id-ID")}`]);
+  rows.push([`# Total Shutdown VMs: ${data.shutdownVms.length}`]);
+  rows.push([]);
+
+  if (data.shutdownVms.length === 0) {
+    rows.push(["No shutdown VMs found."]);
+  } else {
+    rows.push([
+      "No.",
+      "Hostname",
+      "IP Address",
+      "Environment",
+      "Cluster",
+      "Location",
+      "Last Seen",
+    ]);
+    data.shutdownVms.forEach((vm, idx) => {
+      rows.push([
+        String(idx + 1),
+        vm.hostname,
+        vm.ip_address,
+        vm.environment ?? "",
+        vm.cluster ?? "",
+        vm.location ?? "",
+        vm.last_seen ? new Date(vm.last_seen).toLocaleString("id-ID") : "-",
+      ]);
+    });
+  }
+
+  const csv = rows
+    .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  downloadBlob(blob, `Shutdown_VMs_${formatDate(data.generatedAt)}.csv`);
+}
+

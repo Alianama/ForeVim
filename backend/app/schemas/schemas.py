@@ -115,6 +115,7 @@ class UserResponse(BaseSchema):
     is_verified: bool
     last_login: Optional[datetime]
     is_2fa_enabled: bool
+    profile_image: Optional[str] = None
     created_at: datetime
 
 
@@ -248,7 +249,7 @@ class DiskMount(BaseModel):
 class ForecastRequest(BaseModel):
     metric: ForecastMetric
     algorithm: ForecastAlgorithm = ForecastAlgorithm.HOLT_WINTERS
-    period_days: int = Field(default=7, ge=1, le=30)
+    period_days: int = Field(default=30, ge=1, le=90)
 
 
 class ForecastPoint(BaseModel):

@@ -162,8 +162,8 @@ async def get_vm_forecast(
     db: DBSession,
     current_user: CurrentUser,
     metric: ForecastMetric = Query(default=ForecastMetric.CPU),
-    algorithm: ForecastAlgorithm = Query(default=ForecastAlgorithm.AUTO),
-    period_days: int = Query(default=7, ge=1, le=90),
+    algorithm: ForecastAlgorithm = Query(default=ForecastAlgorithm.ARIMA),
+    period_days: int = Query(default=30, ge=1, le=90),
     force_refresh: bool = Query(
         default=False, description="Paksa generate ulang dari Prometheus"
     ),
@@ -187,8 +187,8 @@ async def generate_vm_forecast(
     db: DBSession,
     current_user: CurrentUser,
     metric: ForecastMetric = Query(default=ForecastMetric.CPU),
-    algorithm: ForecastAlgorithm = Query(default=ForecastAlgorithm.AUTO),
-    period_days: int = Query(default=7, ge=1, le=90),
+    algorithm: ForecastAlgorithm = Query(default=ForecastAlgorithm.ARIMA),
+    period_days: int = Query(default=30, ge=1, le=90),
 ):
     vm = await vm_service.get_by_id(db, vm_id)
     if not vm:
@@ -243,8 +243,8 @@ async def get_vm_recommendation(
     vm_id: uuid.UUID,
     db: DBSession,
     current_user: CurrentUser,
-    algorithm: ForecastAlgorithm = Query(default=ForecastAlgorithm.AUTO),
-    period_days: int = Query(default=7, ge=1, le=90),
+    algorithm: ForecastAlgorithm = Query(default=ForecastAlgorithm.ARIMA),
+    period_days: int = Query(default=30, ge=1, le=90),
 ):
     vm = await vm_service.get_by_id(db, vm_id)
     if not vm:

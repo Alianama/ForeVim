@@ -73,6 +73,16 @@ export const authService = {
     });
     return data;
   },
+  uploadProfileImage: async (file: File): Promise<User> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const { data } = await api.post<User>("/auth/me/profile-image", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return data;
+  },
 };
 
 // ─── VMs ─────────────────────────────────────────────────────────────────────
@@ -157,7 +167,7 @@ export const vmService = {
   recommendation: async (
     id: string,
     algorithm: ForecastAlgorithm = "auto",
-    periodDays: number = 7,
+    periodDays: number = 30,
   ): Promise<RecommendationResponse> => {
     const { data } = await api.get<RecommendationResponse>(
       `/vms/${id}/recommendation`,

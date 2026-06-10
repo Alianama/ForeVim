@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MINUTE: int = 100
 
     # ── Forecasting ───────────────────────────────────────────────────────────
-    FORECAST_DEFAULT_PERIOD: int = 7  # days
+    FORECAST_DEFAULT_PERIOD: int = 30  # days
     FORECAST_HISTORY_HOURS: int = 168  # 7 days lookback
     # Background forecast tiap jam memakan CPU (statsmodels); default off — forecast on-demand via API
     FORECAST_SCHEDULER_ENABLED: bool = False

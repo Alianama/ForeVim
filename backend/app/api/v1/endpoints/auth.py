@@ -1,7 +1,10 @@
 from typing import Annotated
 import urllib.parse
+import os
+import uuid
+import shutil
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -113,5 +116,55 @@ async def refresh_token(body: RefreshTokenRequest, db: DBSession):
 
 @router.get("/me", response_model=UserResponse, summary="Get Current User")
 async def get_me(current_user: CurrentUser):
+    return current_user
+
+
+@router.post("/me/profile-image", response_model=UserResponse, summary="Upload profile image")
+async def upload_profile_image(
+    current_user: CurrentUser,
+    db: DBSession,
+    file: UploadFile = File(...)
+):
+    # Validate file format (only images)
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must be an image",
+        )
+    
+    # Generate a unique filename using uuid
+    ext = os.path.splitext(file.filename)[1] if file.filename else ".jpg"
+    if not ext:
+        ext = ".jpg"
+    filename = f"{uuid.uuid4()}{ext}"
+    
+    # Save the file
+    upload_dir = "uploads/profile_images"
+    os.makedirs(upload_dir, exist_ok=True)
+    file_path = os.path.join(upload_dir, filename)
+    
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Could not save file: {str(e)}"
+        )
+    
+    # Delete old profile image if it exists
+    if current_user.profile_image:
+        old_path = current_user.profile_image.lstrip("/")
+        if os.path.exists(old_path) and "uploads/profile_images" in old_path:
+            try:
+                os.remove(old_path)
+            except Exception:
+                pass
+                
+    # Update the user profile image path in DB
+    current_user.profile_image = f"/uploads/profile_images/{filename}"
+    await db.commit()
+    await db.refresh(current_user)
+    
     return current_user
 

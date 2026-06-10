@@ -42,7 +42,7 @@ def _instance_candidates(ip_address: str, prometheus_instance: Optional[str]) ->
 
 
 def _ip_regex(ip_address: str) -> str:
-    escaped = re.escape(ip_address)
+    escaped = re.escape(ip_address).replace("\\", "\\\\")
     return f"{escaped}(:910[0-9]+)?"
 
 

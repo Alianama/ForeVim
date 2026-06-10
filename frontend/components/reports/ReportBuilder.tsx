@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   useVMs,
   useForecastOverview,
@@ -10,12 +10,14 @@ import {
 import { useRealtimeStore } from "@/stores";
 import {
   generateReport,
+  generateShutdownCSV,
   DEFAULT_SECTIONS,
   type ReportFormat,
   type ReportSection,
   type ReportData,
   type VmWithMetrics,
   type TopMetricEntry,
+  type ReportSectionId,
 } from "@/lib/reports";
 import {
   FileSpreadsheet,
@@ -44,6 +46,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   defaultTitle?: string;
+  defaultSections?: ReportSectionId[];
 }
 
 const FORMAT_OPTIONS: {
@@ -94,18 +97,41 @@ export function ReportBuilder({
   isOpen,
   onClose,
   defaultTitle = "ForeVim Report",
+  defaultSections,
 }: Props) {
   const [title, setTitle] = useState(defaultTitle);
   const [subtitle, setSubtitle] = useState("");
   const [format, setFormat] = useState<ReportFormat>("pdf");
   const [sections, setSections] = useState<ReportSection[]>(
-    DEFAULT_SECTIONS.map((s: ReportSection) => ({ ...s })),
+    DEFAULT_SECTIONS.map((s: ReportSection) => ({
+      ...s,
+      enabled: defaultSections ? defaultSections.includes(s.id) : s.enabled,
+    })),
   );
   const [includeCharts, setIncludeCharts] = useState(true);
   const [filterEnv, setFilterEnv] = useState("all");
   const [filterCluster, setFilterCluster] = useState("all");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isExportingShutdown, setIsExportingShutdown] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTitle(defaultTitle);
+      setSubtitle("");
+      setFormat("pdf");
+      setSections(
+        DEFAULT_SECTIONS.map((s: ReportSection) => ({
+          ...s,
+          enabled: defaultSections ? defaultSections.includes(s.id) : true,
+        })),
+      );
+      setIncludeCharts(true);
+      setFilterEnv("all");
+      setFilterCluster("all");
+      setShowAdvanced(false);
+    }
+  }, [isOpen, defaultTitle, defaultSections]);
 
   const { data: vmsData } = useVMs();
   const { data: forecastOverview = [] } = useForecastOverview();
@@ -148,22 +174,31 @@ export function ReportBuilder({
   };
 
   const buildReportData = (): ReportData => {
-    // Build vmsWithMetrics
-    const vmsWithMetrics: VmWithMetrics[] = filteredVms.map((vm) => {
-      const rt = realtimeMetrics[vm.id];
-      return {
-        ...vm,
-        cpu_usage: rt?.cpu_usage ?? null,
-        ram_usage: rt?.ram_usage ?? null,
-        disk_usage: rt?.disk_usage ?? null,
-        ram_used_gb: rt?.ram_used_gb ?? null,
-        ram_total_gb: rt?.ram_total_gb ?? null,
-        disk_used_gb: rt?.disk_used_gb ?? null,
-        disk_total_gb: rt?.disk_total_gb ?? null,
-      };
-    });
+    // Split into active and shutdown VMs
+    const activeVms = filteredVms.filter((vm) => vm.status !== "down");
+    const downVms = filteredVms.filter((vm) => vm.status === "down");
 
-    // Build top metrics (top 10, sorted desc, only those with values)
+    const buildVmWithMetrics = (vms: typeof activeVms): VmWithMetrics[] =>
+      vms.map((vm) => {
+        const rt = realtimeMetrics[vm.id];
+        return {
+          ...vm,
+          cpu_usage: rt?.cpu_usage ?? null,
+          ram_usage: rt?.ram_usage ?? null,
+          disk_usage: rt?.disk_usage ?? null,
+          ram_used_gb: rt?.ram_used_gb ?? null,
+          ram_total_gb: rt?.ram_total_gb ?? null,
+          disk_used_gb: rt?.disk_used_gb ?? null,
+          disk_total_gb: rt?.disk_total_gb ?? null,
+        };
+      });
+
+    // Build vmsWithMetrics — active only
+    const vmsWithMetrics: VmWithMetrics[] = buildVmWithMetrics(activeVms);
+    // Build shutdownVms
+    const shutdownVms: VmWithMetrics[] = buildVmWithMetrics(downVms);
+
+    // Build top metrics (top 10, sorted desc, only those with values, active only)
     const buildTop = (
       metric: "cpu_usage" | "ram_usage" | "disk_usage",
     ): TopMetricEntry[] =>
@@ -181,6 +216,16 @@ export function ReportBuilder({
 
     const enabledSections = sections.filter((s) => s.enabled).map((s) => s.id);
 
+    // Forecast overview — exclude shutdown VMs
+    const activeVmIds = new Set(activeVms.map((v) => v.id));
+    const filteredForecastOverview =
+      filterEnv !== "all" || filterCluster !== "all"
+        ? forecastOverview.filter((vm) => {
+            const match = filteredVms.find((v) => v.id === vm.vm_id);
+            return !!match && activeVmIds.has(vm.vm_id);
+          })
+        : forecastOverview.filter((vm) => activeVmIds.has(vm.vm_id));
+
     return {
       title,
       subtitle,
@@ -188,17 +233,12 @@ export function ReportBuilder({
       sections: enabledSections,
       includeCharts: includeCharts && format !== "csv" && format !== "docx",
       vmsWithMetrics,
+      shutdownVms,
       summary: summary ?? null,
       topCpu: buildTop("cpu_usage"),
       topRam: buildTop("ram_usage"),
       topDisk: buildTop("disk_usage"),
-      forecastOverview:
-        filterEnv !== "all" || filterCluster !== "all"
-          ? forecastOverview.filter((vm) => {
-              const match = filteredVms.find((v) => v.id === vm.vm_id);
-              return !!match;
-            })
-          : forecastOverview,
+      forecastOverview: filteredForecastOverview,
       alerts,
     };
   };
@@ -224,6 +264,23 @@ export function ReportBuilder({
       toast.error(`Failed to create report: ${err?.message ?? "Unknown error"}`);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleExportShutdown = async () => {
+    setIsExportingShutdown(true);
+    try {
+      const reportData = buildReportData();
+      if (reportData.shutdownVms.length === 0) {
+        toast.info("No shutdown VMs found.");
+        return;
+      }
+      generateShutdownCSV(reportData);
+      toast.success(`Shutdown VM list exported as CSV!`);
+    } catch (err: any) {
+      toast.error(`Export failed: ${err?.message ?? "Unknown error"}`);
+    } finally {
+      setIsExportingShutdown(false);
     }
   };
 
@@ -448,11 +505,16 @@ export function ReportBuilder({
                 Preview
               </div>
               <div>
-                {filteredVms.length} VMs{" "}
+                {filteredVms.filter(v => v.status !== "down").length} active VMs{" "}
                 {filterEnv !== "all" || filterCluster !== "all"
                   ? "(filtered)"
                   : "(all)"}
               </div>
+              {filteredVms.filter(v => v.status === "down").length > 0 && (
+                <div className="text-amber-500 font-medium">
+                  {filteredVms.filter(v => v.status === "down").length} shutdown VMs excluded from report
+                </div>
+              )}
               <div>
                 {sections.filter((s) => s.enabled).length} of{" "}
                 {sections.length} sections active
@@ -472,10 +534,30 @@ export function ReportBuilder({
           {/* Footer */}
           <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-border shrink-0">
             <p className="text-xs text-muted-foreground">
-              {filteredVms.length} VMs ·{" "}
+              {filteredVms.filter(v => v.status !== "down").length} active VMs ·{" "}
+              {filteredVms.filter(v => v.status === "down").length > 0 && (
+                <span className="text-amber-500">
+                  {filteredVms.filter(v => v.status === "down").length} shutdown excluded ·{" "}
+                </span>
+              )}
               {sections.filter((s) => s.enabled).length} sections
             </p>
             <div className="flex gap-2">
+              {filteredVms.some(v => v.status === "down") && (
+                <button
+                  onClick={handleExportShutdown}
+                  disabled={isExportingShutdown || isGenerating}
+                  title="Export list of shutdown VMs as CSV"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-amber-600 border border-amber-500/40 bg-amber-500/5 hover:bg-amber-500/15 disabled:opacity-50 transition-all"
+                >
+                  {isExportingShutdown ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <FileDown className="w-3.5 h-3.5" />
+                  )}
+                  Export Shutdown VMs
+                </button>
+              )}
               <button
                 onClick={onClose}
                 className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all border border-border"

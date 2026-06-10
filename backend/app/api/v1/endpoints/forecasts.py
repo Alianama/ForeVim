@@ -4,6 +4,7 @@ Forecast overview and batch scan endpoints.
 from __future__ import annotations
 
 import asyncio
+import json
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -14,8 +15,10 @@ from sqlalchemy import select
 
 from app.api.deps import CurrentUser, DBSession
 from app.core.logging import get_logger
+from app.forecasting.recommender import analyze_metric
 from app.forecasting.service import forecast_service
-from app.models.models import ForecastAlgorithm, ForecastMetric, ForecastResult
+from app.models.models import ForecastAlgorithm, ForecastMetric, ForecastResult, VMStatus
+from app.schemas.schemas import ForecastPoint, ForecastResponse
 from app.services.vm_service import vm_service
 from app.websocket.manager import ws_manager
 
@@ -31,8 +34,8 @@ METRICS = [ForecastMetric.CPU, ForecastMetric.RAM, ForecastMetric.DISK]
 # ── Request schemas ───────────────────────────────────────────────────────────
 
 class ForecastScanRequest(BaseModel):
-    algorithm: str = "holt_winters"
-    period_days: int = 7
+    algorithm: str = "arima"
+    period_days: int = 30
     vm_ids: List[str] = []  # empty list = all VMs with Prometheus
 
 
@@ -68,7 +71,41 @@ async def get_forecast_overview(db: DBSession, current_user: CurrentUser):
             if key not in fresh or fr.generated_at > fresh[key].generated_at:
                 fresh[key] = fr
 
-    def _row_to_dict(fr: ForecastResult, is_expired: bool) -> Dict:
+    def _row_to_dict(fr: ForecastResult, is_expired: bool, current_capacity: Optional[float] = None) -> Dict:
+        recommendation_dict = None
+        try:
+            payload = json.loads(fr.forecast_data)
+            
+            def _load(points: list) -> List[ForecastPoint]:
+                return [
+                    ForecastPoint(
+                        timestamp=datetime.fromisoformat(p["timestamp"].replace("Z", "+00:00")),
+                        value=p["value"],
+                        is_forecast=p.get("is_forecast", False)
+                    )
+                    for p in points
+                ]
+            
+            fcst_res = ForecastResponse(
+                vm_id=fr.vm_id,
+                metric=fr.metric,
+                algorithm=fr.algorithm,
+                period_days=fr.forecast_period_days,
+                historical=_load(payload.get("historical", [])),
+                forecast=_load(payload.get("forecast", [])),
+                generated_at=fr.generated_at
+            )
+            
+            rec = analyze_metric(fr.metric.value, fcst_res, current_capacity=current_capacity)
+            recommendation_dict = {
+                "action": rec.action,
+                "current_capacity": rec.current_capacity,
+                "recommended_capacity": rec.recommended_capacity,
+                "reason": rec.reason
+            }
+        except Exception as e:
+            logger.warning(f"failed_to_analyze_metric_in_overview: {e}")
+
         return {
             "algorithm": fr.algorithm.value,
             "generated_at": fr.generated_at.isoformat(),
@@ -77,18 +114,55 @@ async def get_forecast_overview(db: DBSession, current_user: CurrentUser):
             "period_days": fr.forecast_period_days,
             "has_forecast": True,
             "is_expired": is_expired,
+            "recommendation": recommendation_dict,
         }
+
+    # Fetch bulk capacities from Prometheus
+    from app.prometheus.client import prometheus_service
+
+    cpu_cores_map = {}
+    ram_total_map = {}
+    disk_total_map = {}
+    
+    source_url = None
+    for vm in vms:
+        if vm.prometheus_source and vm.prometheus_source.is_active:
+            source_url = vm.prometheus_source.url
+            break
+            
+    if source_url:
+        try:
+            cpu_cores_res, ram_total_res, disk_total_res = await asyncio.gather(
+                prometheus_service.query('count by (instance) (node_cpu_seconds_total{mode="idle"})', url=source_url),
+                prometheus_service.query('node_memory_MemTotal_bytes', url=source_url),
+                prometheus_service.query('max by (instance) (node_filesystem_size_bytes{fstype!~"tmpfs|devtmpfs|squashfs|overlay|aufs"})', url=source_url),
+            )
+            
+            cpu_cores_map = {r['metric'].get('instance'): int(float(r['value'][1])) for r in cpu_cores_res if 'instance' in r.get('metric', {})}
+            ram_total_map = {r['metric'].get('instance'): round(float(r['value'][1]) / 1e9, 2) for r in ram_total_res if 'instance' in r.get('metric', {})}
+            disk_total_map = {r['metric'].get('instance'): round(float(r['value'][1]) / 1e9, 2) for r in disk_total_res if 'instance' in r.get('metric', {})}
+        except Exception as e:
+            logger.warning(f"failed_bulk_capacity_metrics: {e}")
 
     overview = []
     for vm in vms:
         vid = str(vm.id)
+        instance = vm.prometheus_instance or f"{vm.ip_address}:9100"
+        
+        current_capacities = {
+            "cpu": cpu_cores_map.get(instance),
+            "ram": ram_total_map.get(instance),
+            "disk": disk_total_map.get(instance),
+        }
+
         metrics_status: Dict[str, Optional[Dict]] = {}
         for metric in ("cpu", "ram", "disk"):
             key = (vid, metric)
+            cap = current_capacities.get(metric)
             if key in fresh:
-                metrics_status[metric] = _row_to_dict(fresh[key], False)
+                metrics_status[metric] = _row_to_dict(fresh[key], False, cap)
             elif key in any_map:
-                metrics_status[metric] = _row_to_dict(any_map[key], True)
+                metrics_status[metric] = _row_to_dict(any_map[key], True, cap)
             else:
                 metrics_status[metric] = None
 
@@ -99,6 +173,7 @@ async def get_forecast_overview(db: DBSession, current_user: CurrentUser):
             "location": vm.location,
             "cluster": vm.cluster,
             "has_prometheus": vm.prometheus_source_id is not None,
+            "status": vm.status.value if hasattr(vm.status, "value") else str(vm.status),
             "forecasts": metrics_status,
         })
 
@@ -144,6 +219,9 @@ async def run_forecast_scan(
     if body.vm_ids:
         vm_id_set = set(body.vm_ids)
         vms = [v for v in vms if str(v.id) in vm_id_set]
+    else:
+        # Exclude shutdown/down VMs during scan all
+        vms = [v for v in vms if v.status != VMStatus.DOWN]
 
     # Only VMs with a Prometheus source can be forecast
     vms = [v for v in vms if v.prometheus_source_id is not None]

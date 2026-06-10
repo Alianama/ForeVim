@@ -3,13 +3,9 @@
 import { useState } from "react";
 import { 
   Heart, 
-  Github, 
-  Globe, 
-  Mail, 
   ExternalLink, 
   Coffee, 
   Sparkles, 
-  Terminal, 
   Server, 
   Cpu, 
   Database,
@@ -18,7 +14,7 @@ import {
   Smartphone
 } from "lucide-react";
 
-type TabId = "sponsors" | "platform" | "developer";
+type TabId = "sponsors" | "platform";
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode; desc: string }[] = [
   {
@@ -32,12 +28,6 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode; desc: string }[] 
     label: "Platform Info",
     icon: <Sparkles className="w-4 h-4" />,
     desc: "ForeVim architecture & core features",
-  },
-  {
-    id: "developer",
-    label: "The Developer",
-    icon: <Terminal className="w-4 h-4" />,
-    desc: "Ali Purnama - Tech Enthusiast",
   },
 ];
 
@@ -54,7 +44,7 @@ export default function AboutPage() {
             About & Sponsors
           </h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            Learn more about ForeVim platform, the developer, and how to support the project.
+            Learn more about ForeVim platform and how to support the project.
           </p>
         </div>
       </div>
@@ -308,74 +298,7 @@ export default function AboutPage() {
             </div>
           )}
 
-          {/* ── 3. DEVELOPER TAB ── */}
-          {activeTab === "developer" && (
-            <div className="space-y-4 animate-fade-in flex flex-col justify-between h-full">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                    <Terminal className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-base font-bold text-foreground">Meet the Developer</h2>
-                    <p className="text-[10px] text-muted-foreground">The mind behind ForeVim architecture & design</p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-4 py-1">
-                  {/* Profile Image */}
-                  <div className="w-14 h-14 rounded-xl overflow-hidden border border-border/80 shadow-md shrink-0 select-none">
-                    <img 
-                      src="/ali-purnama.jpg" 
-                      alt="Ali Purnama" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-foreground">Ali Purnama</h3>
-                    <p className="text-xs text-primary font-medium mt-0.5">Tech Enthusiast</p>
-                  </div>
-                </div>
-
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Ali is a tech enthusiast dedicated to creating high-performance cloud monitoring, DevOps workflow automations, and beautiful systems observability tools. He focuses on introducing pixel-perfect aesthetics and highly interactive user interfaces into the enterprise software layer.
-                </p>
-              </div>
-
-              {/* Developer Links */}
-              <div className="pt-4 border-t border-border/40 flex flex-wrap gap-2.5">
-                <a
-                  href="https://alipurnama.my.id"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-xs text-foreground font-semibold transition-all"
-                >
-                  <Globe className="w-3.5 h-3.5" />
-                  alipurnama.my.id
-                  <ExternalLink className="w-3 h-3 opacity-50" />
-                </a>
-
-                <a
-                  href="https://github.com/alianama/forevim"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-xs text-foreground font-semibold transition-all"
-                >
-                  <Github className="w-3.5 h-3.5" />
-                  GitHub Repository
-                  <ExternalLink className="w-3 h-3 opacity-50" />
-                </a>
-
-                <a
-                  href="mailto:alipurnama69@gmail.com"
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-xs text-foreground font-semibold transition-all"
-                >
-                  <Mail className="w-3.5 h-3.5" />
-                  alipurnama69@gmail.com
-                </a>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -35,6 +35,7 @@ export interface User {
   is_verified: boolean;
   last_login: string | null;
   is_2fa_enabled: boolean;
+  profile_image: string | null;
   created_at: string;
 }
 
@@ -258,6 +259,7 @@ export interface ForecastStatusItem {
   period_days: number;
   has_forecast: boolean;
   is_expired: boolean;
+  recommendation?: ResourceRecommendation | null;
 }
 
 export interface ForecastOverviewItem {
@@ -267,6 +269,7 @@ export interface ForecastOverviewItem {
   location: string | null;
   cluster: string | null;
   has_prometheus: boolean;
+  status: VMStatus;
   forecasts: {
     cpu: ForecastStatusItem | null;
     ram: ForecastStatusItem | null;

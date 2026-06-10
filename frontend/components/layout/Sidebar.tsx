@@ -29,7 +29,6 @@ const NAV_ITEMS = [
   { href: "/dashboard/sources", icon: Database, label: "Sources" },
   { href: "/dashboard/settings", icon: SettingsIcon, label: "Notification Settings" },
   { href: "/dashboard/users", icon: Lock, label: "Users & Roles" },
-  { href: "/dashboard/profile", icon: Lock, label: "Profile & Security" },
   { href: "/dashboard/about", icon: Info, label: "About & Sponsors" },
 ];
 
@@ -109,16 +108,6 @@ export function Sidebar() {
 
       {/* User + Logout */}
       <div className="px-2 py-3 border-t border-border space-y-1">
-        {sidebarOpen && user && (
-          <div className="px-3 py-2.5 rounded-lg bg-secondary/50 mb-2 border border-border/40">
-            <p className="text-xs font-semibold truncate text-foreground">
-              {user.full_name || user.username}
-            </p>
-            <p className="text-[9px] text-muted-foreground truncate capitalize font-medium">
-              {user.role}
-            </p>
-          </div>
-        )}
         <button
           onClick={handleLogout}
           className={`nav-item w-full hover:text-destructive ${!sidebarOpen ? "justify-center px-2" : ""}`}

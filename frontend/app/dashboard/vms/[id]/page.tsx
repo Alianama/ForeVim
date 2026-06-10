@@ -39,7 +39,7 @@ export default function VMDetailPage() {
   const [activeTab, setActiveTab] = useState<Tab>("metrics");
   const [historyHours, setHistoryHours] = useState(24);
   const [forecastMetric, setForecastMetric] = useState<ForecastMetric>("cpu");
-  const [forecastPeriod, setForecastPeriod] = useState(7);
+  const [forecastPeriod, setForecastPeriod] = useState(30);
   const [forecastAlgo, setForecastAlgo] = useState<ForecastAlgorithm>("arima");
 
   const { data: retentionDays = 90 } = usePrometheusRetention();

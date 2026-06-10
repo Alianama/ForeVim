@@ -363,8 +363,9 @@ class ARIMAForecaster(ForecastAlgorithmBase):
             logger.error("statsmodels_sarimax_unavailable", error=str(exc))
             return [], (None, "mape")
 
-        data = self._prepare(historical, interval_minutes, min_points=24)
-        if len(data) < 24:
+        min_p = 4 if len(historical) < 8 else 8
+        data = self._prepare(historical, interval_minutes, min_points=min_p)
+        if len(data) < min_p:
             logger.warning("insufficient_data_for_arima", count=len(data))
             return [], (None, "mape")
 

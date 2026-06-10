@@ -67,16 +67,57 @@ export async function generateExcel(data: ReportData): Promise<void> {
 
   // ── Sheet 4: Forecast Status ─────────────────────────────────────────────────
   if (data.sections.includes("forecast_status")) {
-    const headers = ["Hostname", "IP", "Has Prometheus", "CPU Algoritma", "CPU Terakhir", "CPU MAPE (%)", "CPU Expired?", "RAM Algoritma", "RAM Terakhir", "RAM MAPE (%)", "RAM Expired?", "Disk Algoritma", "Disk Terakhir", "Disk MAPE (%)", "Disk Expired?"];
-    const fmtF = (f: any) => f ? [f.algorithm.replace(/_/g, " "), new Date(f.generated_at).toLocaleString("id-ID"), f.accuracy_score?.toFixed(1) ?? "-", f.is_expired ? "Ya" : "Tidak"] : ["-", "-", "-", "-"];
+    const headers = [
+      "Hostname", "IP", "Cluster", "Has Prometheus",
+      // CPU
+      "CPU Algoritma", "CPU Periode (hari)", "CPU MAPE (%)", "CPU Aksi", "CPU Kapasitas Saat Ini", "CPU Kapasitas Rekomendasi", "CPU Alasan", "CPU Expired?", "CPU Dibuat",
+      // RAM
+      "RAM Algoritma", "RAM Periode (hari)", "RAM MAPE (%)", "RAM Aksi", "RAM Kapasitas Saat Ini", "RAM Kapasitas Rekomendasi", "RAM Alasan", "RAM Expired?", "RAM Dibuat",
+      // Disk
+      "Disk Algoritma", "Disk Periode (hari)", "Disk MAPE (%)", "Disk Aksi", "Disk Kapasitas Saat Ini", "Disk Kapasitas Rekomendasi", "Disk Alasan", "Disk Expired?", "Disk Dibuat",
+    ];
+
+    const fmtF = (f: any, metricName: string): string[] => {
+      if (!f) return ["-", "-", "-", "-", "-", "-", "-", "-", "-"];
+      const unit = metricName === "cpu" ? " Cores" : " GB";
+      const rec = f.recommendation;
+      return [
+        f.algorithm ?? "-",
+        f.period_days != null ? String(f.period_days) : "-",
+        f.accuracy_score != null ? f.accuracy_score.toFixed(1) : "-",
+        rec?.action ?? "-",
+        rec?.current_capacity != null ? `${rec.current_capacity.toFixed(1)}${unit}` : "-",
+        rec?.recommended_capacity != null ? `${rec.recommended_capacity.toFixed(1)}${unit}` : "-",
+        rec?.reason ?? "-",
+        f.is_expired ? "Ya" : "Tidak",
+        f.generated_at ? new Date(f.generated_at).toLocaleString("id-ID") : "-",
+      ];
+    };
+
     const rows = [headers, ...data.forecastOverview.map(vm => [
-      vm.hostname, vm.ip_address, vm.has_prometheus ? "Ya" : "Tidak",
-      ...fmtF(vm.forecasts.cpu), ...fmtF(vm.forecasts.ram), ...fmtF(vm.forecasts.disk),
+      vm.hostname, vm.ip_address, vm.cluster ?? "-", vm.has_prometheus ? "Ya" : "Tidak",
+      ...fmtF(vm.forecasts?.cpu, "cpu"),
+      ...fmtF(vm.forecasts?.ram, "ram"),
+      ...fmtF(vm.forecasts?.disk, "disk"),
     ])];
     const ws = XLSX.utils.aoa_to_sheet(rows);
-    ws["!cols"] = [{ wch: 18 }, { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 18 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 18 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 18 }, { wch: 10 }, { wch: 10 }];
+    ws["!cols"] = [
+      { wch: 20 }, { wch: 14 }, { wch: 12 }, { wch: 12 },
+      // CPU cols
+      { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 16 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 20 },
+      // RAM cols
+      { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 16 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 20 },
+      // Disk cols
+      { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 16 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 20 },
+    ];
+    // Bold header row
+    for (let c = 0; c < headers.length; c++) {
+      const cellRef = XLSX.utils.encode_cell({ r: 0, c });
+      if (ws[cellRef]) ws[cellRef].s = headerStyle;
+    }
     XLSX.utils.book_append_sheet(wb, ws, "Forecast");
   }
+
 
   // ── Sheet 5: Alerts ──────────────────────────────────────────────────────────
   if (data.sections.includes("alerts") && data.alerts.length > 0) {

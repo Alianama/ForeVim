@@ -174,7 +174,8 @@ class ForecastService:
         Optional[str],
         ForecastAlgorithm,
     ]:
-        forecaster = get_forecaster(algorithm)
+        # Always use ARIMA (SARIMA) as required by the user
+        forecaster = get_forecaster(ForecastAlgorithm.ARIMA)
         try:
             forecast_points, (accuracy, accuracy_metric) = await asyncio.to_thread(
                 forecaster.fit_predict,
@@ -183,42 +184,11 @@ class ForecastService:
                 interval_minutes,
             )
         except Exception as exc:
-            logger.error("forecast_model_error", algorithm=algorithm.value, error=str(exc))
+            logger.error("forecast_model_error", algorithm=ForecastAlgorithm.ARIMA.value, error=str(exc))
             forecast_points, (accuracy, accuracy_metric) = [], (None, "mape")
 
-        resolved_algorithm = algorithm
-        model_info: Optional[str] = None
-        if algorithm == ForecastAlgorithm.AUTO and isinstance(forecaster, AutoForecaster):
-            resolved_algorithm = forecaster.last_selected
-            model_info = (
-                f"Model terpilih: {resolved_algorithm.value.replace('_', ' ').title()} "
-                f"(MAPE holdout)."
-            )
-
-        if len(forecast_points) < MIN_FORECAST_POINTS:
-            for fallback_algo in (
-                ForecastAlgorithm.MOVING_AVERAGE,
-                ForecastAlgorithm.LINEAR_REGRESSION,
-                ForecastAlgorithm.HOLT_WINTERS,
-            ):
-                if fallback_algo == algorithm:
-                    continue
-                fb = get_forecaster(fallback_algo)
-                forecast_points, (accuracy, accuracy_metric) = await asyncio.to_thread(
-                    fb.fit_predict,
-                    history_raw,
-                    periods,
-                    interval_minutes,
-                )
-                if len(forecast_points) >= MIN_FORECAST_POINTS:
-                    logger.info(
-                        "forecast_fallback",
-                        vm_id=str(vm_id),
-                        from_algo=algorithm.value,
-                        to_algo=fallback_algo.value,
-                    )
-                    model_info = (model_info or "") + f" Fallback: {fallback_algo.value}."
-                    break
+        resolved_algorithm = ForecastAlgorithm.ARIMA
+        model_info = "Model: SARIMA (ARIMA)"
 
         return forecast_points, accuracy, accuracy_metric, model_info, resolved_algorithm
 

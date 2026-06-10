@@ -1,6 +1,6 @@
 export type { ReportFormat, ReportSectionId, ReportSection, ReportConfig, ReportData, VmWithMetrics, TopMetricEntry } from "./types";
 export { DEFAULT_SECTIONS } from "./types";
-export { generateCSV } from "./csv";
+export { generateCSV, generateShutdownCSV } from "./csv";
 export { generateExcel } from "./excel";
 export { generatePDF } from "./pdf";
 export { generatePPTX } from "./pptx";

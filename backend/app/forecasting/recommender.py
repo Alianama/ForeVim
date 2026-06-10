@@ -11,6 +11,9 @@ from app.schemas.schemas import ForecastResponse, ResourceRecommendation
 TARGET_UTILIZATION_INCREASE = 75.0
 TARGET_UTILIZATION_DECREASE = 60.0
 
+# Target utilization for CPU and RAM (user requested 50.0%)
+TARGET_UTILIZATION_CPU_RAM = 50.0
+
 THRESHOLD_INCREASE = 80.0
 THRESHOLD_DECREASE = 40.0
 THRESHOLD_DISK_INCREASE = 85.0
@@ -64,44 +67,44 @@ def analyze_metric(
         if peak_fcst > THRESHOLD_INCREASE:
             action = "INCREASE"
             if current_capacity:
-                raw_cap = (peak_fcst / TARGET_UTILIZATION_INCREASE) * current_capacity
+                raw_cap = (peak_fcst / TARGET_UTILIZATION_CPU_RAM) * current_capacity
                 recommended_cap = max(2.0, float(round(raw_cap / 2.0) * 2.0))
                 if recommended_cap <= current_capacity:
                     recommended_cap = current_capacity + 2.0
-                reason = f"Predicted peak RAM usage reaches {peak_fcst:.1f}%. It is recommended to increase capacity to {int(recommended_cap)}GB to bring utilization down to target {TARGET_UTILIZATION_INCREASE}%."
+                reason = f"Predicted peak RAM usage reaches {peak_fcst:.1f}%. It is recommended to increase capacity to {int(recommended_cap)}GB to bring utilization down to target {TARGET_UTILIZATION_CPU_RAM}%."
             else:
-                reason = f"Predicted peak RAM usage reaches {peak_fcst:.1f}%. It is recommended to increase capacity to bring utilization down to target {TARGET_UTILIZATION_INCREASE}%."
+                reason = f"Predicted peak RAM usage reaches {peak_fcst:.1f}%. It is recommended to increase capacity to bring utilization down to target {TARGET_UTILIZATION_CPU_RAM}%."
         elif peak_fcst < THRESHOLD_DECREASE and peak_hist < THRESHOLD_DECREASE:
             if current_capacity:
-                raw_cap = (peak_fcst / TARGET_UTILIZATION_DECREASE) * current_capacity
+                raw_cap = (peak_fcst / TARGET_UTILIZATION_CPU_RAM) * current_capacity
                 recommended_cap = max(2.0, float(round(raw_cap / 2.0) * 2.0))
                 if recommended_cap >= current_capacity:
                     recommended_cap = max(2.0, current_capacity - 2.0)
                 
                 if recommended_cap < current_capacity:
                     action = "DECREASE"
-                    reason = f"RAM usage is very low (Historical: {peak_hist:.1f}%, Predicted: {peak_fcst:.1f}%). Capacity can be reduced to {int(recommended_cap)}GB for efficiency to target utilization {TARGET_UTILIZATION_DECREASE}%."
+                    reason = f"RAM usage is very low (Historical: {peak_hist:.1f}%, Predicted: {peak_fcst:.1f}%). Capacity can be reduced to {int(recommended_cap)}GB for efficiency to target utilization {TARGET_UTILIZATION_CPU_RAM}%."
                 else:
                     action = "KEEP"
                     recommended_cap = current_capacity
                     reason = f"RAM usage is predicted to be normal and stable (Peak: {peak_fcst:.1f}%)."
             else:
                 action = "DECREASE"
-                reason = f"RAM usage is very low (Historical: {peak_hist:.1f}%, Predicted: {peak_fcst:.1f}%). Capacity can be reduced for efficiency to target utilization {TARGET_UTILIZATION_DECREASE}%."
+                reason = f"RAM usage is very low (Historical: {peak_hist:.1f}%, Predicted: {peak_fcst:.1f}%). Capacity can be reduced for efficiency to target utilization {TARGET_UTILIZATION_CPU_RAM}%."
         else:
             action = "KEEP"
             reason = f"RAM usage is predicted to be normal and stable (Peak: {peak_fcst:.1f}%)."
     else:
         if peak_fcst > THRESHOLD_INCREASE:
             action = "INCREASE"
-            reason = f"Predicted peak {metric_name.upper()} usage reaches {peak_fcst:.1f}%. It is recommended to increase capacity to bring utilization down to target {TARGET_UTILIZATION_INCREASE}%."
+            reason = f"Predicted peak {metric_name.upper()} usage reaches {peak_fcst:.1f}%. It is recommended to increase capacity to bring utilization down to target {TARGET_UTILIZATION_CPU_RAM}%."
             if current_capacity:
-                recommended_cap = round((peak_fcst / TARGET_UTILIZATION_INCREASE) * current_capacity, 2)
+                recommended_cap = round((peak_fcst / TARGET_UTILIZATION_CPU_RAM) * current_capacity, 2)
         elif peak_fcst < THRESHOLD_DECREASE and peak_hist < THRESHOLD_DECREASE:
             action = "DECREASE"
-            reason = f"{metric_name.upper()} usage is very low (Historical: {peak_hist:.1f}%, Predicted: {peak_fcst:.1f}%). Capacity can be reduced for efficiency to target utilization {TARGET_UTILIZATION_DECREASE}%."
+            reason = f"{metric_name.upper()} usage is very low (Historical: {peak_hist:.1f}%, Predicted: {peak_fcst:.1f}%). Capacity can be reduced for efficiency to target utilization {TARGET_UTILIZATION_CPU_RAM}%."
             if current_capacity:
-                calc_cap = round((peak_fcst / TARGET_UTILIZATION_DECREASE) * current_capacity, 2)
+                calc_cap = round((peak_fcst / TARGET_UTILIZATION_CPU_RAM) * current_capacity, 2)
                 recommended_cap = max(calc_cap, 1.0 if metric_name.lower() == "cpu" else 0.5)
 
     return ResourceRecommendation(

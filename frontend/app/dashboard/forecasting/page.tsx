@@ -51,6 +51,10 @@ import {
   HardDrive,
   ChevronLeft,
   ChevronRight,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { toast } from "sonner";
@@ -88,13 +92,6 @@ function ForecastCell({
   item: ForecastStatusItem | null;
   metric: string;
 }) {
-  const metricColor =
-    metric === "cpu"
-      ? "text-blue-400"
-      : metric === "ram"
-        ? "text-emerald-400"
-        : "text-amber-400";
-
   if (!item) {
     return (
       <div className="flex items-center gap-1.5">
@@ -104,39 +101,55 @@ function ForecastCell({
     );
   }
 
-  const algoLabel = item.algorithm.replace(/_/g, " ");
-  const timeAgo = formatDistanceToNow(new Date(item.generated_at), {
-    addSuffix: true,
-  });
+  const rec = item.recommendation;
+  const unit = metric === "cpu" ? " Cores" : " GB";
 
-  if (item.is_expired) {
+  if (!rec) {
+    const algoLabel = item.algorithm.replace(/_/g, " ");
+    const timeAgo = formatDistanceToNow(new Date(item.generated_at), {
+      addSuffix: true,
+    });
     return (
       <div className="flex flex-col gap-0.5">
-        <div className="flex items-center gap-1 text-xs text-amber-500 font-medium">
-          <Clock className="w-3 h-3 shrink-0" />
-          <span className="capitalize truncate max-w-[100px]">{algoLabel}</span>
-        </div>
-        <div className="text-[10px] text-amber-500/60">expired · {timeAgo}</div>
+        <span className="text-xs text-muted-foreground capitalize">{algoLabel}</span>
+        <span className="text-[10px] text-muted-foreground/60">{timeAgo}</span>
       </div>
     );
   }
 
+  let badgeClass = "px-2 py-0.5 text-[10px] font-bold rounded-full uppercase border ";
+  let textClass = "";
+  let Icon = CheckCircle2;
+
+  if (rec.action === "INCREASE") {
+    badgeClass += "bg-rose-500/10 text-rose-400 border-rose-500/20";
+    textClass = "text-rose-400 font-semibold";
+    Icon = ArrowUpCircle;
+  } else if (rec.action === "DECREASE") {
+    badgeClass += "bg-blue-500/10 text-blue-400 border-blue-500/20";
+    textClass = "text-blue-400 font-semibold";
+    Icon = ArrowDownCircle;
+  } else {
+    badgeClass += "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+    textClass = "text-emerald-400";
+    Icon = CheckCircle2;
+  }
+
   return (
-    <div className="flex flex-col gap-0.5">
-      <div
-        className={`flex items-center gap-1 text-xs font-medium ${metricColor}`}
-      >
-        <CheckCircle2 className="w-3 h-3 shrink-0" />
-        <span className="capitalize truncate max-w-[100px]">{algoLabel}</span>
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-1.5">
+        <Icon className={`w-3.5 h-3.5 ${textClass}`} />
+        <span className={badgeClass}>{rec.action}</span>
       </div>
-      <div className="text-[10px] text-muted-foreground">
-        {timeAgo}
-        {item.accuracy_score != null && (
-          <span className="ml-1 opacity-60">
-            · MAPE {item.accuracy_score.toFixed(1)}%
-          </span>
-        )}
-      </div>
+      {rec.current_capacity && rec.recommended_capacity ? (
+        <span className="text-[10px] text-muted-foreground font-mono">
+          {rec.current_capacity}{unit} → {rec.recommended_capacity}{unit}
+        </span>
+      ) : (
+        <span className="text-[10px] text-muted-foreground/50 italic">
+          No capacity data
+        </span>
+      )}
     </div>
   );
 }
@@ -327,8 +340,9 @@ export default function ForecastingPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [algoFilter, setAlgoFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [scanAlgo, setScanAlgo] = useState("holt_winters");
-  const [scanPeriod, setScanPeriod] = useState(7);
+  const [showDown, setShowDown] = useState(false);
+  const [scanAlgo, setScanAlgo] = useState("arima");
+  const [scanPeriod, setScanPeriod] = useState(30);
   const [isScanStarting, setIsScanStarting] = useState(false);
   const [showScanPanel, setShowScanPanel] = useState(false);
   const [overviewPage, setOverviewPage] = useState(1);
@@ -348,7 +362,7 @@ export default function ForecastingPage() {
   const [selectedVmId, setSelectedVmId] = useState<string>("");
   const [metric, setMetric] = useState<ForecastMetric>("cpu");
   const [algorithm, setAlgorithm] = useState<ForecastAlgorithm>("arima");
-  const [periodDays, setPeriodDays] = useState<number>(7);
+  const [periodDays, setPeriodDays] = useState<number>(30);
   const [historyPage, setHistoryPage] = useState(1);
   const historyItemsPerPage = 5;
 
@@ -391,6 +405,7 @@ export default function ForecastingPage() {
       stale = 0,
       missing = 0;
     for (const vm of overview) {
+      if (!showDown && vm.status === "down") continue;
       const c = getVmCompleteness(vm);
       if (c === "complete") complete++;
       else if (c === "partial") partial++;
@@ -398,12 +413,14 @@ export default function ForecastingPage() {
       else missing++;
     }
     return { complete, partial, stale, missing };
-  }, [overview]);
+  }, [overview, showDown]);
 
   // ── Filtered overview ──────────────────────────────────────────────────────────
   const filteredOverview = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return overview.filter((vm) => {
+      if (!showDown && vm.status === "down") return false;
+
       if (
         q &&
         !vm.hostname.toLowerCase().includes(q) &&
@@ -424,7 +441,7 @@ export default function ForecastingPage() {
 
       return true;
     });
-  }, [overview, searchQuery, algoFilter, statusFilter]);
+  }, [overview, searchQuery, algoFilter, statusFilter, showDown]);
 
   // ── Paginated overview ─────────────────────────────────────────────────────────
   const overviewTotalPages = Math.ceil(
@@ -732,6 +749,30 @@ export default function ForecastingPage() {
                   </button>
                 ))}
               </div>
+
+              {/* Show/Hide Down Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setShowDown(!showDown)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all whitespace-nowrap shrink-0 md:ml-auto ${
+                  showDown
+                    ? "bg-secondary text-foreground border-border"
+                    : "bg-background text-muted-foreground border-border hover:bg-secondary hover:text-foreground"
+                }`}
+                title={showDown ? "Hide down VMs" : "Show down VMs"}
+              >
+                {showDown ? (
+                  <Eye className="w-3.5 h-3.5" />
+                ) : (
+                  <EyeOff className="w-3.5 h-3.5" />
+                )}
+                {showDown ? "Hide Down" : "Show Down"}
+                {!showDown && overview.filter((v) => v.status === "down").length > 0 && (
+                  <span className="bg-rose-500/15 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 rounded-full text-[9px] font-bold">
+                    {overview.filter((v) => v.status === "down").length}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
 
@@ -824,6 +865,9 @@ export default function ForecastingPage() {
                               <div className="flex items-center gap-1.5">
                                 <span className="font-medium text-sm text-foreground">
                                   {vm.hostname}
+                                </span>
+                                <span className={`status-badge status-${vm.status} text-[10px] px-1.5 py-0.5`}>
+                                  {vm.status}
                                 </span>
                                 {!vm.has_prometheus && (
                                   <span className="text-[10px] bg-rose-500/10 text-rose-400 px-1.5 py-0.5 rounded-full leading-none">

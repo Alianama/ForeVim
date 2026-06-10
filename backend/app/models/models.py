@@ -102,6 +102,7 @@ class User(TimestampMixin, Base):
     last_login = Column(DateTime(timezone=True), nullable=True)
     totp_secret = Column(String(100), nullable=True)
     is_2fa_enabled = Column(Boolean, default=False, nullable=False)
+    profile_image = Column(String(500), nullable=True)
 
     # Relationships
     audit_logs = relationship("AuditLog", back_populates="user", lazy="dynamic")

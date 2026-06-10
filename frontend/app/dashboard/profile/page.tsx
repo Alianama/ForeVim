@@ -1,31 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuthStore } from "@/stores";
 import { authService } from "@/services";
 import { toast } from "sonner";
 import { 
   ShieldCheck, 
   ShieldAlert, 
-  Key, 
   Copy, 
   Check, 
   Lock, 
-  User, 
   Calendar, 
   Mail, 
   Shield,
-  Loader2
+  Loader2,
+  Camera,
+  Trash2
 } from "lucide-react";
+
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1").replace(/\/api\/v1\/?$/, "");
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
   const [loading, setLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
   const [step, setStep] = useState<"idle" | "setup" | "disable">("idle");
   const [secret, setSecret] = useState("");
   const [provisioningUri, setProvisioningUri] = useState("");
   const [totpCode, setTotpCode] = useState("");
   const [copied, setCopied] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const avatarUrl = user?.profile_image ? `${API_BASE}${user.profile_image}` : null;
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be smaller than 5MB");
+      return;
+    }
+    setUploadLoading(true);
+    try {
+      const updatedUser = await authService.uploadProfileImage(file);
+      setUser(updatedUser);
+      toast.success("Profile photo updated successfully!");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.detail || "Failed to upload profile photo");
+    } finally {
+      setUploadLoading(false);
+      // Reset file input so the same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const handleStartSetup = async () => {
     setLoading(true);
@@ -126,13 +157,49 @@ export default function ProfilePage() {
         {/* Account Details Card */}
         <div className="md:col-span-1 glass-card p-6 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
-                <User className="w-6 h-6 text-primary" />
+            <div className="flex flex-col items-center gap-3 mb-6">
+              {/* Profile Photo Upload */}
+              <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-primary/30 bg-primary/10 flex items-center justify-center shrink-0 shadow-inner">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt="Profile photo"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-2xl font-bold text-primary">
+                      {(user?.full_name?.[0] || user?.username?.[0] || "U").toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                {/* Hover overlay */}
+                <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                  {uploadLoading ? (
+                    <Loader2 className="w-5 h-5 text-white animate-spin" />
+                  ) : (
+                    <Camera className="w-5 h-5 text-white" />
+                  )}
+                </div>
               </div>
-              <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoUpload}
+                disabled={uploadLoading}
+              />
+              <div className="text-center">
                 <h2 className="font-bold text-foreground text-base">{user?.full_name || user?.username}</h2>
                 <p className="text-xs text-muted-foreground capitalize font-medium">{user?.role} Account</p>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadLoading}
+                  className="mt-1.5 text-[10px] text-primary hover:text-primary/80 transition-colors font-medium disabled:opacity-50"
+                >
+                  {uploadLoading ? "Uploading..." : "Change Photo"}
+                </button>
               </div>
             </div>
 

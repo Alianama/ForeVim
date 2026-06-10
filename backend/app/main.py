@@ -36,6 +36,8 @@ async def lifespan(app: FastAPI):
     # Create tables (use Alembic in production migrations)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        from sqlalchemy import text
+        await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_image VARCHAR(500)"))
 
     # Seed superuser if needed
     await _seed_superuser()
@@ -99,6 +101,12 @@ def create_app() -> FastAPI:
         openapi_url="/api/openapi.json",
         lifespan=lifespan,
     )
+
+    # Serve static uploads (profile pictures, etc)
+    from fastapi.staticfiles import StaticFiles
+    import os
+    os.makedirs("uploads/profile_images", exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
     # Rate limiting
     app.state.limiter = limiter
