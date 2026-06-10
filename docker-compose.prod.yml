@@ -1,9 +1,9 @@
 version: "3.9"
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ForeVim — Production Deployment Compose (Unified Single Image)
+# ForeVim — Production Deployment Compose (Unified Single Image + PostgreSQL)
 # Before running:
-# 1. Copy .env.example to .env and configure DATABASE_URL and external variables.
+# 1. Copy .env.example to .env and configure all environment variables.
 # 2. Run: docker compose -f docker-compose.prod.yml up -d
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -11,57 +11,56 @@ networks:
   forevim-net:
     driver: bridge
 
+volumes:
+  postgres_data:
+
 services:
+  # ─── PostgreSQL Database ────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: forevim-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-forevim}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-forevim}
+      POSTGRES_DB: ${POSTGRES_DB:-forevim}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - forevim-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-forevim}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # ─── ForeVim (Unified Frontend, Backend, & Nginx) ───────────────────────────
   forevim:
     image: ghcr.io/alianama/forevim:latest
     container_name: forevim-app
     restart: unless-stopped
+    # Initializes database tables and stamp migration state, then starts API server
+    command: sh -c "python init_db.py && alembic stamp head && uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1"
     environment:
-      # 1. PostgreSQL Database Connection (Wajib menggunakan postgresql+asyncpg)
-      - DATABASE_URL=postgresql+asyncpg://forevim:securepassword@db-server-ip:5432/forevim_db
-      # 2. Security Key (Ganti dengan string random hex panjang, misal: openssl rand -hex 32)
-      - SECRET_KEY=generate_your_own_secure_random_key_here
-      # 3. CORS Allowed Origins (Bisa disamakan dengan alamat akses frontend/nginx)
-      - ALLOWED_ORIGINS_STR=http://localhost:80,http://127.0.0.1:80
-      # 4. Akses URL di Browser Pengguna (PENTING: Ganti localhost ke IP/Domain Publik Server Anda)
-      - NEXT_PUBLIC_API_URL=http://localhost:80/api/v1
-      - NEXT_PUBLIC_WS_URL=ws://localhost:80
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-forevim}:${POSTGRES_PASSWORD:-forevim}@postgres:5432/${POSTGRES_DB:-forevim}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOWED_ORIGINS_STR=${ALLOWED_ORIGINS_STR:-http://localhost,http://localhost:80}
+      # Browser runtime configurations (dynamically injected into built static files at container start)
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:80/api/v1}
+      - NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-ws://localhost:80}
     ports:
       - "80:80"
     networks:
       - forevim-net
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       # Exposes /health through Nginx, which proxies to Backend /health
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 20s
-
-# ──────────────────────────────────────────────────────────────────────────────
-# OPTIONAL: If you want to spin up a local PostgreSQL container inside this compose, 
-# uncomment the block below and set DATABASE_URL=postgresql+asyncpg://forevim:forevim@postgres:5432/forevim
-# ──────────────────────────────────────────────────────────────────────────────
-#   postgres:
-#     image: postgres:16-alpine
-#     container_name: forevim-postgres
-#     restart: unless-stopped
-#     environment:
-#       POSTGRES_USER: forevim
-#       POSTGRES_PASSWORD: forevim
-#       POSTGRES_DB: forevim
-#     volumes:
-#       - postgres_data:/var/lib/postgresql/data
-#     ports:
-#       - "5432:5432"
-#     networks:
-#       - forevim-net
-#     healthcheck:
-#       test: ["CMD-SHELL", "pg_isready -U forevim"]
-#       interval: 10s
-#       timeout: 5s
-#       retries: 5
-#
-# volumes:
-#   postgres_data:
+      start_period: 25s

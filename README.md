@@ -47,30 +47,32 @@ Ada dua cara untuk menjalankan ForeVim: menggunakan **Single Unified Image** (di
 Dengan pilihan ini, Anda tidak perlu mengunduh seluruh source code. Anda hanya perlu menyiapkan satu folder bersih di server Anda, menyiapkan berkas konfigurasi, lalu menarik image dari **GHCR** (GitHub Container Registry).
 
 #### 1. Struktur Folder
-Hanya dibutuhkan **1 berkas saja** di server Anda:
+Siapkan sebuah direktori kosong di server Anda dengan struktur berkas berikut:
 ```
 forevim-deploy/
-└── docker-compose.yml   (Diunduh dari docker-compose.prod.yml)
+├── docker-compose.yml   (Diunduh dari docker-compose.prod.yml)
+└── .env                 (Dibuat dari .env.example)
 ```
 
 #### 2. Langkah Instalasi
 
-##### Langkah 1: Unduh Berkas `docker-compose.yml`
-Jalankan perintah berikut di server Anda:
+##### Langkah 1: Unduh Berkas Konfigurasi
+Jalankan perintah berikut di server Anda untuk membuat direktori dan mengunduh berkas konfigurasi:
 ```bash
 mkdir forevim-deploy && cd forevim-deploy
 curl -o docker-compose.yml https://raw.githubusercontent.com/alianama/forevim/main/docker-compose.prod.yml
+curl -o .env https://raw.githubusercontent.com/alianama/forevim/main/.env.example
 ```
 
-##### Langkah 2: Konfigurasi Berkas `docker-compose.yml`
-Buka berkas `docker-compose.yml` menggunakan editor teks (misal: `nano docker-compose.yml`) dan sesuaikan variabel lingkungan di dalam blok `environment` layanan `forevim`:
-* **`DATABASE_URL`**: Ubah ke URL PostgreSQL Anda (wajib menggunakan format driver `postgresql+asyncpg`, contoh: `postgresql+asyncpg://forevim:securepassword@192.168.1.100:5432/forevim_db`).
+##### Langkah 2: Konfigurasi Berkas `.env`
+Buka berkas `.env` menggunakan editor teks (misal: `nano .env`) dan sesuaikan variabelnya:
+* **`POSTGRES_USER`**, **`POSTGRES_PASSWORD`**, **`POSTGRES_DB`**: Mengatur nama user, kata sandi, dan nama database untuk kontainer database lokal Anda.
 * **`SECRET_KEY`**: Kunci rahasia JWT (bisa diisi string acak atau digenerate dengan `openssl rand -hex 32`).
-* **`NEXT_PUBLIC_API_URL`**: Alamat URL API publik Anda. Jika server dideploy di IP `192.168.1.50`, ubah menjadi `http://192.168.1.50/api/v1`.
-* **`NEXT_PUBLIC_WS_URL`**: Alamat WebSocket publik Anda. Contoh: `ws://192.168.1.50`.
+* **`NEXT_PUBLIC_API_URL`**: Alamat URL API publik Anda. Jika server dideploy di IP `192.168.1.50`, ubah menjadi `http://192.168.1.50/api/v1` (Port `80`).
+* **`NEXT_PUBLIC_WS_URL`**: Alamat WebSocket publik Anda. Contoh: `ws://192.168.1.50` (Port `80`).
 
 ##### Langkah 3: Jalankan Aplikasi
-Jalankan perintah berikut untuk mengunduh image dari GHCR dan memulai aplikasi:
+Jalankan perintah berikut untuk mengunduh image dari GHCR dan menyalakan ForeVim beserta database PostgreSQL:
 ```bash
 docker compose up -d
 ```
