@@ -41,18 +41,48 @@ Linux VM
 
 Ada dua cara untuk menjalankan ForeVim: menggunakan **Single Unified Image** (direkomendasikan untuk produksi/penggunaan praktis) atau membangunnya dari source code secara lokal untuk pengembangan.
 
-### Pilihan A: Production Deployment (Single Image - Rekomendasi)
+### Pilihan A: Production Deployment (Single Image via GHCR - Rekomendasi)
 
-Untuk deploy secara cepat menggunakan Docker Image terpadu (Frontend, Backend, dan Nginx disatukan dalam port `80`):
-1. Unduh file [docker-compose.prod.yml](file:///Users/alipurnama/Project/Self%20Development/forevim/docker-compose.prod.yml) dan [.env.example](file:///Users/alipurnama/Project/Self%20Development/forevim/.env.example).
-2. Salin `.env.example` menjadi `.env` dan konfigurasikan database PostgreSQL eksternal Anda.
-3. Jalankan container:
-   ```bash
-   docker compose -f docker-compose.prod.yml up -d
-   ```
-4. Akses aplikasi langsung di browser: **`http://localhost`** (atau IP server Anda).
+Dengan pilihan ini, Anda tidak perlu mengunduh seluruh source code. Anda hanya perlu menyiapkan satu folder bersih di server Anda, menyiapkan berkas konfigurasi, lalu menarik image dari **GHCR** (GitHub Container Registry).
 
-*Untuk panduan instalasi step-by-step dalam Bahasa Indonesia, lihat [README-DOCKER.md](file:///Users/alipurnama/Project/Self%20Development/forevim/README-DOCKER.md).*
+#### 1. Struktur Folder
+Buat folder baru untuk deployment di server Anda:
+```
+forevim-deploy/
+├── docker-compose.yml   (Diunduh dari docker-compose.prod.yml)
+└── .env                 (Dibuat dari .env.example)
+```
+
+#### 2. Langkah Instalasi
+
+##### Langkah 1: Unduh Berkas Konfigurasi
+Jalankan perintah berikut di server Anda untuk mengunduh konfigurasi Docker Compose dan template `.env`:
+```bash
+mkdir forevim-deploy && cd forevim-deploy
+curl -o docker-compose.yml https://raw.githubusercontent.com/alianama/forevim/main/docker-compose.prod.yml
+curl -o .env https://raw.githubusercontent.com/alianama/forevim/main/.env.example
+```
+
+##### Langkah 2: Konfigurasi Berkas `.env`
+Buka berkas `.env` dengan text editor (misal: `nano .env`) dan sesuaikan variabelnya:
+* **`DATABASE_URL`**: URL PostgreSQL Anda (wajib menggunakan format driver `postgresql+asyncpg`, contoh: `postgresql+asyncpg://forevim:securepassword@192.168.1.100:5432/forevim_db`).
+* **`SECRET_KEY`**: Kunci rahasia JWT (bisa digenerate dengan `openssl rand -hex 32`).
+* **`NEXT_PUBLIC_API_URL`**: Alamat URL API publik Anda. Jika server dideploy di IP `192.168.1.50`, set ke `http://192.168.1.50/api/v1` (Port `80`).
+* **`NEXT_PUBLIC_WS_URL`**: Alamat WebSocket publik Anda. Contoh: `ws://192.168.1.50` (Port `80`).
+
+##### Langkah 3: Jalankan Aplikasi
+Jalankan Docker Compose untuk mengunduh image dari GHCR dan memulai aplikasi:
+```bash
+docker compose up -d
+```
+
+##### Langkah 4: Akses Aplikasi
+Buka browser dan akses server Anda di port `80`:
+* **Dashboard Web**: `http://<ip-server-anda>`
+* **Status API Health**: `http://<ip-server-anda>/health`
+* Kredensial default: `admin@forevim.local` / `ChangeMe123!`
+
+---
 
 ---
 
