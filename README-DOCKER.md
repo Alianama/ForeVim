@@ -1,36 +1,38 @@
-# Panduan Distribusi & Instalasi ForeVim via Docker
+# Panduan Distribusi & Instalasi ForeVim via Docker (Single Unified Image)
 
-Dokumen ini menjelaskan cara mendistribusikan ForeVim menggunakan Docker Image yang di-host di **GitHub Container Registry (GHCR)**, serta cara melakukan instalasi menggunakan `docker-compose` dan database PostgreSQL eksternal (milik Anda sendiri).
+Dokumen ini menjelaskan cara mendistribusikan ForeVim menggunakan **Single Unified Docker Image** (menggabungkan Frontend, Backend, dan Nginx Reverse Proxy menjadi satu kontainer utuh) yang di-host di **GitHub Container Registry (GHCR)**, serta cara melakukan instalasi menggunakan `docker-compose` dan database PostgreSQL eksternal.
 
 ---
 
 ## 1. Arsitektur & Cara Kerja Distribusi
 
-Untuk memudahkan pengguna lain memakai ForeVim tanpa harus melakukan build kode dari awal:
-1. **GitHub Actions Workflow** otomatis akan mem-build kode `backend` & `frontend` menjadi Docker Image ketika ada perubahan di branch `main` atau pembuatan git tag (`v*`).
-2. Image hasil build akan di-push ke registry milik GitHub (**GHCR**):
-   - Backend: `ghcr.io/<github-username>/forevim-backend:latest`
-   - Frontend: `ghcr.io/<github-username>/forevim-frontend:latest`
-3. Pengguna lain cukup mengunduh berkas `docker-compose.prod.yml` dan `.env`, lalu menjalankan container.
-4. **Runtime Env Injection**: Frontend menggunakan Next.js standalone. Karena alamat backend (`NEXT_PUBLIC_API_URL`) berubah-ubah tergantung IP server pengguna, kami telah menambahkan script `docker-entrypoint.sh` di frontend untuk mengubah alamat API di berkas JavaScript terkompilasi secara dinamis saat container pertama kali dinyalakan.
+Untuk memudahkan penyebaran aplikasi dan menyederhanakan konfigurasi jaringan bagi pengguna akhir:
+1. **Single Image**: Frontend (Next.js standalone), Backend (FastAPI), dan Nginx dipaketkan ke dalam **satu Docker Image** tunggal.
+2. **Nginx Reverse Proxy**: Berjalan di dalam kontainer di port `80`:
+   - Rute `/api/v1`, `/docs`, dan WebSocket `/api/v1/ws` diarahkan secara internal ke FastAPI (port `8000`).
+   - Rute halaman dashboard lainnya diarahkan secara internal ke Next.js (port `3000`).
+   - Hal ini membuat pengguna tidak perlu mengatur CORS atau membuka port tambahan di firewall (hanya perlu membuka satu port web saja).
+3. **GitHub Actions Workflow**: Secara otomatis mem-build image tunggal ini ketika ada push ke branch `main` atau pembuatan git tag (`v*`), lalu mengunggahnya ke **GHCR**:
+   - Image Path: `ghcr.io/<github-username>/forevim:latest`
+4. **Runtime Env Injection**: Saat kontainer dijalankan, skrip `entrypoint.sh` secara dinamis menyesuaikan alamat API pada berkas terkompilasi agar sesuai dengan domain/IP yang diakses pengguna.
 
 ---
 
 ## 2. Persiapan Sebelum Instalasi (Sisi Pengguna)
 
 Pengguna harus menyiapkan:
-1. **Docker & Docker Compose** terpasang di server/komputer target.
-2. **Database PostgreSQL**: Database PostgreSQL eksternal yang dapat diakses oleh server Docker.
-   - Database harus sudah dibuat (misal dengan nama `forevim`).
+1. **Docker & Docker Compose** terpasang di server target.
+2. **Database PostgreSQL**: Database PostgreSQL eksternal (milik Anda sendiri).
+   - Pastikan database sudah dibuat (misal bernama `forevim`).
+   - Gunakan driver `postgresql+asyncpg` pada berkas konfigurasi.
    - Contoh URL koneksi: `postgresql+asyncpg://username:password@db-host:5432/forevim`
-   - *Catatan: Pastikan database mengizinkan koneksi dari subnet Docker.*
 
 ---
 
 ## 3. Langkah-Langkah Instalasi & Menjalankan Aplikasi
 
 ### Langkah 1: Unduh Berkas Konfigurasi
-Unduh berkas `docker-compose.prod.yml` dan `.env.example` dari repositori ini, lalu tempatkan ke dalam satu direktori di server Anda:
+Buat sebuah direktori baru di server Anda, lalu unduh berkas `docker-compose.prod.yml` dan `.env.example` dari repositori ini:
 ```bash
 mkdir forevim-deploy && cd forevim-deploy
 # Unduh berkas dari repositori
@@ -39,48 +41,50 @@ curl -o .env https://raw.githubusercontent.com/<github-username>/forevim/main/.e
 ```
 
 ### Langkah 2: Konfigurasi Berkas `.env`
-Buka berkas `.env` menggunakan text editor (seperti `nano` atau `vim`) dan sesuaikan nilainya:
+Buka berkas `.env` menggunakan editor teks (seperti `nano` atau `vim`) dan sesuaikan nilainya:
 ```bash
 nano .env
 ```
 
-Isi dari `.env` yang harus disesuaikan:
+Ubah nilai berikut sesuai dengan kebutuhan server Anda:
 ```ini
 # 1. Koneksi Database PostgreSQL Anda (Wajib menggunakan postgresql+asyncpg)
 DATABASE_URL=postgresql+asyncpg://forevim_user:securepassword123@192.168.1.100:5432/forevim_db
 
 # 2. Key Keamanan (Ganti dengan string random hex panjang)
-# Anda bisa menghasilkan string ini dengan perintah: openssl rand -hex 32
+# Hasilkan string ini dengan perintah: openssl rand -hex 32
 SECRET_KEY=e4a8c9830db923ac0c329d20c32187fca7e7d9e03dcb2910fae1c03e87d8123c
 
 # 3. CORS Backend (Masukkan alamat frontend Anda agar diizinkan memanggil backend)
-ALLOWED_ORIGINS_STR=http://localhost:3000,http://<ip-server-anda>:3000
+# Karena frontend & backend disatukan di port yang sama, Anda cukup memasukkan port akses web Anda (misal port 80)
+ALLOWED_ORIGINS_STR=http://localhost:80,http://<ip-server-anda>:80
 
 # 4. Akses URL di Browser Pengguna (PENTING: Sesuaikan dengan IP Server / Domain Anda)
-# Jika dideploy di server ber-IP 192.168.1.50, ganti localhost menjadi IP tersebut.
-NEXT_PUBLIC_API_URL=http://<ip-server-anda>:8000/api/v1
-NEXT_PUBLIC_WS_URL=ws://<ip-server-anda>:8000
+# Jika dideploy di server ber-IP 192.168.1.50, ganti localhost menjadi 192.168.1.50.
+NEXT_PUBLIC_API_URL=http://<ip-server-anda>:80/api/v1
+NEXT_PUBLIC_WS_URL=ws://<ip-server-anda>:80
 ```
 
 > [!IMPORTANT]
-> Jangan lupa mengubah `<ip-server-anda>` pada `NEXT_PUBLIC_API_URL` dan `NEXT_PUBLIC_WS_URL` agar browser pengguna lain dapat menghubungi backend API dan WebSocket server secara sukses.
+> Jangan lupa mengubah `<ip-server-anda>` pada `NEXT_PUBLIC_API_URL` dan `NEXT_PUBLIC_WS_URL` sesuai dengan IP publik / domain server Anda agar browser pengguna dapat terhubung dengan API dan WebSocket secara lancar.
 
 ### Langkah 3: Jalankan Container
-Jalankan perintah berikut untuk mengunduh image dari GHCR dan menyalakan seluruh layanan ForeVim:
+Jalankan perintah berikut untuk mengunduh image dari GHCR dan menyalakan ForeVim:
 ```bash
 docker compose up -d
 ```
 
-Docker secara otomatis akan:
-- Menarik image `forevim-backend` dan `forevim-frontend` terbaru dari GHCR.
+Kontainer secara otomatis akan:
+- Mengunduh image `forevim` terbaru dari GHCR.
 - Menginisialisasi tabel-tabel database PostgreSQL Anda secara otomatis (`init_db.py`).
 - Menjalankan migrasi database (`alembic`).
-- Menjalankan backend di port `8000` dan frontend di port `3000`.
+- Menjalankan Next.js, FastAPI, dan Nginx secara bersamaan.
+- Membuka port web `80` (Anda dapat mengubah mapping port di `docker-compose.yml` misalnya menjadi `"8080:80"` jika port 80 bentrok).
 
 ### Langkah 4: Verifikasi & Uji Coba
-1. Buka browser dan akses **Dashboard Frontend**: `http://<ip-server-anda>:3000`
-2. Coba login menggunakan kredensial default admin Anda.
-3. Anda dapat memeriksa kesehatan backend dengan mengakses: `http://<ip-server-anda>:8000/health` (harus mengembalikan status JSON `{"status": "healthy"}`).
+1. Buka browser dan akses dashboard: `http://<ip-server-anda>:80` (atau port lain jika Anda mengubah pemetaan port).
+2. Coba login menggunakan kredensial admin Anda.
+3. Untuk memeriksa kesehatan backend, kunjungi: `http://<ip-server-anda>:80/health`.
 
 ---
 
@@ -91,7 +95,7 @@ Docker secara otomatis akan:
   docker compose down
   ```
 * **Memperbarui ke Versi Terbaru**:
-  Jika ada pembaruan versi di repositori, cukup lakukan pull image terbaru dan jalankan kembali:
+  Jika ada rilis baru di repositori GitHub, cukup jalankan perintah:
   ```bash
   docker compose pull
   docker compose up -d
