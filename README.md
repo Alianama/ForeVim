@@ -13,14 +13,15 @@
 Linux VM
   └─► node_exporter (:9100)
         └─► Prometheus (:9090)
-              └─► FastAPI Backend (:8000)
-                    ├─► PostgreSQL (metadata, alerts, forecasts)
-                    ├─► WebSocket (realtime push)
-                    └─► Next.js Frontend (:3000)
+              └─► Nginx Proxy (:80)  ◄── [Docker Single Image / Unified Port]
+                    ├─► Next.js Frontend (:3000)
+                    └─► FastAPI Backend (:8000)
+                          ├─► PostgreSQL (metadata, alerts, forecasts)
+                          └─► WebSocket (realtime push)
 ```
 
 > The backend **only queries Prometheus HTTP API** — no direct VM connections.
-> The frontend **only queries the backend API** — never Prometheus directly.
+> The frontend **only queries the API through the Nginx Proxy** (or backend directly if locally run) — never Prometheus directly.
 
 ---
 
