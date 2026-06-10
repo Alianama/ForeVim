@@ -37,43 +37,61 @@ Linux VM
 
 ---
 
-## Quick Start
+## Deployment & Quick Start
 
-### 1. Clone & Configure
+Ada dua cara untuk menjalankan ForeVim: menggunakan **Single Unified Image** (direkomendasikan untuk produksi/penggunaan praktis) atau membangunnya dari source code secara lokal untuk pengembangan.
+
+### Pilihan A: Production Deployment (Single Image - Rekomendasi)
+
+Untuk deploy secara cepat menggunakan Docker Image terpadu (Frontend, Backend, dan Nginx disatukan dalam port `80`):
+1. Unduh file [docker-compose.prod.yml](file:///Users/alipurnama/Project/Self%20Development/forevim/docker-compose.prod.yml) dan [.env.example](file:///Users/alipurnama/Project/Self%20Development/forevim/.env.example).
+2. Salin `.env.example` menjadi `.env` dan konfigurasikan database PostgreSQL eksternal Anda.
+3. Jalankan container:
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d
+   ```
+4. Akses aplikasi langsung di browser: **`http://localhost`** (atau IP server Anda).
+
+*Untuk panduan instalasi step-by-step dalam Bahasa Indonesia, lihat [README-DOCKER.md](file:///Users/alipurnama/Project/Self%20Development/forevim/README-DOCKER.md).*
+
+---
+
+### Pilihan B: Local Development (Build dari Source)
+
+Jika Anda ingin mem-build image secara lokal dari repositori ini:
+
+#### 1. Clone & Konfigurasi
 
 ```bash
 git clone https://github.com/yourorg/forevim.git
 cd forevim
 
-# Backend config
+# Konfigurasi Backend
 cp backend/.env.example backend/.env
-# Edit backend/.env — set SECRET_KEY, FIRST_SUPERUSER_PASSWORD
+# Edit backend/.env — isi SECRET_KEY, dsb.
 
-# Frontend config
+# Konfigurasi Frontend
 cp frontend/.env.example frontend/.env.local
 ```
 
-### 2. Configure Prometheus (via Web UI)
-
-Setelah login, buka **Prometheus Sources** di dashboard dan tambahkan IP/URL server Prometheus Anda (bisa lebih dari satu). Contoh: `192.168.1.5:9090`.
-
-> URL Prometheus **tidak** dikonfigurasi lewat `.env` — hanya dari web.
-
-Untuk target VM, tetap konfigurasi `node_exporter` di server Prometheus Anda (file `docker/prometheus/prometheus.yml` hanya contoh referensi).
-
-### 3. Start with Docker Compose
+#### 2. Jalankan dengan Docker Compose Lokal
 
 ```bash
-docker compose up -d
+# Build & jalankan frontend, backend, dan postgres lokal
+docker compose up -d --build
 ```
 
-Services:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000/api/docs
+Layanan lokal:
+- Frontend: `http://localhost:3000`
+- Backend API Docs: `http://localhost:8000/docs`
 
-Default login: `admin@forevim.local` / `ChangeMe123!`
+---
 
-Lalu tambahkan Prometheus source di web, lalu **Sync from Prometheus** di halaman Virtual Machines.
+### 3. Konfigurasi Prometheus (Melalui Web UI)
+
+Setelah berhasil login (Default login: `admin@forevim.local` / `ChangeMe123!`), buka menu **Prometheus Sources** di web UI dashboard untuk mendaftarkan URL server Prometheus Anda (misal: `http://192.168.1.10:9090`).
+
+> URL Prometheus **tidak** dikonfigurasi melalui `.env` — semuanya diatur secara dinamis melalui dashboard web.
 
 ---
 
